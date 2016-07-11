@@ -1,7 +1,14 @@
 "use strict";
 
 var request = require('request-promise');
-var mongoose = require
+var mongoose = require('mongoose');
+var mongoose.connect = require()
+var Text = mongoose.model('Text', {
+  body: {
+    type: String,
+    required: true
+  }
+});
 
 var url = 'https://promise-horizons.herokuapp.com/';
 
@@ -33,8 +40,15 @@ request.get(url, {json: true})
 	.then(function(resp) {
     // qs: represents the query parameters
     // Note how we need to return the Promise we get back from request.get()
-    console.log('Success:', resp);
+    var text = new Text({body: resp.key});
+    return text.save();
   })
+  .then(function(textDoc) {
+    console.log('Successfully saved in mongo', textDoc);
+  })
+   .catch(function(error) {
+  console.log(‘failed to save’, error);
+  });
 // Add code to fetch the next 3 stages of this exercise
 // When you're done, you'll see the response:
 // {"success":true,"completed":true,"reason":"Congratulations! You've completed this exercise."}
