@@ -320,6 +320,17 @@ which steps can happen in parallel? In the first case, chain the promises using
 
 ## Bonus. Save to Google Drive
 
+If you're feeling ambitious and want a little more practice with promises, APIs,
+and asynchronicity, add another option to your backup app: back up the contents
+of a Trello board to a CSV file inside your Google Drive account. Use the same
+CSV format we used in the [Trello CSV
+project](https://github.com/horizons-school-of-technology/week03/tree/master/day2/trello-csv).
+Start by reading about the [Google Drive API](https://developers.google.com/drive/v2/reference/),
+the [Google Drive API node quickstart](https://developers.google.com/drive/v3/web/quickstart/nodejs),
+and about how to integrate a Google Drive file selection widget into your app at
+[Open and upload files using the Google Picker API](https://developers.google.com/drive/v3/web/integrate-open) and
+[Picker API Developer's Guide](https://developers.google.com/picker/docs/).
+
 ## Suggested reading
 - [Promise reference](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
 - [You're missing the point of promises](https://blog.domenic.me/youre-missing-the-point-of-promises/)
