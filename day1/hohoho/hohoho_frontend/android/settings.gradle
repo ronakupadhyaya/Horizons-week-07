@@ -1,0 +1,3 @@
+rootProject.name = 'hohoho_frontend'
+
+include ':app'
