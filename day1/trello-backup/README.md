@@ -142,11 +142,161 @@ to select one. Create a `.hbs` template, pass in the boards data, and when the
 user selects a board, take them to a new route, let's call it `/boards/:bid` to
 begin the export process!
 
-## Step 3. Write it to the database
+## Step 3. Read board data from Trello API
 
-## Step 4. Write back to Trello
+Now for the fun part. The user has selected a board by calling `GET
+/boards/:bid` with the board ID. Let's download the board and store its contents
+into a Mongo database. This will require a slightly tricky series of API
+calls--this is where promises will really shine. Slide open your Promisghini's
+suicide doors and let's try to open her up a little bit.
+
+All we have to start with is a board ID. (You could pass the board name, too,
+but the name could change between the time you read it and the time you write
+it, so it's best to look it up again.) We must do the following:
+
+- call `getBoards` again to get the latest metadata for this board
+- call `getListsOnBoard` to get the list of lists on this board, including their
+  metadata
+- call `getCardsOnBoard` to get the list of cards on this board
+
+Think about whether the order of these calls matters. Do we need to do them in
+sequence, or can we speed things up by running all of these calls in parallel?
+
+Do any of the calls depend on the results of another call?
+
+In this particular case, no: we already have all of the data we need for each of
+these three calls. For the first, `getBoards`, as before, we just pass in "me"
+for a list of my boards. For the second and third, we just need to pass in the
+board ID (req.params.bid).
+
+Promises are good at chaining, which lets you run a series of asynchronous calls
+and handle all errors at the end. This is one way to avoid "callback hell" (read
+more about the phenomenon
+[here](http://colintoh.com/blog/staying-sane-with-asynchronous-programming-promises-and-generators),
+[here](http://callbackhell.com/) and
+[here](http://stackabuse.com/avoiding-callback-hell-in-node-js/)--Taylor I'm
+looking at you 😬). You can run a series of async calls thus:
+
+```javascript
+firstCall()
+  .then(secondCall)
+  .then(thirdCall)
+  ...
+  .catch(errorHandler);
+```
+
+But we can also execute a series of calls in parallel--firing them all off, and
+waiting for them all to come back--very elegantly by using
+[`Promise.all'](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all).
+If you ever tried to make several API calls and corral their results using
+callbacks, you know how frustrating this is without promises (Omar, Serena,
+Caitlin, I got y'all 👊). With `Promise.all` it's as easy as:
+
+```javascript
+Promise.all([firstCall(), secondCall(), thirdCall()])
+  .then(results => { /* handle results */ })
+  .catch(errors => { /* handle errors */ });
+```
+
+The results, and errors, come back in the same order as the calls were passed
+into `Promise.all`.
+
+Try kicking off all three API calls in parallel this way, and checking the
+results/errors that come back. Then let's move on to writing 
+
+## Step 4. Saving to the database
+
+Thanks to the incomparable beauty and elegance of promises, you have now
+successfully corralled all of the board data inside your `GET /board/:bid`
+endpoint. Let's go ahead and write it to the database.
+
+First, we need a Mongoose model to store a board. As you've no doubt noticed,
+Trello stores tons and tons of metadata on its boards, lists, and cards. For our
+purposes, we're just going to store the following:
+
+- Boards: board `name` and `id`
+- Lists: list `name` and `id`
+- Cards: card `name`, `id` and `desc`
+
+There are lots of ways we could choose to store these data in our database. We
+could create three separate models, one for each, then link them together using
+[ObjectID refs and populate](http://mongoosejs.com/docs/populate.html). That
+would make sense if list existed independently of boards (e.g., if they could be
+on multiple boards at the same time) or if cards existed independently of lists.
+Is that the case here? Not as far as I know. So the right way to do this is
+probably using [sub-docs](http://mongoosejs.com/docs/subdocs.html) instead.
+
+Create a single top-level `board` model to contain your board with its lists and
+cards. Note that you may choose to specify one large schema containing the
+subdoc schemas inline, like this:
+
+```javascript
+var parentSchema = new Schema({
+  ...
+  children: [{
+    name: String,
+    ...
+  }],
+  ...
+});
+```
+
+Or you may instead choose to create the schemas independently and link them
+together:
+
+```javascript
+var childSchema = new Schema({...});
+var parentSchema = new Schema({
+  ...
+  children: [childSchema],
+  ...
+});
+```
+
+Either way, you'll first need to create the parent document, then you'll need to
+add each of the children. Another benefit to mongoose subdocs is that *you don't
+need to save every time you add a subdoc,* you can do one final `save()` on the
+parent at the end after adding all of the subdocs, and errors from the subdocs
+will bubble up. Take a moment now to RTFM: [Sub Docs](http://mongoosejs.com/docs/subdocs.html).
+
+When performing an async operation with Mongoose, do it using promises instead
+of callbacks! For instance, `document.save().then(...)`.
+
+Remember! Promises can (and should!) be chained! Inside a `then` clause, you can
+return a new promise, which will continue the chain. You need to connect your
+Mongoose code to your Trello API code in a single chain, which should look
+something like this:
+
+```javascript
+Promise.all(/* list of Trello API promises from above */)
+  .then(result => {
+    /* Create your Mongoose object and save it here!
+       Return the promise that save() returns here to continue the chain,
+       for example: */
+    ...
+    return MyModel.save()
+  })
+  .then(result => { /* handle success case */ })
+  .catch(err => { /* handle error case */ });
+```
+
+One final note on chaining promises: rather than doing things serially, and
+worrying about what comes next after each async step inside the callback for
+that step, promises encourage us to take a high-level look at all of our async
+requests--what order they happen in, what depends upon what, what can be
+parallelized and what has to happen serially, etc. Read [Flattening Promise
+Chains](http://solutionoptimist.com/2013/12/27/javascript-promise-chains-2/) for
+a great overview of how to do this.
+
+## Step 5. Write back to Trello
 
 
 
 
 ## Bonus. Save to Google Drive
+
+## Suggested reading
+- [Promise reference](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+- [You're missing the point of promises](https://blog.domenic.me/youre-missing-the-point-of-promises/)
+- [JavaScript Promises tutorial](http://www.html5rocks.com/en/tutorials/es6/promises/)
+- [Flattening Promise Chains](http://solutionoptimist.com/2013/12/27/javascript-promise-chains-2/)
