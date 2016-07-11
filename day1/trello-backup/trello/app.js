@@ -7,12 +7,36 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
-
 var app = express();
+var passport=require('passport');
+TrelloStrategy = require('passport-trello').Strategy
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
+
+//throw in passport-trello
+
+passport.use(new TrelloStrategy({
+   consumerKey: "4426aaac3e3ddf941ff93930255038d8",
+    consumerSecret: "24eb10906b9186cbdceb64f56597e41061c9aa0e91135f6eb07fa23e61b1724e",
+    callbackURL: "https://trello.com/1/authorize",
+    passReqToCallback: true,
+    trelloParams:{
+        scope: "read,write",
+        name: "MyApp",
+        expiration: "never"
+    }
+        
+},
+function(req,token, tokenSecret, profile, done){
+  return {token: token,
+          profile: profile}
+  // User.findOrCreate({profile: profile}, function(err,user){
+  //   return done(err,user);
+  // })
+}));
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
