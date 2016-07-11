@@ -10,5 +10,5 @@ library using promises.
 ## Instructions
 
 1. `npm install`
-2. Edit `script.js`
+2. Edit `script.js` follow instructions there
 3. Run `node script.js`
