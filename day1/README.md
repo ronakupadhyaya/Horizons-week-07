@@ -1,9 +1,6 @@
-# Inline exercises
+# Day 1 exercises
 
-1. [Warmup: React Native](warmup.md)
-1. [React Native counter](rn-intro.md)
+## Inline exercises
 
-# Pair exercises
-
-1. [Ho Ho Ho!](hohoho/)
+## Pair exercises
 
