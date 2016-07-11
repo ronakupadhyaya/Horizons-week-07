@@ -1,6 +1,17 @@
 "use strict";
 
 var request = require('request-promise');
+var mongoose = require('mongoose');
+mongoose.Promise = Promise;
+
+mongoose.connect(require('./connect'))
+
+var Text = mongoose.model('Text', {
+  body: {
+    type: String,
+    required: true
+  }
+});
 
 var url = 'https://promise-horizons.herokuapp.com/';
 
@@ -16,7 +27,27 @@ request.get(url, {json: true})
   .then(function(resp) {
     // Response from the second request
     console.log('Success 2:', resp);
+    return request.get(url, {json: true, qs: { key: resp.key, stage: resp.stage + 1 }});
   })
+    .then(function(resp) {
+    // Response from the second request
+    console.log('Success 2:', resp);
+    return request.get(url, {json: true, qs: { key: resp.key, stage: resp.stage + 1 }});
+  })
+      .then(function(resp) {
+    // Response from the second request
+    console.log('Success 2:', resp);
+    var text = new Text({body: resp.key});
+    return text.save();
+   // return request.get(url, {json: true, qs: { key: resp.key, stage: resp.stage + 1 }});
+  })
+    .then(function(resp) {
+    // Response from the second request
+    console.log('Success 3:', resp);
+  })
+   .catch(function(err) {
+   	console.log("error:" , err)
+   })
 // YOUR CODE HERE
 
 // Add code to fetch the next 3 stages of this exercise
