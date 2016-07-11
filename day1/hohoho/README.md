@@ -76,7 +76,50 @@ to add additional routes.
 
 Back on the frontend, let's create the login screen.
 
+The first thing you'll notice is the boilerplate code for `Navigator` inside the
+root component at the top of `hohoho_frontend/index.ios.js`, which allows us to
+move forward and backward among a series of screens in our app, for instance,
+from a Login screen to a Main screen. Don't worry too much about this for now.
+Just use the boilerplate code to build these two screens.
 
+On the login screen, use `TextInput` components for the form fields, with a
+callback to pass the value to the state, like this:
+
+```javascript
+<TextInput
+  style={{height: 40}}
+  placeholder="Enter your username"
+  onChangeText={(text) => this.setState({username: text})}
+/>
+```
+
+You can find more information in [Handling text input](https://facebook.github.io/react-native/docs/handling-text-input.html).
+
+Once you've got and validated the input values, you can make an HTTP POST
+request with the username and password to the backend route like this:
+
+```javascript
+fetch('http://localhost:3000/login', {
+  method: 'POST',
+  body: JSON.stringify({
+    username: 'yourValue',
+    password: 'yourOtherValue',
+  })
+})
+.then(
+  // success handler
+  (response) => { /* do something with the response */ },
+  // error handler
+  (err) => { /* handle the error */ });
+```
+
+Instead of using `$.ajax()`, in React Native we use the `fetch` command to make
+an HTTP request. The syntax is slightly different, since `fetch` returns a
+promise. The `then` clause contains a success and an error handler. Read more
+about this in [Networking](https://facebook.github.io/react-native/docs/network.html).
+
+Awesome! If you've gotten a successful response from the server, now it's time
+to take the user to the next screen of the app.
 
 ## Part . Send Invite
 
