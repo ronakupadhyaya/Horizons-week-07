@@ -1,13 +1,15 @@
-const React = require('react');
-const AppRegistry = require('react-native').AppRegistry;
-const Navigator = require('react-native').Navigator;
-const Text = require('react-native').Text;
-const View = require('react-native').View;
-const TouchableOpacity = require('react-native').TouchableOpacity;
+import React, {Component} from 'react'
+import {
+  AppRegistry,
+  Navigator,
+  Text,
+  View,
+  TouchableOpacity
+} from 'react-native'
 
 // This is the root view
-const hohoho_frontend = React.createClass({
-  render: function() {
+class hohoho_frontend extends Component {
+  render() {
     return (
       <Navigator
         initialRoute={{ index: 0 }}
@@ -48,10 +50,10 @@ const hohoho_frontend = React.createClass({
       />
     );
   }
-});
+}
 
-const LoginScreen = React.createClass({
-  render: function() {
+class LoginScreen extends Component {
+  render() {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Login screen</Text>
@@ -61,10 +63,10 @@ const LoginScreen = React.createClass({
       </View>
     );
   }
-});
+}
 
-const MainScreen = React.createClass({
-  render: function() {
+class MainScreen extends Component {
+  render() {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Main app</Text>
@@ -74,7 +76,7 @@ const MainScreen = React.createClass({
       </View>
     );
   }
-});
+}
 
 const styles = {
   container: {
@@ -90,4 +92,4 @@ const styles = {
   }
 };
 
-AppRegistry.registerComponent('hohoho_frontend', function() { return hohoho_frontend });
+AppRegistry.registerComponent('hohoho_frontend', () => hohoho_frontend );
