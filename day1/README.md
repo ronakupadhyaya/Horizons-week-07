@@ -1,4 +1,4 @@
-# Week 7 Day 2 Exercises
+# Week 7 Day 1 Exercises
 
 ## Inline Exercises
 
