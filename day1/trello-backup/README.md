@@ -137,6 +137,11 @@ error message. In this case you should use `Array.isArray(boards)` to check if
 you got a list of boards, or if you got an error string instead, and handle the
 error appropriately.
 
+Note also that there's scant documentation on this Trello node module. The best
+thing to do is just to look inside
+[`main.js`](https://github.com/norberteder/trello/blob/master/main.js) and find
+the functions you need there--for example, try searching for the word "board".
+
 The final task here is to render the list of boards for the user and allow them
 to select one. Create a `.hbs` template, pass in the boards data, and when the
 user selects a board, take them to a new route, let's call it `/boards/:bid` to
@@ -187,7 +192,7 @@ firstCall()
 
 But we can also execute a series of calls in parallel--firing them all off, and
 waiting for them all to come back--very elegantly by using
-[`Promise.all'](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all).
+[`Promise.all`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all).
 If you ever tried to make several API calls and corral their results using
 callbacks, you know how frustrating this is without promises (Omar, Serena,
 Caitlin, I got y'all 👊). With `Promise.all` it's as easy as:
@@ -202,7 +207,8 @@ The results, and errors, come back in the same order as the calls were passed
 into `Promise.all`.
 
 Try kicking off all three API calls in parallel this way, and checking the
-results/errors that come back. Then let's move on to writing 
+results/errors that come back. Then let's move on to writing all this junk back
+to the database.
 
 ## Step 4. Saving to the database
 
@@ -290,8 +296,27 @@ a great overview of how to do this.
 
 ## Step 5. Write back to Trello
 
+You've gotten this far, this is the easy part. You just need to make the whole
+process work in reverse.
 
+You'll need to add another route to your app, let's call it `GET /restore`, that
+displays a list of boards that you've backed up in your database, and a `GET
+/restore/:bid` to kick off the restoration process for one board. Similar to
+before, the user should have the option to click a board, which would start the
+restore process by doing everything in reverse: read the board data from Mongo
+and execute a series of Trello API calls to write the data to Trello. Give some
+thought as to whether you want to *overwrite* the board data already in
+Trello--and to how you would do that--or whether you just want to restore by
+creating a new board.
 
+This time, you'll have to chain your promises in the opposite direction too!
+Kick off the promise chain with a mongoose `find` operation of one sort or
+another, and then once you've gotten all of the data you need from the database,
+fire off one or more Trello API calls such as `addBoard`, `addListToBoard`,
+`addCard`, etc. As above, spend some time designing how you're going to do this.
+Which steps need to happen serially (because one depends upon another), and
+which steps can happen in parallel? In the first case, chain the promises using
+`then()`; in the second case, use `Promise.all()` as above.
 
 ## Bonus. Save to Google Drive
 
