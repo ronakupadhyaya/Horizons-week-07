@@ -10,7 +10,7 @@ right? Welcome to the wild world of mobile development.
 
 Follow the instructions at [React Native: Getting
 Started](https://facebook.github.io/react-native/docs/getting-started.html) to
-install the required components on your system.
+install the required components on your system and create your first mobile app.
 
 For OS X users, this will include installing Xcode ([App Store
 link](https://itunes.apple.com/us/app/xcode/id497799835?mt=12)). Xcode is very
