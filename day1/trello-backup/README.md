@@ -232,6 +232,13 @@ on multiple boards at the same time) or if cards existed independently of lists.
 Is that the case here? Not as far as I know. So the right way to do this is
 probably using [sub-docs](http://mongoosejs.com/docs/subdocs.html) instead.
 
+If we were storing boards, lists, and cards independently of one another, we
+would need to link them using IDs (foreign keys): a board would need to store a
+list of list IDs and/or a list would need a board ID. This is how the data you
+receive from Trello is structured. However, if we choose to use subdocs, we
+don't strictly need to store these IDs anywhere, since the association is
+implicit. See the next part on how to reconstruct the data.
+
 Create a single top-level `board` model to contain your board with its lists and
 cards. Note that you may choose to specify one large schema containing the
 subdoc schemas inline, like this:
@@ -308,6 +315,19 @@ and execute a series of Trello API calls to write the data to Trello. Give some
 thought as to whether you want to *overwrite* the board data already in
 Trello--and to how you would do that--or whether you just want to restore by
 creating a new board.
+
+As discussed above, if we're using subdocs in mongoose, we don't need to
+explicitly specify which lists belong to which board, which lists a board
+contains, etc. with lists of IDs. The relationship is implicit: when we look up
+a board, it contains lists as subdocs, and those lists contain cards as subdocs.
+We don't even need to use `populate` in this case. You can run:
+
+```javascript
+Board.findById(bid).then(board => {
+  /* Create the board using Trello API, save its lists (board.lists),
+  and save the cards for each of those lists (e.g., board.lists[0].cards) */
+}).catch(err => { /* handle error */ });
+```
 
 This time, you'll have to chain your promises in the opposite direction too!
 Kick off the promise chain with a mongoose `find` operation of one sort or
