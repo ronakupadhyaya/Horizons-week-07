@@ -4,12 +4,17 @@ var request = require('request-promise');
 
 var url = 'https://promise-horizons.herokuapp.com/';
 
-// This code fetches the first two stages of this exercise
+// Example code: fetches the first two stages of this exercise.
+// We set json: true in options because we want response data to be
+// parsed automatically.
 request.get(url, {json: true})
   .then(function(resp) {
+    // qs: represents the query parameters
+    // Note how we need to return the Promise we get back from request.get()
     return request.get(url, {json: true, qs: { key: resp.key, stage: resp.stage + 1 }});
   })
   .then(function(resp) {
+    // Response from the second request
     console.log('Success 2:', resp);
   })
 // YOUR CODE HERE
