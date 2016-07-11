@@ -9,4 +9,6 @@ library using promises.
 
 ## Instructions
 
-Instructions are in `script.js`
+1. `npm install`
+2. Edit `script.js`
+3. Run `node script.js`
