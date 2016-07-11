@@ -40,6 +40,55 @@ To start the frontend code in the iOS simulator, `cd` into the
 
 *FILL IN INFO ON WINDOWS AND ANDROID STUDIO*
 
+## Part 1. Login
+
+### Backend
+
+Since your frontend and backend are completely disjoint, you no longer have the
+option of letting the user authenticate--or do anything else--on the backend.
+100% of the data your app needs must be sent and received via a REST API, so
+it's critical that you spend some time thinking and planning which routes you
+will need for each of the app's features.
+
+Let's start with login. At minimum, you will need the following routes:
+
+- `POST /login`: Send a username and password; authenticates the user via
+  Passport and logs them in, then returns user info, or an error on failure
+- `POST /register`: Send a username and password to create a new user; returns
+  the new user info, or an error (if e.g. the username is already taken)
+
+These routes are filled in for you. Remember, *there is no user on a web browser
+viewing our app on the web!* This has big implications for the format of the
+data that we return, how we handle errors, etc. For example, if the user tries
+to access a protected resource without logging in, there's no point in
+attempting to redirect them to a login page--since a.) there is no web-based
+login page, and b.) even if we tried, the app would ignore the redirect.
+Instead, we need to use [HTTP status
+codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) to send
+meaningful success and error messages to the app. Code 401 means "unauthorized",
+so it should tell the app that the user needs to login before accessing this
+resource.
+
+To add support for other authentication providers, such as Facebook, we'll have
+to add additional routes.
+
+### Frontend
+
+Back on the frontend, let's create the login screen.
+
+
+
+## Part . Send Invite
+
+## Part . Receive Invite
+
+## Part . Friend List
+
+## Part . Send a Ho! Ho! Ho!
+
+## Part . Receive a Ho! Ho! Ho!
+
+## Bonus: address book integration
 
 ## Bonus: push notifications
 
