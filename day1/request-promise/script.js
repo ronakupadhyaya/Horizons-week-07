@@ -16,7 +16,26 @@ request.get(url, {json: true})
   .then(function(resp) {
     // Response from the second request
     console.log('Success 2:', resp);
+        return request.get(url, {json: true, qs: { key: resp.key, stage: resp.stage + 1 }});
+
   })
+   .then(function(resp) {
+    // Response from the second request
+    console.log('Success 3:', resp);
+        return request.get(url, {json: true, qs: { key: resp.key, stage: resp.stage + 1 }});
+  })
+      .then(function(resp) {
+    // Response from the second request
+    console.log('Success 4:', resp);
+        return request.get(url, {json: true, qs: { key: resp.key, stage: resp.stage + 1 }});
+  })
+         .then(function(resp) {
+    // Response from the second request
+    console.log('Success 5:', resp);
+        // return request.get(url, {json: true, qs: { key: resp.key, stage: resp.stage + 1 }});
+  })
+
+
 // YOUR CODE HERE
 
 // Add code to fetch the next 3 stages of this exercise
