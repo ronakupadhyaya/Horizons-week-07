@@ -14,6 +14,21 @@ request.get(url, {json: true})
     return request.get(url, {json: true, qs: { key: resp.key, stage: resp.stage + 1 }});
   })
   .then(function(resp) {
+    // qs: represents the query parameters
+    // Note how we need to return the Promise we get back from request.get()
+    return request.get(url, {json: true, qs: { key: resp.key, stage: resp.stage + 1 }});
+  })
+  .then(function(resp) {
+    // qs: represents the query parameters
+    // Note how we need to return the Promise we get back from request.get()
+    return request.get(url, {json: true, qs: { key: resp.key, stage: resp.stage + 1 }});
+  })
+  .then(function(resp) {
+    // qs: represents the query parameters
+    // Note how we need to return the Promise we get back from request.get()
+    return request.get(url, {json: true, qs: { key: resp.key, stage: resp.stage + 1 }});
+  })
+  .then(function(resp) {
     // Response from the second request
     console.log('Success 2:', resp);
   })
