@@ -13,7 +13,7 @@ class hohoho_frontend extends Component {
     return (
       <Navigator
         initialRoute={{ index: 0 }}
-        renderScene={function(route, navigator) {
+        renderScene={(route, navigator) => {
           // Function to call when a new scene should be displayed
           function onForward() {
             navigator.push({

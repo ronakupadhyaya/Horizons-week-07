@@ -95,6 +95,9 @@ callback to pass the value to the state, like this:
 
 You can find more information in [Handling text input](https://facebook.github.io/react-native/docs/handling-text-input.html).
 
+Then you'll need a submit button. Use `TouchableOpacity` for this, with an
+`onTouch` handler.
+
 Once you've got and validated the input values, you can make an HTTP POST
 request with the username and password to the backend route like this:
 
@@ -121,15 +124,50 @@ about this in [Networking](https://facebook.github.io/react-native/docs/network.
 Awesome! If you've gotten a successful response from the server, now it's time
 to take the user to the next screen of the app.
 
-## Part . Send Invite
+## Part 2. Add a friend
 
-## Part . Receive Invite
+The first real feature we'll implement is the ability for a user to add a friend
+--because Ho! Ho! Ho! isn't much fun without other people, right? The user can
+do this in one of two ways:
 
-## Part . Friend List
+- By searching for that user, by username, email address, or phone number
+- By inviting someone who hasn't yet signed up
+
+In this part, we'll implement the first of these only. The second will be
+completed later on.
+
+Let's start by adding a route on the backend to allow the user to add another
+user as their friend. It should take a single parameter, user, and if it
+successfully finds that user, it should add them to the user's friend list in
+the database and return the friend's username and ID, otherwise it should return
+an error. Create a `POST /friend` route for this.
+
+On the frontend, add another `TextInput` on the main app screen with a button
+(`TouchableOpacity` with an `onTouch` handler, as before) that triggers this
+HTTP POST request (using `fetch` as before). If it succeeds, display the friend
+on the user's screen in the friends list (don't bother waiting for them to
+"accept" the request); if not, display an error to the user.
+
+## Part 3. Friend List
+
+In the previous part you added the ability to add a friend; now you need to add
+the ability to load a user's existing friend list
 
 ## Part . Send a Ho! Ho! Ho!
 
 ## Part . Receive a Ho! Ho! Ho!
+
+## Part . Send Invite
+
+The first real feature we'll implement is the ability for a user to invite
+someone else to the app--because Ho! Ho! Ho! isn't much fun without other
+people, right?
+
+The user will enter an email address or a phone number 
+
+Let's start by adding the necessary backend routes. 
+
+## Part . Receive Invite
 
 ## Bonus: address book integration
 
