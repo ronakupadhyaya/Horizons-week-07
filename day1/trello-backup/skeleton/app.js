@@ -11,6 +11,8 @@ var TrelloStrategy = require('passport-trello').Strategy;
 var auth = require('./routes/auth');
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var mongoose = require('mongoose');
+
 
 var app = express();
 
@@ -26,50 +28,71 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(session({
+  secret: process.env.SECRET
+}))
+
 app.use(passport.initialize());
 app.use(passport.session());
 
 passport.serializeUser(function(user, done) {
-  done(null,JSON.stringify(user));
+  done(null, JSON.stringify(user));
 });
 
 passport.deserializeUser(function(input, done) {
-  done(null,JSON.parse(input));
+  done(null, JSON.parse(input));
   });
 
 // Passport strategy
 passport.use('trello', new TrelloStrategy({
-    consumerKey: '63aa587ffd2bc71922dbbbdf72958ded',
-    consumerSecret:  'a347b3f17d5ca9479ee565757c0e5a80661b163dd7e2e67aaa7af535e4cd73f7',
-    callbackURL: '/auth/trello/callback',
+    consumerKey: process.env.TRELLO_KEY,
+    consumerSecret:  process.env.TRELLO_SECRET,
+    callbackURL: 'http://localhost:3000/auth/trello/callback',
     passReqToCallback: true,
     trelloParams: {
+      // authType: 'rerequest',
       scope: "read,write",
-      name: "MyApp",
+      name: "Trello Backup Engine",
       expiration: "never"
     }
   },
   function(req, token, tokenSecret, profile, done) {
+    // console.log("token", token)
+    // console.log("tokenSecret", tokenSecret)
+    // console.log("profile", profile)
+    // console.log("done", done)
+
       var user = {
       token: token,
       profile: profile
       }
 
-     if (!req.user) {
-      return done("Error, no user found");
-     }
-            //user is not authenticated, log in via trello or do something else 
-        else{
-          return done(null, user);
-        }
-            //authorize user to use Trello api 
-
+    if (token === null) {
+      console.log("nah")
+      return done(null, user);
+    }
+        //user is not authenticated, log in via trello or do something else 
+    else{
+      console.log("You're good");
+      return done(null, user);
+    }
+    // //authorize user to use Trello api 
   }
 ));
 
+
+
+app.use('/', auth(passport));
+
+app.use((req, res, next) => {
+  if (!req.isAuthenticated()) {
+    return res.redirect('/login');
+  }
+  return next();
+})
+
 app.use('/', routes);
 app.use('/users', users);
-app.use('/', auth(passport));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
