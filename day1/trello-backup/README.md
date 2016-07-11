@@ -19,7 +19,7 @@ from week 3. This project has several key differences:
   easier.
 
 Start with an `express` scaffold--feel free to use `express-generator` as in
-past projects.
+past projects, and don't forget the `--hbs` argument to add Handlebars support.
 
 ## Step 1. Trello authentication
 
@@ -57,8 +57,8 @@ The `callback` function should take the following arguments: `req`, `token`,
   - `token`: The token you can subsequently pass to API calls to authenticate as
     the user.
   - `tokenSecret`: You don't need this right now.
-  - `profile`: Information on the user, including their ID, name, and
-    importantly, a list of boards.
+  - `profile`: Information on the user, including their ID, name, and a bunch of
+    other data.
   - `done`: The passport callback to indicate whether the authentication was
     successful.
 
@@ -69,10 +69,26 @@ the database in this case. Think about why not.
 
 Instead of looking up/creating a new user, upon authentication success, why not
 just return a "fake user" object containing just the information you need--in
-this case, the `token` and `profile` objects passed into the callback?
+this case, the `token` and `profile` objects passed into the callback? As far as
+passport is concerned, a "user" can be any JavaScript object, e.g.:
+
+```javascript
+{
+  token: token,
+  profile: profile
+}
+```
+
+The only trick is that you need to supply `passport.serializeUser` and
+`passport.deserializeUser` callbacks as well, which convert the user object to a
+string and restore it from a string, respectively. How do we convert a simple
+JavaScript object to a string? You guessed it... JSON! Your `serializeUser`
+callback should call its `done` callback with the output of `JSON.stringify` on
+the user object, and your `deserializeUser` callback should call its `done`
+callback with the output of `JSON.parse` on the input object.
 
 You'll also want to redirect the user to another route, let's call it `/boards`,
-upon success.
+upon success, to select a board. Read on, dear student.
 
 ## Step 2. Download the board
 
@@ -94,7 +110,37 @@ var trello = new Trello("MY APPLICATION KEY", "MY USER TOKEN");
 ```
 
 As above, the application key is the same Trello API key that you used to
-configure `passport-trello`. And the token? You just got that via OAuth!
+configure `passport-trello`. And the token? You just got that via OAuth! And it
+should be stored in your `req.user` object. So we have all the information we
+need to make an API call authenticated as the user.
+
+Let's add a `GET /boards` route that displays a list of boards and allows the
+user to choose the board to export. It should read the OAuth token from
+`req.user.token`, initialize the Trello module using the token, then make an
+authenticated call to `getBoards` to get the list. Instead of passing in a
+callback to `getBoards`, handle the return value, and the error, using the
+promise it returns, like this:
+
+```javascript
+trello.getBoards("me").then(boards => {
+  // do something with boards data
+}).catch(err => {
+  // handle the error
+});
+```
+
+Note that the Trello API has a funny way of returning errors. Many errors
+actually do not cause the promise to reject and trigger the error handler;
+instead the "success" handler gets called, but instead of receiving the data it
+expects--in this case, a list of boards--it receives a string containing an
+error message. In this case you should use `Array.isArray(boards)` to check if
+you got a list of boards, or if you got an error string instead, and handle the
+error appropriately.
+
+The final task here is to render the list of boards for the user and allow them
+to select one. Create a `.hbs` template, pass in the boards data, and when the
+user selects a board, take them to a new route, let's call it `/boards/:bid` to
+begin the export process!
 
 ## Step 3. Write it to the database
 
