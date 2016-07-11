@@ -4,7 +4,7 @@
 
 1. [jQuery AJAX refresher](warmup.md)
 1. [Promises with jQuery](jquery-promise.md)
-1. [Component Lifecycle: Timer](timer.md)
+1. [Promises with Node Request library](request-promise/README.md)
 
 ## Pair Programming Exercise
 
