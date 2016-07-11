@@ -21,21 +21,30 @@ router.get('/auth/trello/callback', passport.authenticate('trello', {successRedi
 	));
 
 router.use(function(req,res,next){
-	console.log(req.user,'23')
+	//console.log(req.user,'23')
 	if(!req.user){
 		res.redirect('/')
 	}
 	else{
-		var trello = new Trello("4426aaac3e3ddf941ff93930255038d8", req.user.token);
+		// var trello = new Trello("4426aaac3e3ddf941ff93930255038d8", req.user.token);
 		//console.log(req.user)
-		//next()
-		res.redirect('/boards')
+		next()
+		//res.redirect('/board')
 	}
 })
 
 // var trello = new Trello("4426aaac3e3ddf941ff93930255038d8", req.user.token);
 
 router.get('/boards', function(req,res){
+	var trello = new Trello("4426aaac3e3ddf941ff93930255038d8", req.user.token);
+	trello.getBoards("me").then(
+		function(boards){
+			console.log(boards)
+		}
+  	// do something with boards data
+	).catch(function(err){
+		console.log(err)
+	});
 	// var trello = new Trello("4426aaac3e3ddf941ff93930255038d8", req.user.token);
 	res.render('boards')
 })

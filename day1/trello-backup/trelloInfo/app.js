@@ -25,6 +25,7 @@ var sess = {
 
 app.use(session(sess))
 app.use(passport.initialize())
+app.use(passport.session())
 
 //throw in passport-trello
 
@@ -41,19 +42,19 @@ passport.use(new TrelloStrategy({
         
 },
 function(req,token, tokenSecret, profile, done){
-  console.log(token,'token')
-  console.log(profile,'profile')
+  // console.log(token,'token')
+  // console.log(profile,'profile')
   done(null,{token: token,
           profile: profile})
 }));
 
 passport.serializeUser(function(user, done) {
-  console.log(user,'51')
   done(null, JSON.stringify(user));
 });
 
 passport.deserializeUser(function(user, done) {
-    done(err, JSON.parse(user))
+//  console.log(user,'51')
+    done(null, JSON.parse(user))
 });
 
 // uncomment after placing your favicon in /public
