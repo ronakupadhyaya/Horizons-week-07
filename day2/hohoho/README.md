@@ -122,13 +122,63 @@ promise. The `then` clause contains a success and an error handler. Read more
 about this in [Networking](https://facebook.github.io/react-native/docs/network.html).
 
 Awesome! If you've gotten a successful response from the server, now it's time
-to take the user to the next screen of the app.
+to take the user to the next screen of the app. Inside your success promise
+chain, you can call `this.props.onForward` to move to the next screen.
 
-## Part 2. Add a friend
+## Part 2. Friend list
 
-The first real feature we'll implement is the ability for a user to add a friend
---because Ho! Ho! Ho! isn't much fun without other people, right? The user can
-do this in one of two ways:
+The main screen of your app is going to contain a list of the user's friends;
+tapping one of them would "Ho! Ho! Ho!" them. The easiest and most natural way
+to display a list of data in React Native is by [Using a ListView](https://facebook.github.io/react-native/docs/using-a-listview.html).
+
+The first step to add a `ListView` is to import the required object: modify the
+`import` statement at the top of `index.ios.js` to import `ListView` like this:
+
+```javascript
+import { ..., ListView } from 'react-native'
+```
+
+Next we need to add something called a data source to the state for the
+`MainScreen` component. In React you learned to do this using the
+`getInitialState` lifecycle method; in React Native, using ES6 classes, you'll
+do it by adding a `constructor` method to your class, which sets `this.state`.
+Instantiate a data source object and add it to your state like this. For now
+we'll make it contain a static list of friends:
+
+```javascript
+class MainScreen extends Component {
+  constructor(props) {
+    super(props);
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.state = {
+      dataStore: ds.cloneWithRows([
+        'Moose', 'Lane', 'Josh', 'Ethan', 'Elon', 'Darwish', 'Abhi Fitness'
+      ])
+    };
+  }
+}
+```
+
+Let's render the list view. Inside the main `<View>` component in the `render`
+method for the view, add a list view component like this:
+
+```javascript
+<ListView
+  dataSource={this.state.dataSource}
+  renderRow={(rowData) => <Text>{rowData}</Text>}
+/>
+```
+
+Boom! That's it. Now we have a list of friends in our app. Kinda. Of course,
+there's no data yet, so the list never changes and you can't add to it, but,
+hey, if you're gonna have a static list of friends, that's a hell of a list!
+
+## Part 3. Add a friend
+
+Okay, so you've got some "static" friends, BFD. Let's make things interesting by
+tying the friend list to the database so that you can find and add some real
+friends instead, and ditch those "static" losers. In Ho! Ho! Ho!, the user can
+add a friend in one of two ways:
 
 - By searching for that user, by username, email address, or phone number
 - By inviting someone who hasn't yet signed up
@@ -137,7 +187,7 @@ In this part, we'll implement the first of these only. The second will be
 completed later on.
 
 Let's start by adding a route on the backend to allow the user to add another
-user as their friend. It should take a single parameter, user, and if it
+user as their friend. It should take a single parameter, `user`, and if it
 successfully finds that user, it should add them to the user's friend list in
 the database and return the friend's username and ID, otherwise it should return
 an error. Create a `POST /friend` route for this.
@@ -148,10 +198,42 @@ HTTP POST request (using `fetch` as before). If it succeeds, display the friend
 on the user's screen in the friends list (don't bother waiting for them to
 "accept" the request); if not, display an error to the user.
 
-## Part 3. Friend List
+The last thing you need on the backend for this part is another `GET /friend`
+route that returns the user's friend list, which we'll load in a moment.
 
-In the previous part you added the ability to add a friend; now you need to add
-the ability to load a user's existing friend list
+Now that we can get some real data from the backend, let's display it to the
+user and make the friend list dynamic.
+
+The tricky part here is that, when the screen first loads, we don't have any
+data--so we need to display an empty list, then immediately kick off a request
+that downloads the friend list, and then update the list asynchronously when the
+request comes back. Welcome to the thrilling world of frontend mobile
+development.
+
+In the [React component
+lifecycle](https://facebook.github.io/react/docs/component-specs.html) (which
+applies to React Native components as well), where do we put code that we want
+to run once, and only once, when a component first loads? Answer: in
+`componentDidMount`. What do we add there? Answer: a networking call, to
+download the friends list.
+
+First add this call as a new function inside the `MainScreen` component, like
+this:
+
+```javascript
+class MainScreen extends Component {
+  ...
+  updateList() {
+    fetch('http://localhost:3000/friends')
+      .then(friends => this.setState({
+        dataStore: this.state.dataStore.cloneWithRows(friends)
+      }))
+      .catch(err => { /* handle the error */ });
+```
+
+This will replace the list of friends currently stored in
+`this.state.dataSource`, and currently displayed in the `ListView`, with the
+list that you just downloaded from the backend.
 
 ## Part . Send a Ho! Ho! Ho!
 
