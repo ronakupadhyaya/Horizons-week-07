@@ -1,4 +1,4 @@
-# Inline exercise: React Native intro
+# Inline exercise: Styling React Native
 ## Time limit: 10 minutes
 
 ## Goal
