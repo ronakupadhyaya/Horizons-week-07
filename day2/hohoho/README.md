@@ -94,21 +94,26 @@ request with the username and password to the backend route like this:
 fetch('https://hohoho-backend.herokuapp.com/register', {
   method: 'POST',
   body: JSON.stringify({
-    username: 'yourValue',
-    password: 'yourOtherValue',
+    username: 'theValueOfTheUsernameState',
+    password: 'theValueOfThePasswordState',
   })
 })
-.then(
-  // success handler
-  (response) => { /* do something with the response */ },
-  // error handler
-  (err) => { /* handle the error */ });
+.then((response) => response.json())
+.then((responseJson) => {
+  /* do something with responseJson and go back to the Login view but
+   * make sure to check for responseJson.success! */
+})
+.catch((err) => {
+  /* do something if there was an error with fetching */
+});
 ```
 
 Instead of using `$.ajax()`, in React Native we use the `fetch` command to make
 an HTTP request. The syntax is slightly different, since `fetch` returns a
 promise. The `then` clause contains a success and an error handler. Read more
 about this in [Networking](https://facebook.github.io/react-native/docs/network.html).
+
+⚠️ **Warning:** Make sure to call `.then(response => response.json())` (like above) **before any other `.then` statements** to turn the raw response into JSON that you can process in subsequent `.then`'s.
 
 Awesome! If you've gotten a successful response from the server, now it's time
 to take the user to the next screen of the app. Inside your success promise
@@ -128,7 +133,7 @@ For login, we will be creating a view that looks like the following:
 
 ![](img/login.png)
 
-TODO update section
+This view will be very similar to registration - we will only need to change the routes we use for `fetch` and change what happens upon success.
 
 ## Part 3. User list
 
