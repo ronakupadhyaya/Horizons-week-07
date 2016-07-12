@@ -39,14 +39,27 @@ To start the frontend code in the iOS simulator, `cd` into the
 
 ## Part 1. Registration
 
+### Overview
+
+For registration, we will be creating a screen that _looks like_ the following:
+
 ![](img/register.png)
 
-TODO update section
 
-Back on the frontend, let's create the login screen.
+Your registration screen should be able to _do_ the following:
 
-The first thing you'll notice is the boilerplate code for `Navigator` inside the
-root component at the top of `hohoho_frontend/index.ios.js`, which allows us to
+- Take a username as an input
+- Take a password as an input
+- Make a `POST` request to a server (API reference provided, see **_Endpoint Reference_**).
+
+
+### Creating Components - `index.ios.js [Register]`
+
+
+Let's create the registration screen.
+
+The first thing you'll notice is the boilerplate code for `NavigatorIOS` inside the
+root component at the top of `index.ios.js`, which allows us to
 move forward and backward among a series of screens in our app, for instance,
 from a Login screen to a Main screen. Don't worry too much about this for now.
 Just use the boilerplate code to build these two screens.
@@ -65,13 +78,13 @@ callback to pass the value to the state, like this:
 You can find more information in [Handling text input](https://facebook.github.io/react-native/docs/handling-text-input.html).
 
 Then you'll need a submit button. Use `TouchableOpacity` for this, with an
-`onTouch` handler.
+`onPress` handler.
 
 Once you've got and validated the input values, you can make an HTTP POST
 request with the username and password to the backend route like this:
 
 ```javascript
-fetch('http://localhost:3000/login', {
+fetch('https://hohoho-backend.herokuapp.com/register', {
   method: 'POST',
   body: JSON.stringify({
     username: 'yourValue',
@@ -92,9 +105,19 @@ about this in [Networking](https://facebook.github.io/react-native/docs/network.
 
 Awesome! If you've gotten a successful response from the server, now it's time
 to take the user to the next screen of the app. Inside your success promise
-chain, you can call `this.props.onForward` to move to the next screen.
+chain, call the `this.props.navigator.pop()` to use the `NavigatorIOS` component to bring us back to our previous view - the Login view. 
+
+### End Result, Part 1
+
+By the end of Part 1, make sure that you are able to access your registration view upon load of the app, enter in registration details (username and password), and successfully get a response back from the server. Upon successful registration, your app should bring you back to the Login view to login with the details you just registered with.
+
+Congratulations! You've built your first native application view - in the next part, we'll build login in much the same way we did with registration, using `fetch` for handling network requests with our backend, and calling methods on our `NavigatorIOS` to bring us into different views. 
 
 ## Part 2. Login
+
+### Overview
+
+For login, we will be creating a view that looks like the following:
 
 ![](img/login.png)
 
@@ -236,7 +259,9 @@ This will replace the list of friends currently stored in
 `this.state.dataSource`, and currently displayed in the `ListView`, with the
 list that you just downloaded from the backend.
 
-### Endpoint Reference
+## Endpoint Reference - `https://hohoho-backend.herokuapp.com/`
+
+**Base URL:** https://hohoho-backend.herokuapp.com/
 
 All endpoints accept JSON data and return JSON data. All responses include
 a boolean `success` field that indicates if request was successful.
@@ -266,7 +291,7 @@ was successful.
 - `GET /users`: Get all registered users in HoHoHo
   - Example response:
 
-  ```
+  ```javascript
   {
     "success": true,
     "users": [
@@ -293,7 +318,7 @@ was successful.
 - `GET /messages`: Get messages sent to and from current user
   - Example response:
 
-  ```
+  ```javascript
   {
     "success": true,
     "messages": [
