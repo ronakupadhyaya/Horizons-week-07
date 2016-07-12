@@ -11,7 +11,8 @@ Follow these instructions to view the terminal.
 <img src="https://cl.ly/2i3F2p3j2j13/step%201.png">
 
 1. Inside of this you should see a file with a blue xcode icon that ends in
-   `.xcodeproj` -- double click this file to open the project in Xcode.
+   `.xcodeproj` (its name depends on what you named your project when you
+   created it) -- double click this file to open the project in Xcode.
 
 <img src="https://cl.ly/2k133Z2D3r3y/step%202.png">
 
