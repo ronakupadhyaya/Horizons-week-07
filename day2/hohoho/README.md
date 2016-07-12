@@ -1,3 +1,6 @@
+---
+breaks: false
+---
 # Pair programming exercise: Ho! Ho! Ho!
 
 ## Goal
@@ -64,7 +67,7 @@ move forward and backward among a series of screens in our app, for instance,
 from a Login screen to a Main screen. Don't worry too much about this for now.
 Just use the boilerplate code to build these two screens.
 
-On the login screen, use `TextInput` components for the form fields, with a
+On the registration screen, use `TextInput` components for the form fields, with a
 callback to pass the value to the state, like this:
 
 ```javascript
@@ -77,8 +80,12 @@ callback to pass the value to the state, like this:
 
 You can find more information in [Handling text input](https://facebook.github.io/react-native/docs/handling-text-input.html).
 
+You will need two of these `<TextInput />` components, once for maintaining a state for `username`, and another storing state for `password`. Both of these will be used upon submitting the registration!
+
 Then you'll need a submit button. Use `TouchableOpacity` for this, with an
-`onPress` handler.
+`onPress` handler. If you need an example for `TouchableOpacity`, take a look at the scaffolding for the `<Login />` component we provided for you. If you want to hide the user input (say, for passwords), add the prop: `secureTextEntry={true}`.
+
+> **Tip:** We also created some preset styles, such as `styles.button` and `styles.buttonBlue` , `styles.buttonGreen`, and `styles.buttonRed`. Feel free to add your own in the `StyleSheet` at the bottom!
 
 Once you've got and validated the input values, you can make an HTTP POST
 request with the username and password to the backend route like this:
