@@ -12,13 +12,12 @@ your choice, iOS or Android.
 
 Your app will have the following features:
 
-- Login/register
-- Find friends who are already users (search by name, phone number, or email)
-  and invite friends via email or SMS
-- Invitees can accept invitations and the relationship is then established; they
-  are invited to download the app, but can also "Ho! Ho! Ho!" the sender
-  directly via the web from the link they received
-- Tap on a friend's name in the app to "Ho! Ho! Ho!" them
+- Register
+- Login
+- List all users
+- Send a HoHoHo to users
+- List messages sent and received
+- (Bonus) Implement pull to refresh
 
 ## Instructions
 
@@ -38,11 +37,11 @@ You can start the backend by running `npm start` or `nodemon` in the
 To start the frontend code in the iOS simulator, `cd` into the
 `hohoho-frontend/` directory in the terminal and run `react-native run-ios`.
 
-*FILL IN INFO ON WINDOWS AND ANDROID STUDIO*
+## Part 1. Registration
 
-## Part 1. Login
+![](img/register.png)
 
-### Frontend
+TODO update section
 
 Back on the frontend, let's create the login screen.
 
@@ -95,7 +94,17 @@ Awesome! If you've gotten a successful response from the server, now it's time
 to take the user to the next screen of the app. Inside your success promise
 chain, you can call `this.props.onForward` to move to the next screen.
 
-## Part 2. Friend list
+## Part 2. Login
+
+![](img/login.png)
+
+TODO update section
+
+## Part 3. User list
+
+![](img/users.png)
+
+TODO update section
 
 The main screen of your app is going to contain a list of the user's friends;
 tapping one of them would "Ho! Ho! Ho!" them. The easiest and most natural way
@@ -143,7 +152,29 @@ Boom! That's it. Now we have a list of friends in our app. Kinda. Of course,
 there's no data yet, so the list never changes and you can't add to it, but,
 hey, if you're gonna have a static list of friends, that's a hell of a list!
 
-## Part 3. Add a friend
+
+## Part 4. Send a HoHoHo
+
+![](img/sent.png)
+
+TODO update section
+
+## Part 5. Messages list
+
+![](img/messages.png)
+
+TODO update section
+
+## Bonus. Pull to refresh
+
+TODO update section
+
+Update your message and user views to be able to perform a
+[pull to refresh](https://facebook.github.io/react-native/docs/refreshcontrol.html).
+
+## Part 4. Send a HoHoHo
+
+TODO This section below is mostly irrelevant now
 
 Okay, so you've got some "static" friends, BFD. Let's make things interesting by
 tying the friend list to the database so that you can find and add some real
@@ -283,23 +314,3 @@ was successful.
     ]
   }
   ```
-
-## Bonus: Pull to Refresh
-
-TODO
-
-## Part . Send a Ho! Ho! Ho!
-
-## Part . Receive a Ho! Ho! Ho!
-
-## Part . Send Invite
-
-The first real feature we'll implement is the ability for a user to invite
-someone else to the app--because Ho! Ho! Ho! isn't much fun without other
-people, right?
-
-The user will enter an email address or a phone number
-
-Let's start by adding the necessary backend routes.
-
-## Part . Receive Invite
