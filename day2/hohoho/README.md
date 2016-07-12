@@ -1,6 +1,3 @@
----
-breaks: false
----
 # Pair programming exercise: Ho! Ho! Ho!
 
 ## Goal
@@ -133,13 +130,49 @@ For login, we will be creating a view that looks like the following:
 
 ![](img/login.png)
 
-This view will be very similar to registration - we will only need to change the routes we use for `fetch` and change what happens upon success.
+Your login view will be able to do the following:
+- Take a username through a text input
+- Take a password through a text input
+- Use `fetch` to verify a user that is logging in with the above inputs
+- Push a new view upon success, and display an error upon failed authentication
+
+### Creating Components - `index.ios.js [Login]`
+
+This view will be very similar to registration - we will only need to change the routes we use for `fetch` and change what happens upon success. 
+
+Build two `<TextInput />` components and a `<TouchableOpacity />` component within the `render()` function of our `Login`, much the same as our `Register` component from the previous step. 
+
+Create a new `onPress` handler for the `<TouchableOpacity />` component that will do the following:
+
+- Calls `fetch` for requesting the login route and checking if the user's input matches a valid login.
+  - Refer to the **_Endpoint Reference_** below for how to call our login route.
+- If the `responseJson.success` is true, continue and push a new view - a view that displays all the users (we will create that next - for now, you can push the Register view again).
+  - **Remember:** pushing the registration view will look like:
+  ```javascript
+  this.props.navigator.push({
+    component: Register,
+    title: "Register"
+  })
+  ```
+  - **Careful - we will replace thie later!** In the next step, we will modify this function to push the `Users` component here rather than the Register view again. We will let you know when that needs to happen!
+- If `responseJson.success` is not true, display a message with the error from the response. 
+  - To display a message to the user, set a property to your state (with `setState`) and create a `<Text>` component like the following that updates with your state:
+  ```jsx
+  <Text>{{this.state.message}}</Text>
+  ```
+
+### End Result, Part 2
+At the end of Part 2, you should be able to both register and login; successful logins will bring up the registration view again, but we will change this in the next part.
 
 ## Part 3. User list
 
 ![](img/users.png)
 
-TODO update section
+### Overview
+
+
+
+### Creating Components - `index.ios.js [Users]`
 
 The main screen of your app is going to contain a list of the user's friends;
 tapping one of them would "Ho! Ho! Ho!" them. The easiest and most natural way
