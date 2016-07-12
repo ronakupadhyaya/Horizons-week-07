@@ -164,13 +164,22 @@ Create a new `onPress` handler for the `<TouchableOpacity />` component that wil
 ### End Result, Part 2
 At the end of Part 2, you should be able to both register and login; successful logins will bring up the registration view again, but we will change this in the next part.
 
+**Note that all new requests will now automatically be authenticated, thanks to cookies!** No need to store a username, password, or token for this simple app.
+
 ## Part 3. User list
+### Overview
+
+Now that we've successfully logged into our app, we will create a list view for displaying our users that we are able to send messages to. The result will look like the following:
 
 ![](img/users.png)
 
-### Overview
+Your users view will be able to do the following:
 
+- `fetch` all users from the database
+- Display the result of this `fetch` in a list view with all usernames of each user
+- Upon tapping any of the displayed users, another `fetch` should be called to send a "HoHoHo" to the tapped user (from the user that is logged in)
 
+We'll break this down into sections: first, we'll just handle displaying a list of users, and then, we'll use `fetch` to display the correct list of users.
 
 ### Creating Components - `index.ios.js [Users]`
 
@@ -178,36 +187,38 @@ The main screen of your app is going to contain a list of the user's friends;
 tapping one of them would "Ho! Ho! Ho!" them. The easiest and most natural way
 to display a list of data in React Native is by [Using a ListView](https://facebook.github.io/react-native/docs/using-a-listview.html).
 
-The first step to add a `ListView` is to import the required object: modify the
-`import` statement at the top of `index.ios.js` to import `ListView` like this:
+Take a look at the top of your `index.ios.js` and spot a line that looks like:
 
 ```javascript
-import { ..., ListView } from 'react-native'
+import {
+  ...
+  ListView
+} from 'react-native'
 ```
 
-Next we need to add something called a data source to the state for the
-`MainScreen` component. In React you learned to do this using the
-`getInitialState` lifecycle method; in React Native, using ES6 classes, you'll
-do it by adding a `constructor` method to your class, which sets `this.state`.
-Instantiate a data source object and add it to your state like this. For now
+This import statement allows us to use `ListView` throughout the rest of our app - we've done this for you!
+
+Next, we need to add something called a _data source_ to the state for the
+`Users` component. In React you learned to do this using the
+`getInitialState` lifecycle method!
+Use this knowledge to add your data source to your view upon `getInitialState`. For now
 we'll make it contain a static list of friends:
 
 ```javascript
-class MainScreen extends Component {
-  constructor(props) {
-    super(props);
+var Users = React.createClass({
+  getInitialState() {
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-    this.state = {
+    return {
       dataStore: ds.cloneWithRows([
         'Moose', 'Lane', 'Josh', 'Ethan', 'Elon', 'Darwish', 'Abhi Fitness'
       ])
     };
   }
-}
+})
 ```
 
 Let's render the list view. Inside the main `<View>` component in the `render`
-method for the view, add a list view component like this:
+method for this `Users` view, add a list view component like this:
 
 ```javascript
 <ListView
@@ -216,93 +227,49 @@ method for the view, add a list view component like this:
 />
 ```
 
-Boom! That's it. Now we have a list of friends in our app. Kinda. Of course,
+Boom! Now we have a list of friends in our app. Kinda. Of course,
 there's no data yet, so the list never changes and you can't add to it, but,
 hey, if you're gonna have a static list of friends, that's a hell of a list!
+
+### Checkpoint, Part 3
+At this point, you should be able to register, login, and view a static list of users that currently do nothing. In the next section, we will fetch a list of users and add an `onPress` handler to send a _Ho Ho Ho!_ to any user we tap.
+
+### Creating More Components - `index.ios.js [Users]`
+
+Now, implement `fetch` inside of your `getInitialState` to load up an array of real users rather than a list of static users.
+
+```javascript
+.then((responseJson) => {
+  return {
+    dataStore: ds.cloneWithRows(/* replace this with the array 
+                                      * of users you receive in 
+                                      * the response of fetch! */)
+  };
+});
+```
+
+You will also need to update your components 
 
 
 ## Part 4. Send a HoHoHo
 
 ![](img/sent.png)
 
-TODO update section
+_Coming soon_
 
 ## Part 5. Messages list
 
 ![](img/messages.png)
 
-TODO update section
+_Coming soon_
 
 ## Bonus. Pull to refresh
 
-TODO update section
+_Coming soon_
 
 Update your message and user views to be able to perform a
 [pull to refresh](https://facebook.github.io/react-native/docs/refreshcontrol.html).
 
-## Part 4. Send a HoHoHo
-
-TODO This section below is mostly irrelevant now
-
-Okay, so you've got some "static" friends, BFD. Let's make things interesting by
-tying the friend list to the database so that you can find and add some real
-friends instead, and ditch those "static" losers. In Ho! Ho! Ho!, the user can
-add a friend in one of two ways:
-
-- By searching for that user, by username, email address, or phone number
-- By inviting someone who hasn't yet signed up
-
-In this part, we'll implement the first of these only. The second will be
-completed later on.
-
-Let's start by adding a route on the backend to allow the user to add another
-user as their friend. It should take a single parameter, `user`, and if it
-successfully finds that user, it should add them to the user's friend list in
-the database and return the friend's username and ID, otherwise it should return
-an error. Create a `POST /friend` route for this.
-
-On the frontend, add another `TextInput` on the main app screen with a button
-(`TouchableOpacity` with an `onTouch` handler, as before) that triggers this
-HTTP POST request (using `fetch` as before). If it succeeds, display the friend
-on the user's screen in the friends list (don't bother waiting for them to
-"accept" the request); if not, display an error to the user.
-
-The last thing you need on the backend for this part is another `GET /friend`
-route that returns the user's friend list, which we'll load in a moment.
-
-Now that we can get some real data from the backend, let's display it to the
-user and make the friend list dynamic.
-
-The tricky part here is that, when the screen first loads, we don't have any
-data--so we need to display an empty list, then immediately kick off a request
-that downloads the friend list, and then update the list asynchronously when the
-request comes back. Welcome to the thrilling world of frontend mobile
-development.
-
-In the [React component
-lifecycle](https://facebook.github.io/react/docs/component-specs.html) (which
-applies to React Native components as well), where do we put code that we want
-to run once, and only once, when a component first loads? Answer: in
-`componentDidMount`. What do we add there? Answer: a networking call, to
-download the friends list.
-
-First add this call as a new function inside the `MainScreen` component, like
-this:
-
-```javascript
-class MainScreen extends Component {
-  ...
-  updateList() {
-    fetch('http://localhost:3000/friends')
-      .then(friends => this.setState({
-        dataStore: this.state.dataStore.cloneWithRows(friends)
-      }))
-      .catch(err => { /* handle the error */ });
-```
-
-This will replace the list of friends currently stored in
-`this.state.dataSource`, and currently displayed in the `ListView`, with the
-list that you just downloaded from the backend.
 
 ## Endpoint Reference - `https://hohoho-backend.herokuapp.com/`
 
