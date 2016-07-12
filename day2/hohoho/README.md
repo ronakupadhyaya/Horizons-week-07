@@ -161,7 +161,7 @@ Create a new `onPress` handler for the `<TouchableOpacity />` component that wil
 - If `responseJson.success` is not true, display a message with the error from the response. 
   - To display a message to the user, set a property to your state (with `setState`) and create a `<Text>` component like the following that updates with your state:
   ```jsx
-  <Text>{{this.state.message}}</Text>
+  <Text>{this.state.message}</Text>
   ```
 
 ### End Result, Part 2
@@ -212,7 +212,7 @@ var Users = React.createClass({
   getInitialState() {
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     return {
-      dataStore: ds.cloneWithRows([
+      dataSource: ds.cloneWithRows([
         'Moose', 'Lane', 'Josh', 'Ethan', 'Elon', 'Darwish', 'Abhi Fitness'
       ])
     };
@@ -244,7 +244,7 @@ Now, implement `fetch` inside of your `getInitialState` to load up an array of r
 ```javascript
 .then((responseJson) => {
   return {
-    dataStore: ds.cloneWithRows(/* replace this with the array 
+    dataSource: ds.cloneWithRows(/* replace this with the array 
                                       * of users you receive in 
                                       * the response of fetch! */)
   };
