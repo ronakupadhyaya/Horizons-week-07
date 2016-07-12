@@ -248,8 +248,18 @@ Now, implement `fetch` inside of your `getInitialState` to load up an array of r
 });
 ```
 
-You will also need to update your components 
+We will also need to modify your `render` function to handle our response correctly, since `responseJson` is now an array of _objects_. Change the `<Text>` component within each `renderRow` of your `<ListView />` to:
 
+```jsx
+<ListView
+  ...
+  renderRow={(rowData) => <Text>{rowData.username}</Text>}
+/>
+```
+
+### End Result, Part 3
+
+By Part 3, you will be able to login, register, and view all usernames returned by our backend. Tapping them will do nothing yet, but we will take care of that in the next part!
 
 ## Part 4. Send a HoHoHo
 
