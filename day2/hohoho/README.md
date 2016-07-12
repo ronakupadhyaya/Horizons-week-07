@@ -415,8 +415,8 @@ was successful.
     ]
   }
   ```
-  
- - `POST /messages`: Sends a message/_Ho Ho Ho!_ to another user
+
+- `POST /messages`: Sends a message/_Ho Ho Ho!_ to another user
   - Parameters:
     - `to`: the ID of the user you are sending a message to
   - Response codes:
