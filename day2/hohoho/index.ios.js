@@ -1,95 +1,116 @@
 import React, {Component} from 'react'
 import {
   AppRegistry,
-  Navigator,
+  StyleSheet,
   Text,
   View,
-  TouchableOpacity
+  TouchableOpacity,
+  TextInput,
+  NavigatorIOS,
+  ListView
 } from 'react-native'
 
 // This is the root view
-class hohoho_frontend extends Component {
+var hohoho = React.createClass({
   render() {
     return (
-      <Navigator
-        initialRoute={{ index: 0 }}
-        renderScene={(route, navigator) => {
-          // Function to call when a new scene should be displayed
-          function onForward() {
-            navigator.push({
-              index: route.index + 1,
-            });
-          }
-
-          // Function to call to go back to the previous scene
-          function onBack() {
-            if (route.index > 0) {
-              navigator.pop();
-            }
-          }
-
-          switch (route.index) {
-            case 0:
-              return (
-                <LoginScreen
-                  onForward={onForward}
-                  onBack={onBack}
-                />
-              );
-            case 1:
-              return (
-                <MainScreen
-                  onForward={onForward}
-                  onBack={onBack}
-                />
-              );
-            default:
-              throw new Error("Unknown route");
-          }
+      <NavigatorIOS
+        initialRoute={{
+          component: Login,
+          title: "Login"
         }}
+        style={{flex: 1}}
       />
     );
   }
-}
+});
 
-class LoginScreen extends Component {
+var Register = React.createClass({
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Login screen</Text>
-        <TouchableOpacity onPress={this.props.onForward}>
-          <Text>Tap to Login</Text>
+        <Text style={styles.textBig}>Register</Text>
+      </View>
+    );
+  }
+});
+
+var Login = React.createClass({
+  press() {
+    
+  },
+  register() {
+    this.props.navigator.push({
+      component: Register,
+      title: "Register"
+    });
+  },
+  render() {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.textBig}>Login to HoHoHo!</Text>
+        <TouchableOpacity onPress={this.press} style={[styles.button, styles.buttonGreen]}>
+          <Text style={styles.buttonLabel}>Tap to Login</Text>
+        </TouchableOpacity>
+      <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={this.register}>
+          <Text style={styles.buttonLabel}>Tap to Register</Text>
         </TouchableOpacity>
       </View>
     );
   }
-}
+});
 
-class MainScreen extends Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.textBig}>Main app</Text>
-        <TouchableOpacity onPress={this.props.onBack}>
-          <Text>Tap to go back to Login Screen</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-}
-
-const styles = {
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
-  textBig: {
+  containerFull: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'stretch',
+    backgroundColor: '#F5FCFF',
+  },
+  welcome: {
     fontSize: 20,
     textAlign: 'center',
     margin: 10,
+  },
+  instructions: {
+    textAlign: 'center',
+    color: '#333333',
+    marginBottom: 5,
+  },
+  textBig: {
+    fontSize: 36,
+    textAlign: 'center',
+    margin: 10,
+  },
+  button: {
+    alignSelf: 'stretch', 
+    paddingTop: 10,
+    paddingBottom: 10,
+    marginTop: 10,
+    marginLeft: 5,
+    marginRight: 5,
+    borderRadius: 5
+  },
+  buttonRed: {
+    backgroundColor: '#FF585B', 
+  },
+  buttonBlue: {
+    backgroundColor: '#0074D9',
+  },
+  buttonGreen: {
+    backgroundColor: '#2ECC40'
+  },
+  buttonLabel: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: 'white'
   }
-};
+});
 
-AppRegistry.registerComponent('hohoho_frontend', () => hohoho_frontend );
+AppRegistry.registerComponent('hohoho', () => hohoho );
