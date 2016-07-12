@@ -26,11 +26,16 @@ exercise](../warmup.md) to install the required components for React Native.
 
 This is going to be the first project where your frontend and backend code are
 totally separate. Your frontend will be running on a mobile phone (or in a
-mobile emulator), via React Native; your backend is hosted by us. Scroll all the
-way to the bottom to find the **_Endpoint Reference_** for our API.
+mobile emulator), via React Native; your backend will be an express app, which
+you've seen many times by now. Find the scaffold for the backend app in
+`hohoho-backend/` in this folder, and find the scaffold for the frontend app in
+`hohoho-frontend/`.
+
+You can start the backend by running `npm start` or `nodemon` in the
+`hohoho-backend/` directory.
 
 To start the frontend code in the iOS simulator, `cd` into the
-`hohoho` directory in the terminal and run `react-native run-ios`.
+`hohoho-frontend/` directory in the terminal and run `react-native run-ios`.
 
 ## Part 1. Registration
 
@@ -85,6 +90,9 @@ request with the username and password to the backend route like this:
 ```javascript
 fetch('https://hohoho-backend.herokuapp.com/register', {
   method: 'POST',
+  headers: {
+    "Content-Type": "application/json"
+  },
   body: JSON.stringify({
     username: 'theValueOfTheUsernameState',
     password: 'theValueOfThePasswordState',
@@ -258,9 +266,60 @@ By Part 3, you will be able to login, register, and view all usernames returned 
 
 ## Part 4. Send a HoHoHo
 
+### Overview 
+
+Next, we will be handling the logic for sending a _Ho Ho Ho!_ to another user in our user list. The end result will look something like the following:
+
 ![](img/sent.png)
 
-_Coming soon_
+This component should be able to accomplish the following on the tap of a row:
+- Use `fetch` to send a request to our backend server to _Ho Ho Ho!_ another user
+- Alert with either the success or response of a _Ho Ho Ho!_ 
+
+### Adding to Components - `index.ios.js [Users]`
+
+First, create a new function inside of the `Users` class (the same class that we created a `getInitialState` to `fetch` existing users in the previous part) called `touchUser`. `touchUser` will take a parameter called `user` (which we will bind later to pass us a _specific user_ every time we tap on their corresponding row in the `<ListView>`). 
+
+Inside of this `touchUser` function, use `fetch` and create a request that sends a _Ho Ho Ho!_ to another user by the `_id` property of the parameter `user`. That is, in the `to` parameter of `POST /messages` (refer to **_Endpoints Reference_** down below!), pass in `user._id`.
+
+Within the `.then` of this `fetch` (_don't forget to `.json()` the response with another `.then` before this!_), we want to alert based on whether or not the request completed successfuly or not. Here is an example of how we display an [alert with React Native](https://facebook.github.io/react-native/docs/alert.html):
+
+```javascript
+reactNative.Alert.alert(
+  'Alert Title',
+  'Alert Contents',
+  [{text: 'Dismiss Button'}] // Button
+)
+
+```
+
+If `responseJson.success` is true, display an alert that says "Your _Ho Ho Ho!_ to `THE_USERNAME` has been sent!" If not, display an alert with an error saying "Your _Ho Ho Ho!_ to `THE USERNAME` could not be sent."
+
+Next, recall the following lines of code from the `render()` function of our `Users` view component:
+
+```jsx
+<ListView
+  ...
+  renderRow={(rowData) => <Text>{rowData.username}</Text>}
+/>
+```
+
+Here, all we are displaying is a simple `<Text>` component inside of each row of our `<ListView>` to show the username of each user. To make each of these rows "tappable," we will now wrap the `<Text>` component inside of a `<TouchableOpacity>` component, just like we did for our Login and Register buttons from earlier.
+
+Add to the `renderRow` prop of the `<ListView>` component and put the `<Text>` component returned _inside of_ a `<TouchableOpacity>` component. Pass an `onPress` prop to the `<TouchableOpacity>` that calls the `touchUser` function you wrote and pass in `rowData` to the function. 
+
+You can do this by binding like the following:
+```jsx
+<TouchableOpacity onPress={this.touchUser.bind(this, rowData)}... />
+```
+
+The goal here is to call `touchUser` on pressing any of the rows and pass in an object to the `touchUser` function representing the user corresponding to the row. 
+
+The `touchUser` function will then take the `_id` of the user object passed in and create a request to send the _Ho Ho Ho!_
+
+### End Result, Part 4
+
+By Part 4, you will now be able to tap on anyone's name and send them your very own _Ho Ho Ho!_ You aren't able to receive any _Ho Ho Ho!_'s yet, though - we'll fix that in the next part!
 
 ## Part 5. Messages list
 
@@ -354,5 +413,26 @@ was successful.
         "timestamp": "2016-07-12T04:17:48.304Z"
       }
     ]
+  }
+  ```
+ - `POST /messages`: Sends a message/_Ho Ho Ho!_ to another user
+  - Parameters:
+    - `to`: the ID of the user you are sending a message to
+  - Response codes:
+    - `401`: User is not logged in
+    - `400`: There was an error saving to database
+    - `200`: The _Ho Ho Ho!_ was sent!
+  - Example response:
+  ```javascript
+  {
+    "success": true,
+    "message": {
+    "__v": 0,
+    "to": "57849dac19a9131100ab2fe5",
+    "from": "578533b8787e661100aec76a",
+    "_id": "5785397a787e661100aec7d6",
+    "body": "HoHoHo",
+    "timestamp": "2016-07-12T18:39:54.406Z"
+    }
   }
   ```
