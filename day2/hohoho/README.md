@@ -26,16 +26,11 @@ exercise](../warmup.md) to install the required components for React Native.
 
 This is going to be the first project where your frontend and backend code are
 totally separate. Your frontend will be running on a mobile phone (or in a
-mobile emulator), via React Native; your backend will be an express app, which
-you've seen many times by now. Find the scaffold for the backend app in
-`hohoho-backend/` in this folder, and find the scaffold for the frontend app in
-`hohoho-frontend/`.
-
-You can start the backend by running `npm start` or `nodemon` in the
-`hohoho-backend/` directory.
+mobile emulator), via React Native; your backend is hosted by us. Scroll all the
+way to the bottom to find the **_Endpoint Reference_** for our API.
 
 To start the frontend code in the iOS simulator, `cd` into the
-`hohoho-frontend/` directory in the terminal and run `react-native run-ios`.
+`hohoho` directory in the terminal and run `react-native run-ios`.
 
 ## Part 1. Registration
 
