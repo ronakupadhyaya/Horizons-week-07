@@ -42,36 +42,6 @@ To start the frontend code in the iOS simulator, `cd` into the
 
 ## Part 1. Login
 
-### Backend
-
-Since your frontend and backend are completely disjoint, you no longer have the
-option of letting the user authenticate--or do anything else--on the backend.
-100% of the data your app needs must be sent and received via a REST API, so
-it's critical that you spend some time thinking and planning which routes you
-will need for each of the app's features.
-
-Let's start with login. At minimum, you will need the following routes:
-
-- `POST /login`: Send a username and password; authenticates the user via
-  Passport and logs them in, then returns user info, or an error on failure
-- `POST /register`: Send a username and password to create a new user; returns
-  the new user info, or an error (if e.g. the username is already taken)
-
-These routes are filled in for you. Remember, *there is no user on a web browser
-viewing our app on the web!* This has big implications for the format of the
-data that we return, how we handle errors, etc. For example, if the user tries
-to access a protected resource without logging in, there's no point in
-attempting to redirect them to a login page--since a.) there is no web-based
-login page, and b.) even if we tried, the app would ignore the redirect.
-Instead, we need to use [HTTP status
-codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) to send
-meaningful success and error messages to the app. Code 401 means "unauthorized",
-so it should tell the app that the user needs to login before accessing this
-resource.
-
-To add support for other authentication providers, such as Facebook, we'll have
-to add additional routes.
-
 ### Frontend
 
 Back on the frontend, let's create the login screen.
@@ -235,6 +205,89 @@ This will replace the list of friends currently stored in
 `this.state.dataSource`, and currently displayed in the `ListView`, with the
 list that you just downloaded from the backend.
 
+### Endpoint Reference
+
+All endpoints accept JSON data and return JSON data. All responses include
+a boolean `success` field that indicates if request was successful.
+You can also use the response status code to figure out if a request
+was successful.
+
+- `POST /register`: Register a new user. Does **not** automatically log user in.
+  - Parameters:
+    - `username`: Required String
+    - `password`: Required String
+  - Response codes:
+    - `400`: Bad user input, includes `error` field indicating cause
+    - `200`: Registration successful
+- `POST /login`: Log in as a pre-existing user.
+  - Parameters:
+    - `username`: Required String
+    - `password`: Required String
+  - Response codes:
+    - `400`: Bad user input, includes `error` field indicating cause
+    - `401`: Bad username or password, includes `error` field indicating cause
+    - `200`: Login successful
+- `GET /login/success`: Check if the user is logged in
+  - Parameters: **none**
+  - Response codes:
+    - `401`: User is not logged in
+    - `200`: User is logged in
+- `GET /users`: Get all registered users in HoHoHo
+  - Example response:
+
+  ```
+  {
+    "success": true,
+    "users": [
+      {
+        "username": "moose",
+        "_id": "57844cbdbedf35366e2690d3"
+      },
+      {
+        "username": "dar",
+        "_id": "57846e7666b869d88ad96430"
+      },
+      {
+        "username": "other",
+        "_id": "57846fea0ccbba228cd1479e"
+      },
+      {
+        "username": "other2",
+        "_id": "57846ff00ccbba228cd1479f"
+      }
+    ]
+  }
+  ```
+
+- `GET /messages`: Get messages sent to and from current user
+  - Example response:
+
+  ```
+  {
+    "success": true,
+    "messages": [
+      {
+        "_id": "57846f6cafacd3988b4362e6",
+        "to": {
+          "_id": "57846e7666b869d88ad96430",
+          "username": "dar"
+        },
+        "from": {
+          "_id": "57844cbdbedf35366e2690d3",
+          "username": "moose"
+        },
+        "__v": 0,
+        "body": "Yo",
+        "timestamp": "2016-07-12T04:17:48.304Z"
+      }
+    ]
+  }
+  ```
+
+## Bonus: Pull to Refresh
+
+TODO
+
 ## Part . Send a Ho! Ho! Ho!
 
 ## Part . Receive a Ho! Ho! Ho!
@@ -245,15 +298,8 @@ The first real feature we'll implement is the ability for a user to invite
 someone else to the app--because Ho! Ho! Ho! isn't much fun without other
 people, right?
 
-The user will enter an email address or a phone number 
+The user will enter an email address or a phone number
 
-Let's start by adding the necessary backend routes. 
+Let's start by adding the necessary backend routes.
 
 ## Part . Receive Invite
-
-## Bonus: address book integration
-
-## Bonus: push notifications
-
-## Addendum: Running on a real mobile device
-
