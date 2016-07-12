@@ -1,4 +1,4 @@
-# Week 6 Day 2 Exercises
+# Week 7 Day 1 Exercises
 
 ## Inline Exercises
 
@@ -8,4 +8,4 @@
 
 ## Pair Programming Exercise
 
-Coming soon.
+1. [Trello Backup Engine](trello-backup/README.md)
