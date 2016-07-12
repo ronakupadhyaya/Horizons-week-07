@@ -1,3 +1,6 @@
+---
+breaks: false
+---
 # Pair programming exercise: Ho! Ho! Ho!
 
 ## Goal
@@ -230,6 +233,17 @@ method for this `Users` view, add a list view component like this:
 />
 ```
 
+To tie it all together, change the `.then()` within the `fetch` of your `Login` component to 
+
+```javascript
+this.props.navigator.push({
+  component: Users,
+  title: "Users"
+})
+```
+
+This will make sure that after Login, our view changes to the new Users view instead of back to our Registration view.
+
 Boom! Now we have a list of friends in our app. Kinda. Of course,
 there's no data yet, so the list never changes and you can't add to it, but,
 hey, if you're gonna have a static list of friends, that's a hell of a list!
@@ -243,13 +257,15 @@ Now, implement `fetch` inside of your `getInitialState` to load up an array of r
 
 ```javascript
 .then((responseJson) => {
-  return {
+  this.setState({
     dataSource: ds.cloneWithRows(/* replace this with the array 
                                       * of users you receive in 
                                       * the response of fetch! */)
-  };
-});
+  });
+}.bind(this));
 ```
+
+⚠️ **Note:** You will _not_ be able to return the `getInitialState` function inside of a `.then()` statement - use `this.setState` when you receive the results back from `fetch` and return an empty array (`ds.cloneWithRows([])`) for your `dataSource` in the `getInitialState` function. This way, your initial state will be zero rows, but the new rows will be set once we fetch the users from the server.
 
 We will also need to modify your `render` function to handle our response correctly, since `responseJson` is now an array of _objects_. Change the `<Text>` component within each `renderRow` of your `<ListView />` to:
 
@@ -323,13 +339,63 @@ By Part 4, you will now be able to tap on anyone's name and send them your very 
 
 ## Part 5. Messages list
 
+### Overview
+
+For this part, we will create a new view that displays all messages sent and received from a current user. This view will look something like the following: 
+
 ![](img/messages.png)
 
-_Coming soon_
+This view will be able to _do_ the following:
+- Display all messages sent and received from a logged-in user
+- (_Optional_) Visually distinguish between messages sent and messages received
 
-## Bonus. Pull to refresh
+### Creating, Modifying Components - `index.ios.js [Users, Messages]`
 
-_Coming soon_
+Start by creating a new class called `Messages` that has a `getInitialState` function that is similar to that of your `Users` component. Refer to **_Endpoints Reference_** for how to `fetch` all the messages sent and received by your currently logged-in user. 
+
+> **Tip:** Base this off of the `getInitialState` of your `Users` component.  Create a `fetch` promise that calls `setState` upon succesfully retrieving messages and return `ds.cloneWithRows[]` outside of the promise. Make sure this property of your state is called `messages` and not `users`!
+
+Implement the `render()` function for the `Messages` class that displays the following details about our message:
+
+- The username of the sender (`aMessage.from.username`)
+- The username of the receiver (`aMessage.to.username`)
+- The timestamp of the message (`aMessage.timestamp`)
+
+<sub>*Where `aMessage` represents any message object as part of the  `responseJson.messages` array!</sub>
+
+> **Tip:** Again, this should be based off of the `render` function of your `Users` component. Create a `<ListView>` that renders rows of messages with the contents above. 
+
+We will now modify our `Users` view to allow the view to present our newly created `Messages` view.
+
+First, modify the `Login` component of your `index.ios.js` file to **add a function** called `messages()` that will push the messages component with `this.props.navigator.push`, just like we've been pushing views to the stack before. We will use this function later.
+
+At this point, your `Login` component should have the following functions:
+
+- `getInitialState` - the initial properties of the `username` and `password` parts of the state 
+- `press` - the `onPress` handler of your Login submission button (_it might not be called this, depending on the way you implemented it!_)
+- `register` - the function that pushes the `Register` view onto the navigator stack
+- `messages` (**you just created this!**) - the function that pushes the `Messages` view onto the navigator stack
+- `render` - the render function for your `Login` component
+
+Next, add a couple more properties to the object that we push onto the `Navigator` stack when we push the `Users` view - this should be in the `.then()` of your `press()` function, where you call `fetch` to send a login request. Within this `this.props.navigator.push` function, where you pass in `{component: Users, title: "Users"}`, add the following properties:
+
+```javascript
+{
+  rightButtonTitle: 'Messages',
+  onRightButtonPress: this.messages
+}
+```
+
+This will create a new button on the `Users` view when we navigate to it that says "Messages," which will take us to the `Messages` component when tapped.
+
+### End Result, Part 5
+
+By this step, you should be able to perform all parts of the initial app functionality outlined: registration, login, sending _Ho Ho Ho!_ 's to other users and being able to see all the _Ho Ho Ho!_ 's you have sent and received as a logged-in user.
+
+Congratulations! You've finished your first React Native application!
+
+
+## Bonus: Pull to refresh
 
 Update your message and user views to be able to perform a
 [pull to refresh](https://facebook.github.io/react-native/docs/refreshcontrol.html).
@@ -415,8 +481,8 @@ was successful.
     ]
   }
   ```
-
-- `POST /messages`: Sends a message/_Ho Ho Ho!_ to another user
+  
+ - `POST /messages`: Sends a message/_Ho Ho Ho!_ to another user
   - Parameters:
     - `to`: the ID of the user you are sending a message to
   - Response codes:
