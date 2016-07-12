@@ -22,3 +22,35 @@ request.get(url, {json: true})
 // Add code to fetch the next 3 stages of this exercise
 // When you're done, you'll see the response:
 // {"success":true,"completed":true,"reason":"Congratulations! You've completed this exercise."}
+// var url = 'https://promise-horizons.herokuapp.com/';
+
+// This code makes two requests one dependendent on the other.
+// Your goal is to repeat this process three more times until you get the final answer.
+// $.ajax(url)
+// .then(function(resp) {
+//  console.log('Success response', resp);
+//  return $.ajax(url, {
+//    data: {key: resp.key, stage: resp.stage + 1}
+//  })
+// })
+// .then(function(resp) {
+//  console.log('Success response', resp);
+//  return $.ajax(url, {
+//    data: {key: resp.key, stage: resp.stage + 1}
+//  })
+// })
+// .then(function(resp) {
+//  console.log('Success response', resp);
+//  return $.ajax(url, {
+//    data: {key: resp.key, stage: resp.stage + 1}
+//  })
+// })
+// .then(function(resp) {
+//  console.log('Success response', resp);
+//  return $.ajax(url, {
+//    data: {key: resp.key, stage: resp.stage + 1}
+//  })
+// })
+// .then(function(resp) {
+//  console.log('Success response', resp);
+// })
