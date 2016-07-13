@@ -118,7 +118,7 @@ AsyncStorage.getItem('user')
     }
     // Don't really need an else clause, we don't do anything in this case.
   })
-  .catch(err => { /* handle the error */ }
+  .catch(err => { /* handle the error */ })
 ```
 
 > **Note:** Just to be clear, `login` and
