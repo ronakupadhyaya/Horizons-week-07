@@ -216,6 +216,13 @@ var Home = React.createClass({
 
 var Login = React.createClass({
   press() {
+    if(!this.state.username || !this.state.password){
+      
+    }
+    AsyncStorage.setItem('user', {
+        username: this.state.username,
+        password: this.state.password
+    });
     fetch('https://hohoho-backend.herokuapp.com/login', {
       method: 'POST',
       headers: {
