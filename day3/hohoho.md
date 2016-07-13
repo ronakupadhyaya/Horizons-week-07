@@ -38,7 +38,7 @@ The tool we'll use to accomplish this is called [`AsyncStorage`](https://faceboo
 one of the many powerful APIs available in React Native. `AsyncStorage`, which
 is akin to [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
 in the browser, allows us to save and read data using a key-value format (the
-formal name for this is ["key-value store"](https://en.wikipedia.org/wiki/Key-value_database).
+formal name for this is ["key-value store"](https://en.wikipedia.org/wiki/Key-value_database)).
 
 The `AsyncStorage` API is quite simple. We only have two methods: `setItem` and
 `getItem`. As the name suggests, both of these are asynchronous operations, so
@@ -101,7 +101,7 @@ need to fill in functions that actually do these things. And do put them inside
 functions--lots of simple, elegant functions is way nicer than tons of code
 jumbled together. And you need to do the latter two inside your `onPress`
 handler anyway, so putting the code in a function allows you to [avoid
-duplication](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself))
+duplication](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself).)
 
 See what I did there? There's a promise chain (the one that starts with `login`)
 inside of another promise chain (the one that starts with `readUsername...`).
@@ -151,6 +151,12 @@ Kick things off by `npm install --save`ing that bad boy, then import the module:
 import Swiper from 'react-native-swiper'
 ```
 
+> ⚠️ You cannot install plugins when you're using RNPlay.org. It's a little
+> messy, but as a workaround, copy and paste the text in [this
+> gist](https://gist.github.com/lrettig/b34d9b74fac88fe6324a08ddb2efb632) into
+> the bottom of your RNPlay codepen. Check out the [Sample
+> RNPlay](https://rnplay.org/apps/iIyfBg).
+
 Using the swiper is as simple as creating a new class that contains a few other
 classes as children, e.g.:
 
@@ -184,9 +190,106 @@ can swipe smoothly back and forth across views. See how easy that was? In the
 next part we're going to add an _exciting_ and _novel_ new view with a cool new
 feature.
 
-## Part . Share your location
+## Part 3. Share your location
 
-## Part . View shared locations
+Okay, now for the meat of today's project. Delicious, tender, flavorful meat.
+Sorry, sorry, that tends to happen a lot when I've had too much Soylent lately 😑
+
+Seriously though, this is where the fun starts. One of the coolest and most
+important features of mobile devices is support for location services. Let's add
+the ability to not only "Ho! Ho! Ho!" another user, but also to share your
+location with them.
+
+### Create the class
+
+You already have a `Users` class that shows us a list of users and lets us
+message them. We want to do basically the same thing on this view, with a slight
+twist: sharing our location. Whenever you recognize this pattern--_I want to do
+basically the same thing, with a twist--_you know it's time to modularize your
+code. In this case, we want to abstract away the bits of the `Users` class that
+we're going to use across both views, the one that lets the user sends messages
+and the new one that lets the user share their location.
+
+Create a new React class called `SendMessage` (this will be the view for sending
+messages), and cut-and-paste _just_ the `touchUser` handler function from your
+`Users` into it. This is the only part that's going to be different between
+these two new views--get it? Then add a `render()` method, since every class
+needs `render`. What should go into render? Well, it should just render the
+underlying `Users` class! The whole thing should look something like this:
+
+```javascript
+var SendMessage = React.createClass({
+  touchUser() {
+    /* your onTouch handler from your Users class */
+  },
+
+  render() {
+    return <UsersView touchUser={this.onTouch}/>;
+  }
+});
+```
+
+Next we need another new class called `SendLocation`. Do the exact same thing to
+create it. You'll also need to update the `render()` method of your `SwiperView`
+to display both of the two new classes (and not to display the `Users` class
+directly). This will let you swipe back and forth between sending a message and
+sharing a location.
+
+### Getting the location
+
+Fortunately React Native makes getting the user's location pretty easy, too. The
+whole system is documented [here](https://facebook.github.io/react-native/docs/geolocation.html)
+but you only really need to call a single method,
+`navigator.geolocation.getCurrentPosition`, which allows us to asynchronously
+(big surprise) get the longitude and latitude coordinates of the user's current
+location. Add two new properties to the state for `SendLocation`: `longitude` and
+`latitude` (remember to initialize them in `getInitialState`--in this case,
+initialize them both to zero).
+
+We need to get the user's coordinates once, and only once, when the view loads.
+Remember where things of that nature live? Hint: it's one of the React component
+lifecycle methods, and you just used it today! Add code that looks like this to
+the proper lifecycle method (no need to `import` anything to get this to work):
+
+```javascript
+navigator.geolocation.getCurrentPosition(
+  position => {
+    console.log("Got position:", position);
+    this.setState({
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+    });
+  },
+  error => alert(error.message),
+  {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+);
+```
+
+### Sending the location
+
+The final step on the frontend is to add a `touchUser` function to this new
+class. It should do basically the same thing as the old `touchUser` function
+with one small difference: in addition to sending a `to` parameter inside the
+`body` in the `fetch` call, it should also send the location coordinates. Go
+ahead and add the `touchUser` function to make it so! The format of the data
+that the `fetch` call sends should be:
+
+```javascript
+{
+  to: <the recipient's ID>,
+  location: {
+    longitude: this.state.longitude,
+    latitude: this.state.latitude
+  }
+}
+```
+
+Sweet baby Jesus! We have location data! Now you can find out the user's
+location, and share it. For now it's just a bunch of bits and bytes inside an
+invisible server somewhere. But that won't be the case for long. Read on, dear
+reader, to see why location data is so freaking awesome.
+
+## Part 4. View shared locations
 
 ## Suggested reading
 - [We have a problem with promises](https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html)
