@@ -320,9 +320,10 @@ class that contains just one thing, a
 [`MapView`](https://facebook.github.io/react-native/docs/mapview.html) (this is
 another React Native builtin, just make sure you import/require it first). Pass
 in the location data, and the name of the message sender, as props when you
-display it.  You can set the location of the map, drop a pin to represent the
-sender's location, _and_ show the _current user's_ location with a blue dot like
-this:
+display it. You'll want to use the `showsUserLocation` prop to show the _current
+user's_ location as a blue dot, the `region` prop to pass in the area where the
+map should be centered, and the `annotations` prop to drop a pin to show the
+_sender's_ location. Here's a partial example:
 
 ```javascript
 <MapView
@@ -334,11 +335,7 @@ this:
     longitudeDelta: 1,
     latitudeDelta: 1
   }}
-  annotations={[{
-    latitude: this.props.latitude,
-    longitude: this.props.longitude,
-    title: this.props.from + "'s Location"
-  }]}
+  // See if you can figure out how to add a pin!
 />
 ```
 
