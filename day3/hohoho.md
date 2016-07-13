@@ -125,9 +125,64 @@ would (well, wouldn't) happen:
 
 Cool beans. So you're a promise ninja and you figured out how to read the
 username and password using `AsyncStorage`, and you figured out how to pass
-these to the backend to login automatically. Keep reading.
+these to the backend to login automatically. Now when you restart your app, you
+should be logged in automatically! Keep reading.
 
-## Part 1. Adding a swiper
+## Part 2. Adding a swiper
+
+Another great feature we can take advantage of on mobile phones, which isn't
+available to us in web apps, is gestures. Mobile devices allow us to use all
+sorts of gestures, such as tap, double tap, long tap, swipe, pinch, zoom, and
+pan. React Native provides built-in components, such as [`ListView`](https://facebook.github.io/react-native/docs/listview.html)
+and [`ScrollView`](https://facebook.github.io/react-native/docs/scrollview.html)
+that make common gesture patterns super easy. For more complicated gesture
+patterns, there are lots of lovely third party modules.
+
+For this part of the project, we're going to use a module called
+[`react-native-swiper`](https://github.com/leecade/react-native-swiper) that
+allows us to connect several screens together using a swipe pattern that should
+feel familiar from apps such as Snapchat and (the real) Yo. It looks like this:
+
+<img src="https://camo.githubusercontent.com/2bb70cd3dc3b94523811ab1536cc5ad30932d2be/687474703a2f2f692e696d6775722e636f6d2f7a7273617a41472e6769662532303d33303078">
+
+Kick things off by `npm install --save`ing that bad boy, then import the module:
+
+```javascript
+import Swiper from 'react-native-swiper'
+```
+
+Using the swiper is as simple as creating a new class that contains a few other
+classes as children, e.g.:
+
+```javascript
+var SwiperView = React.createClass({
+  render() {
+    return (
+      <Swiper>
+        // First component
+        // Second component
+        // Third component
+      </Swiper>
+    );
+  }
+});
+```
+
+In our case, we're going to start by mounting the `Users` and `Messages` views
+inside of the `SwiperView`. Go ahead and reorganize things now. Here are a few
+tips:
+
+- Your `Login` page was loading your `Users` page before. Now you want it to
+  load your `SwiperView` instead.
+- Be careful to proxy your props down through the new component layer. In plain
+  English, if you were previously passing the `navigator` into the `UserView`
+  as a prop from the `LoginView`, you'll need to pass it into `SwiperView` now,
+  and `SwiperView` will need to pass it on down into its child views.
+
+Pretty cool, right? Now instead of tapping on buttons, which are so 2007, we
+can swipe smoothly back and forth across views. See how easy that was? In the
+next part we're going to add an _exciting_ and _novel_ new view with a cool new
+feature.
 
 ## Part . Share your location
 
@@ -135,4 +190,5 @@ these to the backend to login automatically. Keep reading.
 
 ## Suggested reading
 - [We have a problem with promises](https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html)
+- [Gesture detection in React Native](http://blog.lum.pe/gesture-detection-in-react-native/)
 - [../day1/trello-backup/README.md#suggested-reading](Monday's readings on promises) (as if you actually read them all)
