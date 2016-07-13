@@ -10,14 +10,13 @@ to add a few more fun features, taking advantage of the power of mobile:
   plugin
 - Share your location with other people via GPS, and view their location on a
   map
-- Send and receive photos
 
 ## Instructions
 
 Yesterday you learned to build a basic mobile app using the same technologies
 you've been learning all summer. Today, we're going to make this app even more
 awesome by taking advantage of the full power of mobile to add awesome features
-such as maps and photos.
+such as maps and gestures.
 
 Continue using your code from yesterday, and continue to use the same backend
 endpoint: `https://hohoho-backend.herokuapp.com`. Follow along below to add some
@@ -153,8 +152,8 @@ import Swiper from 'react-native-swiper'
 
 > ⚠️ You cannot install plugins when you're using RNPlay.org. It's a little
 > messy, but as a workaround, copy and paste the text in [this
-> gist](https://gist.github.com/lrettig/b34d9b74fac88fe6324a08ddb2efb632) into
-> the bottom of your RNPlay codepen. Check out the [Sample
+> gist](https://gist.github.com/lrettig/b34d9b74fac88fe6324a08ddb2efb632)--all
+> of it, verbatim--into the bottom of your RNPlay codepen. Check out the [Sample
 > RNPlay](https://rnplay.org/apps/iIyfBg).
 
 Using the swiper is as simple as creating a new class that contains a few other
@@ -205,7 +204,7 @@ location with them.
 You already have a `Users` class that shows us a list of users and lets us
 message them. We want to do basically the same thing on this view, with a slight
 twist: sharing our location. Whenever you recognize this pattern--_I want to do
-basically the same thing, with a twist--_you know it's time to modularize your
+basically the same thing, with a twist_--you know it's time to modularize your
 code. In this case, we want to abstract away the bits of the `Users` class that
 we're going to use across both views, the one that lets the user sends messages
 and the new one that lets the user share their location.
@@ -220,11 +219,11 @@ underlying `Users` class! The whole thing should look something like this:
 ```javascript
 var SendMessage = React.createClass({
   touchUser() {
-    /* your onTouch handler from your Users class */
+    /* your touchUser handler from your Users class */
   },
 
   render() {
-    return <UsersView touchUser={this.onTouch}/>;
+    return <UsersView touchUser={this.touchUser}/>;
   }
 });
 ```
@@ -276,7 +275,7 @@ that the `fetch` call sends should be:
 
 ```javascript
 {
-  to: <the recipient's ID>,
+  to: <RECIPIENT_ID>,
   location: {
     longitude: this.state.longitude,
     latitude: this.state.latitude
@@ -284,12 +283,68 @@ that the `fetch` call sends should be:
 }
 ```
 
+Note that the backend endpoints remain the same. You should still be calling
+`POST /messages`. We use the same set of endpoints for both types of messages,
+basic Ho! Ho! Ho!s (see what I did there?), and shared locations. You don't need
+to worry about the distinction. Just include the right set of params and the
+backend will sort it out for you.
+
 Sweet baby Jesus! We have location data! Now you can find out the user's
 location, and share it. For now it's just a bunch of bits and bytes inside an
 invisible server somewhere. But that won't be the case for long. Read on, dear
 reader, to see why location data is so freaking awesome.
 
 ## Part 4. View shared locations
+
+For the final part of this trick, we're going to saw Ethan in half. Just
+kidding. We love Ethan too much to do that to him. (Now that annoying person who
+always starts vacuuming the hallway when we begin lessons, that's another
+story...)
+
+What we're actually going to do is make all that sweet, juicy location data
+visible on a map. We'll stick with our existing `Messages` class, but we'll
+extend it by indicating which messages contain location data, and by allowing us
+to click on them to view the location.
+
+To make it clear which messages contain location data, modify the `renderRow`
+prop of the `ListView` in your `Messages` class to add an icon--I recommend the
+globe emoji, 🌎--to the appropriate rows. How do you know whether a row contains
+location data? Check for `(rowData.location && rowData.location.longitude)`.
+Then you need to make these rows touchable, too. You already know how to do
+this, too! Wrap the row in a `Touchable` class such as `TouchableOpacity`. Pass
+the `rowData` into the `onPress` handler, and check again for the location
+data--the handler should do nothing if it doesn't contain location data.
+
+We need to add one final view, to let us see a user's location. Create a new
+class that contains just one thing, a [`MapView`](https://facebook.github.io/react-native/docs/mapview.html).
+Pass in the location data, and the name of the message sender, as props when you
+display it.  You can set the location of the map, drop a pin to represent the
+sender's location, _and_ show the _current user's_ location with a blue dot like
+this:
+
+```javascript
+<MapView
+  showsUserLocation={true}
+  scrollEnabled={false}
+  region={{
+    longitude: this.props.longitude,
+    latitude: this.props.latitude,
+    longitudeDelta: 1,
+    latitudeDelta: 1
+  }}
+  annotations={[{
+    latitude: this.props.latitude,
+    longitude: this.props.longitude,
+    title: this.props.from + "'s Location"
+  }]}
+/>
+```
+
+Make sure there's a way for the user to go back to the messages list from the
+map view.
+
+That's it! Pretty awesome, right? Now you have all of the tools you need to
+become the next Yo or Snapchat, right?
 
 ## Suggested reading
 - [We have a problem with promises](https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html)
