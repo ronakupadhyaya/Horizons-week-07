@@ -298,7 +298,7 @@ Inside of this `touchUser` function, use `fetch` and create a request that sends
 Within the `.then` of this `fetch` (_don't forget to `.json()` the response with another `.then` before this!_), we want to alert based on whether or not the request completed successfuly or not. Here is an example of how we display an [alert with React Native](https://facebook.github.io/react-native/docs/alert.html):
 
 ```javascript
-reactNative.Alert.alert(
+Alert.alert(
   'Alert Title',
   'Alert Contents',
   [{text: 'Dismiss Button'}] // Button
