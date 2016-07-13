@@ -26,10 +26,47 @@ var hohoho = React.createClass({
 });
 
 var Register = React.createClass({
+  getInitialState(){
+    return {
+      username: '',
+      password: ''
+    };
+  },
+  register(){
+    fetch('https://hohoho-backend.herokuapp.com/register', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password,
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      /* do something with responseJson and go back to the Login view but
+       * make sure to check for responseJson.success! */
+       
+    })
+    .catch((err) => {
+      /* do something if there was an error with fetching */
+    });
+  },
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Register</Text>
+        <TextInput
+    style={{height: 40}}
+    placeholder="Enter your username"
+    onChangeText={(text) => this.setState({username: text})}
+        />
+        <TextInput
+    style={{height: 40}}
+    placeholder="Password"
+    onChangeText={(text) => this.setState({password: text})}
+        />
+        <TouchableOpacity onPress={} style={styles.textBig}>Register</TouchableOpacity>
       </View>
     );
   }
