@@ -68,7 +68,7 @@ triggered when the user taps the "Login" button inside `onPress` in your Login
 component. Right now, the first thing you do (after, hopefully, validating that
 the user entered a username and password!) is fire off `fetch` to login.
 
-Before doing this, call 
+After verifying that the user has logged in with correct credentials:
 ```javascript
 AsyncStorage.setItem('user', JSON.stringify({
     username: this.state.username, 
