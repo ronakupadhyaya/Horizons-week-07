@@ -5,12 +5,134 @@
 Your goal is to extend the [Ho! Ho! Ho! project from yesterday](../day2/hohoho)
 to add a few more fun features, taking advantage of the power of mobile:
 
-- Share your location with other people via GPS, and view their location
+- Make the login persistent by storing the user's credentials
+- Use the swipe gesture to move between screens with a powerful React Native
+  plugin
+- Share your location with other people via GPS, and view their location on a
+  map
 - Send and receive photos
 
 ## Instructions
 
+Yesterday you learned to build a basic mobile app using the same technologies
+you've been learning all summer. Today, we're going to make this app even more
+awesome by taking advantage of the full power of mobile to add awesome features
+such as maps and photos.
+
 Continue using your code from yesterday, and continue to use the same backend
-endpoint: `https://hohoho-backend.herokuapp.com`.
+endpoint: `https://hohoho-backend.herokuapp.com`. Follow along below to add some
+awesome new features to your app.
 
+## Part 1. Persistent login
 
+Usernames and passwords are a basic form of security, but as you've no doubt
+noticed by now, the downside is that every time you open the app, you need to
+login again. What a pain!
+
+Let's kick things off today by adding a feature common in many popular mobile
+apps: persistent login. We're going to do this by storing the username and
+password that the user enters so that we can automatically log them in when they
+open the app.
+
+The tool we'll use to accomplish this is called [`AsyncStorage`](https://facebook.github.io/react-native/docs/asyncstorage.html),
+one of the many powerful APIs available in React Native. `AsyncStorage`, which
+is akin to [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
+in the browser, allows us to save and read data using a key-value format (the
+formal name for this is ["key-value store"](https://en.wikipedia.org/wiki/Key-value_database).
+
+The `AsyncStorage` API is quite simple. We only have two methods: `setItem` and
+`getItem`. As the name suggests, both of these are asynchronous operations, so
+both of these methods return a promise.
+
+### Saving the login credentials
+
+Let's start by _saving_ the username and password using `AsyncStorage` when the
+user logs in. We can do this by modifying the existing promise chain that is
+triggered when the user taps the "Login" button inside `onPress` in your Login
+component. Right now, the first thing you do (after, hopefully, validating that
+the user entered a username and password!) is fire off `fetch` to login.
+
+Before doing this, call `AsyncStorage.setItem('username', this.state.username)`
+and do the same thing for password. That's it. Be careful with how you begin the
+promise chain, and with what goes inside the `.then()` clauses. 
+
+Obviously, the username and password that we save using `AsyncStorage` will be
+overwritten every time the user logins in with another username and password,
+but that's fine.
+
+### Reading the login credentials
+
+Reading the credentials is slightly harder. It needs to happen when the
+component first loads, but it needs to happen asynchronously. Which [component
+lifecycle method](https://facebook.github.io/react/docs/component-specs.html)
+does this belong in?
+
+If you guessed `render()`, you guessed wrong (render runs many times, not just
+once). If you guessed `addEventListener()`, you're about six weeks late. If you
+guessed that you're annoyed by these obnoxious rhetorical questions which serve
+no purpose but to make you stop and think about the answer to this question
+before just giving it to you--well kudos to you for that. It's
+[`componentDidMount`](https://facebook.github.io/react/docs/component-specs.html#mounting-componentdidmount). 
+That's where we put things that run once, and only once, when a component
+finishes loading.
+
+Chain a couple of calls to `AsyncStorage.getItem` at the top of this method.
+Inside the `then()` clause, check whether we got a username and password (if the
+user has never logged in before, they won't be set!), and if we did, try to log
+the user in. At a high level, this promise chain should look like:
+
+```javascript
+readUsernameAndPasswordFromAsyncStorage()
+  .then(result => {
+    var [username, password] = result;
+    if (username && password) {
+      return login(username, password)
+        .then(resp => resp.json())
+        .then(checkResponseAndGoToMainScreen);
+    }
+    // Don't really need an else clause, we don't do anything in this case.
+  })
+  .catch(err => { /* handle the error */ }
+```
+
+(Just to be clear, `readUsernameAndPasswordFromAsyncStorage`, `login`, and
+`checkResponseAndGoToMainScreen` are pseudocode. They're not real functions. You
+need to fill in functions that actually do these things. And do put them inside
+functions--lots of simple, elegant functions is way nicer than tons of code
+jumbled together. And you need to do the latter two inside your `onPress`
+handler anyway, so putting the code in a function allows you to [avoid
+duplication](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself))
+
+See what I did there? There's a promise chain (the one that starts with `login`)
+inside of another promise chain (the one that starts with `readUsername...`).
+WTF? Yeah, well, you can do that, too--in this case we have to because of the
+`if` statement. In other words, **if** we successfully got a username and a
+password, then we want to continue the promise chain; if we didn't, we just want
+to stop it.
+
+There's one **very very very very** important caveat here. The inner promise
+chain **must** have a `return` in front of it. Without this `return`, two things
+would (well, wouldn't) happen:
+
+1. If there were additional steps in the outer promise chain, i.e., additional
+   `then()` clauses, they wouldn't run
+1. Even more alarmingly, **any error thrown inside the inner promise chain would
+   be silently swallowed.** They would disappear. Vanish. The `return` causes
+   whatever error happened in the inner promise chain to bubble back up to the
+   outer chain so that it will be caught by the `catch` handler at the end.
+   This is a very, very easy mistake to make. Consider yourself warned! (Read
+   more about it here: [We have a problem with promises](https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html).)
+
+Cool beans. So you're a promise ninja and you figured out how to read the
+username and password using `AsyncStorage`, and you figured out how to pass
+these to the backend to login automatically. Keep reading.
+
+## Part 1. Adding a swiper
+
+## Part . Share your location
+
+## Part . View shared locations
+
+## Suggested reading
+- [We have a problem with promises](https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html)
+- [../day1/trello-backup/README.md#suggested-reading](Monday's readings on promises) (as if you actually read them all)
