@@ -69,13 +69,15 @@ the user entered a username and password!) is fire off `fetch` to login.
 
 Before doing this, call 
 ```javascript
-AsyncStorage.setItem('user', {
+AsyncStorage.setItem('user', JSON.stringify({
     username: this.state.username, 
     password: this.state.password
-});
+}));
 ```
 That's it. Be careful with how you begin the
 promise chain, and with what goes inside the `.then()` clauses. 
+
+> **Remember**: Because we are `stringify`'ing it here, we need to `parse` it later when we read the `user` item!
 
 Obviously, the username and password that we save using `AsyncStorage` will be
 overwritten every time the user logins in with another username and password,
@@ -105,8 +107,9 @@ the user in. At a high level, this promise chain should look like:
 ```javascript
 AsyncStorage.getItem('user')
   .then(result => {
-    var username = result.username;
-  var password = result.password;
+    var parsedResult = JSON.parse(result);
+    var username = parsedResult.username;
+    var password = parsedResult.password;
     if (username && password) {
       return login(username, password)
         .then(resp => resp.json())
