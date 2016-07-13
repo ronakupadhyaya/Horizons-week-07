@@ -316,8 +316,10 @@ the `rowData` into the `onPress` handler, and check again for the location
 data--the handler should do nothing if it doesn't contain location data.
 
 We need to add one final view, to let us see a user's location. Create a new
-class that contains just one thing, a [`MapView`](https://facebook.github.io/react-native/docs/mapview.html).
-Pass in the location data, and the name of the message sender, as props when you
+class that contains just one thing, a
+[`MapView`](https://facebook.github.io/react-native/docs/mapview.html) (this is
+another React Native builtin, just make sure you import/require it first). Pass
+in the location data, and the name of the message sender, as props when you
 display it.  You can set the location of the map, drop a pin to represent the
 sender's location, _and_ show the _current user's_ location with a blue dot like
 this:
@@ -349,4 +351,4 @@ become the next Yo or Snapchat, right?
 ## Suggested reading
 - [We have a problem with promises](https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html)
 - [Gesture detection in React Native](http://blog.lum.pe/gesture-detection-in-react-native/)
-- [../day1/trello-backup/README.md#suggested-reading](Monday's readings on promises) (as if you actually read them all)
+- [Monday's readings on promises](../day1/trello-backup/README.md#suggested-reading) (as if you actually read them all)
