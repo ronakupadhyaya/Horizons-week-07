@@ -267,29 +267,25 @@ kidding. We love Ethan too much to do that to him. (Now that annoying person who
 always starts vacuuming the hallway when we begin lessons, that's another
 story...)
 
-By the end of this part, you will not only be sending locations as with the last part, but be able to see received locations on a map view, inline with each message.
+By the end of this part, you will not only be sending locations as with the last part, but be able to see received locations on a map view, **_inline with each message_**.
 
 What we're actually going to do is make all that sweet, juicy location data
 visible on a map. We'll stick with our existing `Messages` class, but we'll
-extend it by indicating which messages contain location data, and by allowing us
-to click on them to view the location.
+extend it by showing maps inline with the _Ho Ho Ho!_'s that contain location data.
+
+By the end of this part, your `Messages` component should display something that looks like the following:
+
+![](https://cl.ly/3l3h2u2w2W35/Simulator%20Screen%20Shot%20Jul%2013,%202016,%208.23.47%20AM.png)
+
 
 ### Modifying the `Messages` Component
 
-To make it clear which messages contain location data, modify the `renderRow`
-prop of the `ListView` in your `Messages` class to add an icon--I recommend the
-globe emoji, 🌎--to the appropriate rows. How do you know whether a row contains
-location data? Check for `(rowData.location && rowData.location.longitude)`.
-Then you need to make these rows touchable, too. You already know how to do
-this, too! Wrap the row in a `Touchable` class such as `TouchableOpacity`. Pass
-the `rowData` into the `onPress` handler, and check again for the location
-data--the handler should do nothing if it doesn't contain location data.
-
-We need to add one final view, to let us see a user's location. Create a new
-class that contains just one thing, a
+To display a message's location with its _From_ and _To_, check for `(rowData.location && rowData.location.longitude)`. If the _Ho Ho Ho!_ contains location data, render an additional component: a
 [`MapView`](https://facebook.github.io/react-native/docs/mapview.html) (this is
-another React Native builtin, just make sure you import/require it first). Pass
-in the location data, and the name of the message sender, as props when you
+another React Native builtin, just **_make sure you import/require it first at the top of the file_**).
+
+Pass
+in the location data (which will be in `rowData.location`, and the name of the message sender, as props when you
 display it. You'll want to use the `showsUserLocation` prop to show the _current
 user's_ location as a blue dot, the `region` prop to pass in the area where the
 map should be centered, and the `annotations` prop to drop a pin to show the
@@ -312,6 +308,8 @@ _sender's_ location. Here's a partial example:
   }]}
 />
 ```
+
+> **Note:** This should not be a standalone component! Your `<MapView />` should be rendered in with a typical Message row below its normal contents.
 
 Make sure there's a way for the user to go back to the messages list from the
 map view.
@@ -463,6 +461,9 @@ was successful.
 - `POST /messages`: Sends a message/_Ho Ho Ho!_ to another user
   - Parameters:
     - `to`: the ID of the user you are sending a message to
+    - `location`: (_Optional_) - an Object that represents a sent location in a _Ho Ho Ho!_
+      - `latitude`: The latitude of the location
+      - `longitude`: The longitude of the location
   - Response codes:
     - `401`: User is not logged in
     - `400`: There was an error saving to database
