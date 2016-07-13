@@ -219,6 +219,8 @@ navigator.geolocation.getCurrentPosition(
 );
 ```
 
+> **Remember:** The latitude and longitude received in the success callback of `getCurrentPosition` are inside of `position.coords`. This means that the latitude of the user you are locating is inside of `position.coords.latitutde` and the longitude of the user you are locating is inside of `position.coords.longitude`.
+
 The final step on this `sendLocation` function is to send a `fetch` request to the server to send a location to another user. It should do basically the same thing as the old `onPress` handler function
 with one small difference: in addition to sending a `to` parameter inside the
 `body` in the `fetch` call, it should also send the location coordinates. Go
