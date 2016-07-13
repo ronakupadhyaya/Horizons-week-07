@@ -24,6 +24,22 @@ awesome new features to your app.
 
 ## Part 1. Persistent login
 
+### Overview
+
+In this part, we will be saving your login information so that your app does not prompt you to login upon restart. The end result will look something like the following:
+
+![Auto-login, wow!](https://s3.amazonaws.com/f.cl.ly/items/342H3W2v312b3v3t1I3K/Screen%20Recording%202016-07-13%20at%2008.05%20AM.gif)
+
+Notice how almost immediately after the Login screen renders, the app recognizes that you have logged in before and switches you into the Users view!
+
+This view will be able to accomplish the following:
+
+- Write to `AsyncStorage` to save a username and password for the next run
+- Read from `AsyncStorage` to read the saved data in the `componentDidMount` of the Login view and attempt a login
+
+
+### Saving into `AsyncStorage`
+
 Usernames and passwords are a basic form of security, but as you've no doubt
 noticed by now, the downside is that every time you open the app, you need to
 login again. What a pain!
@@ -51,8 +67,14 @@ triggered when the user taps the "Login" button inside `onPress` in your Login
 component. Right now, the first thing you do (after, hopefully, validating that
 the user entered a username and password!) is fire off `fetch` to login.
 
-Before doing this, call `AsyncStorage.setItem('username', this.state.username)`
-and do the same thing for password. That's it. Be careful with how you begin the
+Before doing this, call 
+```javascript
+AsyncStorage.setItem('user', {
+    username: this.state.username, 
+    password: this.state.password
+});
+```
+That's it. Be careful with how you begin the
 promise chain, and with what goes inside the `.then()` clauses. 
 
 Obviously, the username and password that we save using `AsyncStorage` will be
@@ -81,9 +103,10 @@ user has never logged in before, they won't be set!), and if we did, try to log
 the user in. At a high level, this promise chain should look like:
 
 ```javascript
-readUsernameAndPasswordFromAsyncStorage()
+AsyncStorage.getItem('user')
   .then(result => {
-    var [username, password] = result;
+    var username = result.username;
+  var password = result.password;
     if (username && password) {
       return login(username, password)
         .then(resp => resp.json())
@@ -94,7 +117,7 @@ readUsernameAndPasswordFromAsyncStorage()
   .catch(err => { /* handle the error */ }
 ```
 
-(Just to be clear, `readUsernameAndPasswordFromAsyncStorage`, `login`, and
+> **Note:** Just to be clear, `login` and
 `checkResponseAndGoToMainScreen` are pseudocode. They're not real functions. You
 need to fill in functions that actually do these things. And do put them inside
 functions--lots of simple, elegant functions is way nicer than tons of code
@@ -127,9 +150,178 @@ username and password using `AsyncStorage`, and you figured out how to pass
 these to the backend to login automatically. Now when you restart your app, you
 should be logged in automatically! Keep reading.
 
-## Part 2. Adding a swiper
 
-Another great feature we can take advantage of on mobile phones, which isn't
+
+## Part 2. Share your location
+
+### Overview
+
+Okay, now for the meat of today's project. Delicious, tender, flavorful meat.
+Sorry, sorry, that tends to happen a lot when I've had too much Soylent lately 😑
+
+Seriously though, this is where the fun starts. One of the coolest and most
+important features of mobile devices is support for location services. Let's add
+the ability to not only "Ho! Ho! Ho!" another user, but also to share your
+location with them.
+
+At the end of Part 2, your app should be able to send other users locations to the server. We will be modifying the `Users` view to tap and hold on any of the users to send a location rather than a simple _Ho Ho Ho!_
+
+### Modifying `Users` - `index.ios.js`
+
+You already have a `Users` class that shows us a list of users and lets us
+message them. We want to do basically the same thing on this view, with a slight
+twist: sharing our location. We will modify the rows of users to send a location when someone taps and holds on their name.
+
+Modify your `<ListView />` component in the `Users` class to to include two new props: `onLongPress` and `delayLongPress`. 
+
+```javascript
+<ListView
+  dataSource={this.state.dataSource}
+  renderRow={(rowData) => (
+  <TouchableOpacity
+    onPress={this.touch.bind(this, rowData)}
+    onLongPress={/* your function here */}
+    delayLongPress={/* num of millseconds here */}>
+    <Text>{rowData.username}</Text>
+  </TouchableOpacity>
+  )}
+/>
+
+```
+
+`/* your function here */` will become a function that we write in the next section; for now, call this function `sendLocation` and bind it to the `this` context of the component and pass in `rowData`, just like we did for the `onPress` handler to send normal _Ho Ho Ho!_'s.
+
+It will look like: `onLongPress={this.sendLocation.bind(this, rowData)}`
+
+
+### Getting and sending the location
+
+We will now write the `sendLocation` function to respond to the press-and-hold of any user row. This function will accomplish two things:
+
+- Get the user's current position in latitude and longitude.
+- Use `fetch` to send a request to the server that sends a _Ho Ho Ho!_ with a location attached.
+
+Fortunately React Native makes getting the user's location pretty easy, too. The
+whole system is documented [here](https://facebook.github.io/react-native/docs/geolocation.html)
+but you only really need to call a single method,
+`navigator.geolocation.getCurrentPosition`, which allows us to asynchronously
+(big surprise) get the longitude and latitude coordinates of the user's current
+location. Add two new properties to the state for `SendLocation`: `longitude` and
+`latitude` (remember to initialize them in `getInitialState`--in this case,
+initialize them both to zero).
+
+We need to get the user's coordinates once, and only once, when the view loads.
+Remember where things of that nature live? Hint: it's one of the React component
+lifecycle methods, and you just used it today! Add code that looks like this to
+the proper lifecycle method (no need to `import` anything to get this to work):
+
+```javascript
+navigator.geolocation.getCurrentPosition(
+  position => {
+    console.log("Got position:", position);
+    /* use fetch() with the received position here */
+  },
+  error => alert(error.message),
+  {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+);
+```
+
+The final step on this function is to send a `fetch` request to the server to send a location to another user. It should do basically the same thing as the old `onPress` handler function
+with one small difference: in addition to sending a `to` parameter inside the
+`body` in the `fetch` call, it should also send the location coordinates. Go
+ahead and add the `touchUser` function to make it so! The format of the data
+that the `fetch` call sends should be:
+
+```javascript
+{
+  to: <RECIPIENT_ID>,
+  location: {
+    longitude: this.state.longitude,
+    latitude: this.state.latitude
+  }
+}
+```
+
+Note that the backend endpoints remain the same. You should still be calling
+`POST /messages`. We use the same set of endpoints for both types of messages,
+basic Ho! Ho! Ho!s (see what I did there?), and shared locations. You don't need
+to worry about the distinction. Just include the right set of params and the
+backend will sort it out for you.
+
+> **Tip:** If you are testing with iOS Simulator, you can change the location of the device! Go to the top menu `Debug > Location > Custom Location...` to select a custom latitude and longitude for simulated current location. Some examples are as follows:
+> - **Grand Canyon:** `(36.1128, -113.9961)`
+> - **Austin, TX:** `(30.2672, -97.7431)`
+> - **International House, PHL:** `(39.9552515, -75.1991039)`
+
+Sweet baby Jesus! We have location data! Now you can find out the user's
+location, and share it. For now it's just a bunch of bits and bytes inside an
+invisible server somewhere. But that won't be the case for long. Read on, dear
+reader, to see why location data is so freaking awesome.
+
+## Part 3. View shared locations
+
+### Overview
+
+For the final part of this trick, we're going to saw Ethan in half. Just
+kidding. We love Ethan too much to do that to him. (Now that annoying person who
+always starts vacuuming the hallway when we begin lessons, that's another
+story...)
+
+By the end of this part, you will not only be sending locations as with the last part, but be able to see received locations on a map view, inline with each message.
+
+What we're actually going to do is make all that sweet, juicy location data
+visible on a map. We'll stick with our existing `Messages` class, but we'll
+extend it by indicating which messages contain location data, and by allowing us
+to click on them to view the location.
+
+### Modifying the `Messages` Component
+
+To make it clear which messages contain location data, modify the `renderRow`
+prop of the `ListView` in your `Messages` class to add an icon--I recommend the
+globe emoji, 🌎--to the appropriate rows. How do you know whether a row contains
+location data? Check for `(rowData.location && rowData.location.longitude)`.
+Then you need to make these rows touchable, too. You already know how to do
+this, too! Wrap the row in a `Touchable` class such as `TouchableOpacity`. Pass
+the `rowData` into the `onPress` handler, and check again for the location
+data--the handler should do nothing if it doesn't contain location data.
+
+We need to add one final view, to let us see a user's location. Create a new
+class that contains just one thing, a
+[`MapView`](https://facebook.github.io/react-native/docs/mapview.html) (this is
+another React Native builtin, just make sure you import/require it first). Pass
+in the location data, and the name of the message sender, as props when you
+display it. You'll want to use the `showsUserLocation` prop to show the _current
+user's_ location as a blue dot, the `region` prop to pass in the area where the
+map should be centered, and the `annotations` prop to drop a pin to show the
+_sender's_ location. Here's a partial example:
+
+```javascript
+<MapView
+  showsUserLocation={true}
+  scrollEnabled={false}
+  region={{
+    longitude: this.props.longitude,
+    latitude: this.props.latitude,
+    longitudeDelta: 1,
+    latitudeDelta: 1
+  }}
+  annotations={[{
+    latitude: 33.6434822, 
+    longitude: -117.5809571, 
+    title: "Ethan's School"
+  }]}
+/>
+```
+
+Make sure there's a way for the user to go back to the messages list from the
+map view.
+
+That's it! Pretty awesome, right? Now you have all of the tools you need to
+become the next Yo or Snapchat, right?
+
+## Bonus: Navigating with a swiper
+
+Speaking of Snapchat, another great feature we can take advantage of on mobile phones, which isn't
 available to us in web apps, is gestures. Mobile devices allow us to use all
 sorts of gestures, such as tap, double tap, long tap, swipe, pinch, zoom, and
 pan. React Native provides built-in components, such as [`ListView`](https://facebook.github.io/react-native/docs/listview.html)
@@ -185,165 +377,110 @@ tips:
   and `SwiperView` will need to pass it on down into its child views.
 
 Pretty cool, right? Now instead of tapping on buttons, which are so 2007, we
-can swipe smoothly back and forth across views. See how easy that was? In the
-next part we're going to add an _exciting_ and _novel_ new view with a cool new
-feature.
+can swipe smoothly back and forth across views. See how easy that was?
 
-## Part 3. Share your location
+## Endpoint Reference - `https://hohoho-backend.herokuapp.com/`
 
-Okay, now for the meat of today's project. Delicious, tender, flavorful meat.
-Sorry, sorry, that tends to happen a lot when I've had too much Soylent lately 😑
+**Base URL:** https://hohoho-backend.herokuapp.com/
 
-Seriously though, this is where the fun starts. One of the coolest and most
-important features of mobile devices is support for location services. Let's add
-the ability to not only "Ho! Ho! Ho!" another user, but also to share your
-location with them.
+All endpoints accept JSON data and return JSON data. All responses include
+a boolean `success` field that indicates if request was successful.
+You can also use the response status code to figure out if a request
+was successful.
 
-### Create the class
+- `POST /register`: Register a new user. Does **not** automatically log user in.
+  - Parameters:
+    - `username`: Required String
+    - `password`: Required String
+  - Response codes:
+    - `400`: Bad user input, includes `error` field indicating cause
+    - `200`: Registration successful
+- `POST /login`: Log in as a pre-existing user.
+  - Parameters:
+    - `username`: Required String
+    - `password`: Required String
+  - Response codes:
+    - `400`: Bad user input, includes `error` field indicating cause
+    - `401`: Bad username or password, includes `error` field indicating cause
+    - `200`: Login successful
+- `GET /login/success`: Check if the user is logged in
+  - Parameters: **none**
+  - Response codes:
+    - `401`: User is not logged in
+    - `200`: User is logged in
+- `GET /users`: Get all registered users in HoHoHo
+  - Example response:
 
-You already have a `Users` class that shows us a list of users and lets us
-message them. We want to do basically the same thing on this view, with a slight
-twist: sharing our location. Whenever you recognize this pattern--_I want to do
-basically the same thing, with a twist_--you know it's time to modularize your
-code. In this case, we want to abstract away the bits of the `Users` class that
-we're going to use across both views, the one that lets the user sends messages
-and the new one that lets the user share their location.
-
-Create a new React class called `SendMessage` (this will be the view for sending
-messages), and cut-and-paste _just_ the `touchUser` handler function from your
-`Users` into it. This is the only part that's going to be different between
-these two new views--get it? Then add a `render()` method, since every class
-needs `render`. What should go into render? Well, it should just render the
-underlying `Users` class! The whole thing should look something like this:
-
-```javascript
-var SendMessage = React.createClass({
-  touchUser() {
-    /* your touchUser handler from your Users class */
-  },
-
-  render() {
-    return <UsersView touchUser={this.touchUser}/>;
+  ```javascript
+  {
+    "success": true,
+    "users": [
+      {
+        "username": "moose",
+        "_id": "57844cbdbedf35366e2690d3"
+      },
+      {
+        "username": "dar",
+        "_id": "57846e7666b869d88ad96430"
+      },
+      {
+        "username": "other",
+        "_id": "57846fea0ccbba228cd1479e"
+      },
+      {
+        "username": "other2",
+        "_id": "57846ff00ccbba228cd1479f"
+      }
+    ]
   }
-});
-```
+  ```
 
-Next we need another new class called `SendLocation`. Do the exact same thing to
-create it. You'll also need to update the `render()` method of your `SwiperView`
-to display both of the two new classes (and not to display the `Users` class
-directly). This will let you swipe back and forth between sending a message and
-sharing a location.
+- `GET /messages`: Get messages sent to and from current user
+  - Example response:
 
-### Getting the location
-
-Fortunately React Native makes getting the user's location pretty easy, too. The
-whole system is documented [here](https://facebook.github.io/react-native/docs/geolocation.html)
-but you only really need to call a single method,
-`navigator.geolocation.getCurrentPosition`, which allows us to asynchronously
-(big surprise) get the longitude and latitude coordinates of the user's current
-location. Add two new properties to the state for `SendLocation`: `longitude` and
-`latitude` (remember to initialize them in `getInitialState`--in this case,
-initialize them both to zero).
-
-We need to get the user's coordinates once, and only once, when the view loads.
-Remember where things of that nature live? Hint: it's one of the React component
-lifecycle methods, and you just used it today! Add code that looks like this to
-the proper lifecycle method (no need to `import` anything to get this to work):
-
-```javascript
-navigator.geolocation.getCurrentPosition(
-  position => {
-    console.log("Got position:", position);
-    this.setState({
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude,
-    });
-  },
-  error => alert(error.message),
-  {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
-);
-```
-
-### Sending the location
-
-The final step on the frontend is to add a `touchUser` function to this new
-class. It should do basically the same thing as the old `touchUser` function
-with one small difference: in addition to sending a `to` parameter inside the
-`body` in the `fetch` call, it should also send the location coordinates. Go
-ahead and add the `touchUser` function to make it so! The format of the data
-that the `fetch` call sends should be:
-
-```javascript
-{
-  to: <RECIPIENT_ID>,
-  location: {
-    longitude: this.state.longitude,
-    latitude: this.state.latitude
+  ```javascript
+  {
+    "success": true,
+    "messages": [
+      {
+        "_id": "57846f6cafacd3988b4362e6",
+        "to": {
+          "_id": "57846e7666b869d88ad96430",
+          "username": "dar"
+        },
+        "from": {
+          "_id": "57844cbdbedf35366e2690d3",
+          "username": "moose"
+        },
+        "__v": 0,
+        "body": "Yo",
+        "timestamp": "2016-07-12T04:17:48.304Z"
+      }
+    ]
   }
-}
-```
-
-Note that the backend endpoints remain the same. You should still be calling
-`POST /messages`. We use the same set of endpoints for both types of messages,
-basic Ho! Ho! Ho!s (see what I did there?), and shared locations. You don't need
-to worry about the distinction. Just include the right set of params and the
-backend will sort it out for you.
-
-Sweet baby Jesus! We have location data! Now you can find out the user's
-location, and share it. For now it's just a bunch of bits and bytes inside an
-invisible server somewhere. But that won't be the case for long. Read on, dear
-reader, to see why location data is so freaking awesome.
-
-## Part 4. View shared locations
-
-For the final part of this trick, we're going to saw Ethan in half. Just
-kidding. We love Ethan too much to do that to him. (Now that annoying person who
-always starts vacuuming the hallway when we begin lessons, that's another
-story...)
-
-What we're actually going to do is make all that sweet, juicy location data
-visible on a map. We'll stick with our existing `Messages` class, but we'll
-extend it by indicating which messages contain location data, and by allowing us
-to click on them to view the location.
-
-To make it clear which messages contain location data, modify the `renderRow`
-prop of the `ListView` in your `Messages` class to add an icon--I recommend the
-globe emoji, 🌎--to the appropriate rows. How do you know whether a row contains
-location data? Check for `(rowData.location && rowData.location.longitude)`.
-Then you need to make these rows touchable, too. You already know how to do
-this, too! Wrap the row in a `Touchable` class such as `TouchableOpacity`. Pass
-the `rowData` into the `onPress` handler, and check again for the location
-data--the handler should do nothing if it doesn't contain location data.
-
-We need to add one final view, to let us see a user's location. Create a new
-class that contains just one thing, a
-[`MapView`](https://facebook.github.io/react-native/docs/mapview.html) (this is
-another React Native builtin, just make sure you import/require it first). Pass
-in the location data, and the name of the message sender, as props when you
-display it. You'll want to use the `showsUserLocation` prop to show the _current
-user's_ location as a blue dot, the `region` prop to pass in the area where the
-map should be centered, and the `annotations` prop to drop a pin to show the
-_sender's_ location. Here's a partial example:
-
-```javascript
-<MapView
-  showsUserLocation={true}
-  scrollEnabled={false}
-  region={{
-    longitude: this.props.longitude,
-    latitude: this.props.latitude,
-    longitudeDelta: 1,
-    latitudeDelta: 1
-  }}
-  // See if you can figure out how to add a pin!
-/>
-```
-
-Make sure there's a way for the user to go back to the messages list from the
-map view.
-
-That's it! Pretty awesome, right? Now you have all of the tools you need to
-become the next Yo or Snapchat, right?
+  ```
+  
+- `POST /messages`: Sends a message/_Ho Ho Ho!_ to another user
+  - Parameters:
+    - `to`: the ID of the user you are sending a message to
+  - Response codes:
+    - `401`: User is not logged in
+    - `400`: There was an error saving to database
+    - `200`: The _Ho Ho Ho!_ was sent!
+  - Example response:
+  ```javascript
+  {
+    "success": true,
+    "message": {
+    "__v": 0,
+    "to": "57849dac19a9131100ab2fe5",
+    "from": "578533b8787e661100aec76a",
+    "_id": "5785397a787e661100aec7d6",
+    "body": "HoHoHo",
+    "timestamp": "2016-07-12T18:39:54.406Z"
+    }
+  }
+  ```
 
 ## Suggested reading
 - [We have a problem with promises](https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html)
