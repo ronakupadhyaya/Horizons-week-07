@@ -206,14 +206,7 @@ whole system is documented [here](https://facebook.github.io/react-native/docs/g
 but you only really need to call a single method,
 `navigator.geolocation.getCurrentPosition`, which allows us to asynchronously
 (big surprise) get the longitude and latitude coordinates of the user's current
-location. Add two new properties to the state for `SendLocation`: `longitude` and
-`latitude` (remember to initialize them in `getInitialState`--in this case,
-initialize them both to zero).
-
-We need to get the user's coordinates once, and only once, when the view loads.
-Remember where things of that nature live? Hint: it's one of the React component
-lifecycle methods, and you just used it today! Add code that looks like this to
-the proper lifecycle method (no need to `import` anything to get this to work):
+location. We need to get the user's coordinates each time we run this `sendLocation` function. With `navigator.geolocation`, that would look like the following:
 
 ```javascript
 navigator.geolocation.getCurrentPosition(
@@ -226,7 +219,7 @@ navigator.geolocation.getCurrentPosition(
 );
 ```
 
-The final step on this function is to send a `fetch` request to the server to send a location to another user. It should do basically the same thing as the old `onPress` handler function
+The final step on this `sendLocation` function is to send a `fetch` request to the server to send a location to another user. It should do basically the same thing as the old `onPress` handler function
 with one small difference: in addition to sending a `to` parameter inside the
 `body` in the `fetch` call, it should also send the location coordinates. Go
 ahead and add the `touchUser` function to make it so! The format of the data
@@ -236,8 +229,8 @@ that the `fetch` call sends should be:
 {
   to: <RECIPIENT_ID>,
   location: {
-    longitude: this.state.longitude,
-    latitude: this.state.latitude
+    longitude: /* the received longitude from getCurrentPosition */,
+    latitude: /* the received latitude from getCurrentPosition */
   }
 }
 ```
