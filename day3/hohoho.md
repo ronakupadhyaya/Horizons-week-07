@@ -37,6 +37,7 @@ This view will be able to accomplish the following:
 - Write to `AsyncStorage` to save a username and password for the next run
 - Read from `AsyncStorage` to read the saved data in the `componentDidMount` of the Login view and attempt a login
 
+> **Note:** Make sure to begin by **importing `AsyncStorage` at the top**, the same place you are importing things like `NavigatorIOS`, `Alert`, `AppRegistry`, `StyleSheet`, etc.!
 
 ### Saving into `AsyncStorage`
 
