@@ -1,11 +1,9 @@
-# Day 2 exercises
-## Inline exercises
+# Week 7 Day 1 Exercises
 
-1. [Warmup: React Native](warmup.md)
-1. [React Native style](style.md)
-1. [React Native navigation](nav.md)
-1. [React Native counter](counter.md)
+## Individual Exercises
 
-## Pair exercises
+1. [React Native Individual Exercises](examples.md)
 
-1. [Ho Ho Ho!](hohoho/)
+## Pair Programming Exercise
+
+1. [Trello Backup Engine](trello-backup/README.md)
