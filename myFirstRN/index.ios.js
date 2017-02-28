@@ -54,12 +54,17 @@ export default class myFirstRN extends Component {
     return (
     <View style={{flex: 1,
         marginTop:20,
-        alignItems: 'center'
+        alignItems: 'center',
+
       }}>
-      <View style={{alignItems: 'center'}}>
-        <Text style={{color: 'blue', fontSize:50}}>Blue</Text>
-        <Text style={{color:'red', fontSize: 20}}>Red</Text>
-      </View>
+      <TouchableOpacity style={{flex: 1,
+          justifyContent: 'center',
+
+        }}>
+        <Text style={{
+            fontSize: 40
+          }}>Junjie is fat</Text>
+        </TouchableOpacity>
     </View>
 
     );
