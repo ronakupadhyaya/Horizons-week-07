@@ -6,7 +6,7 @@
   open in your browser. Lesson slides contain code samples and links to
   essential documentation.
 - You can write all your solutions in the same project. You don't need to
-  create a new React Native project for each secion.
+  create a new React Native project for each section.
 - Ask for help early and often! 🙋
 
 ## [Introduction](https://vimeo.com/205854019)
