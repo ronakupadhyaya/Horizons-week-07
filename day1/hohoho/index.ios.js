@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   View,
+  RefreshControl,
   TouchableOpacity,
   TextInput,
   NavigatorIOS,
@@ -87,7 +88,6 @@ var Users = React.createClass({
       dataSource: ds.cloneWithRows([])
     }
   },
-
   componentDidMount() {
     var self = this;
     fetch('https://hohoho-backend.herokuapp.com/users', {
@@ -155,7 +155,8 @@ var Users = React.createClass({
         dataSource={this.state.dataSource}
         style={{height: 1000, margin: 10, padding: 10}}
         renderRow={(rowData) => <TouchableOpacity>
-          <Text onPress={this.touchUser.bind(this, rowData)} style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center', padding: 10, margin: 10}}>{rowData.username}</Text></TouchableOpacity>}
+          <Text onPress={this.touchUser.bind(this, rowData)} style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center', padding: 10, margin: 10}}>{rowData.username}</Text>
+          </TouchableOpacity>}
       />
       </View>
     )
@@ -167,8 +168,41 @@ var Messages = React.createClass({
   getInitialState(){
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     return {
-      dataSource: ds.cloneWithRows([])
+      dataSource: ds.cloneWithRows([]),
+      refreshing: false
     }
+  },
+  refresh(){
+    this.setState({
+      refreshing: true
+    });
+    var self = this;
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if(responseJson.success) {
+        const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+        self.setState({
+          dataSource: ds.cloneWithRows(responseJson.messages),
+          refreshing: false
+        })
+      } else {
+        Alert.alert(
+          'Dang it',
+          'Failed to send a message :/',
+          [{text: 'Shiiieznitz!'}] // Button
+        )
+      }
+    })
+    .catch((err) => {
+      /* do something if there was an error with fetching */
+      alert(err);
+    });
   },
   componentDidMount(){
     var self = this;
@@ -201,9 +235,13 @@ var Messages = React.createClass({
   render() {
     return(
       <View style={{marginLeft: 10, marginRight: 10, marginTop: 30, marginBottom: 10, alignItems: 'center'}}>
-
       <ListView
-        dataSource={this.state.dataSource}
+      refreshControl={
+        <RefreshControl
+          refreshing={this.state.refreshing}
+          onRefresh={this.refresh.bind(this)}
+      />
+    }   dataSource={this.state.dataSource}
         style={{height: 1000}}
         renderRow={(rowData) => <TouchableOpacity>
           <Text style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center', padding: 10}}>
