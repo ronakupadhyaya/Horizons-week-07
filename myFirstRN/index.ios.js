@@ -52,19 +52,22 @@ export default class myFirstRN extends Component {
     });
 
     return (
-    <View style={{flex: 1,
-        marginTop:20,
-        alignItems: 'center',
+    <View style={styles.container}>
 
-      }}>
-      <TouchableOpacity style={{flex: 1,
-          justifyContent: 'center',
 
-        }}>
-        <Text style={{
-            fontSize: 40
-          }}>Junjie is fat</Text>
-        </TouchableOpacity>
+      <TouchableOpacity>
+        <Text style={styles.button}>Button 1</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity>
+        <Text style={styles.button}>Button 2</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity>
+        <Text style={styles.button}>Button 3</Text>
+      </TouchableOpacity>
+
+
     </View>
 
     );
@@ -73,20 +76,15 @@ export default class myFirstRN extends Component {
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: 20,
     flex: 1,
-    justifyContent: 'center',
+    flexDirection: 'column',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF'
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'space-between'
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5
+  button: {
+    fontSize: 40
   }
 });
 
