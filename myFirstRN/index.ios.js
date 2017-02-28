@@ -11,7 +11,8 @@ import {
   Text,
   View,
   TouchableOpacity,
-  ListView
+  ListView,
+  Button
 } from 'react-native';
 var _ = require('underscore');
 
@@ -21,12 +22,26 @@ export default class myFirstRN extends Component {
     super();
 
     this.state = {
-      numbers: _.range(100)
+      numbers: _.range(10)
     };
-
   }
 
-  remove(item) {
+  add() {
+    var lastNum = this.state.numbers[this.state.numbers.length - 1];
+
+    this.setState({
+      numbers: this.state.numbers.concat(this.state.numbers[this.state.numbers.length - 1] + 1)
+    });
+  }
+  remove() {
+    this.setState({
+      numbers: this.state.numbers.filter((curItem) => {
+        return this.state.numbers[this.state.numbers.length - 1] !== curItem
+      })
+    });
+  }
+
+  removeOne(item) {
     this.setState({
       numbers: this.state.numbers.filter((curItem) => (item !== curItem))
     });
@@ -39,12 +54,15 @@ export default class myFirstRN extends Component {
 
     return (
       <View style={styles.container}>
+        <View>
+          <Button title="Add" onPress={this.add.bind(this)}></Button>
+          <Button title="Remove" onPress={this.remove.bind(this)}></Button>
+        </View>
         <ListView dataSource={dataSource.cloneWithRows(this.state.numbers)} renderRow={(item) => (
-          <TouchableOpacity style={styles.button} onPress={this.remove.bind(this, item)}>
+          <TouchableOpacity style={styles.numbers} onPress={this.removeOne.bind(this, item)}>
             <Text>{item}</Text>
           </TouchableOpacity>
-        )}>
-        </ListView>
+        )}></ListView>
       </View>
     );
   }
@@ -53,11 +71,10 @@ export default class myFirstRN extends Component {
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
-
     backgroundColor: '#FFFFFF'
   },
-  button: {
-    alignItems: 'center',
+  numbers: {
+    alignItems: 'center'
   }
 });
 
