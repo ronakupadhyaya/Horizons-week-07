@@ -37,7 +37,7 @@ var Register = React.createClass({
 
 var Login = React.createClass({
   press() {
-    
+
   },
   register() {
     this.props.navigator.push({
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   button: {
-    alignSelf: 'stretch', 
+    alignSelf: 'stretch',
     paddingTop: 10,
     paddingBottom: 10,
     marginTop: 10,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     borderRadius: 5
   },
   buttonRed: {
-    backgroundColor: '#FF585B', 
+    backgroundColor: '#FF585B',
   },
   buttonBlue: {
     backgroundColor: '#0074D9',
