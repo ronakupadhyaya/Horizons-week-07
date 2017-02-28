@@ -5,52 +5,92 @@
  */
 
 import React, {Component} from 'react';
-import {AppRegistry, StyleSheet, Text, View} from 'react-native';
+import {AppRegistry, StyleSheet, Text, View, NavigatorIOS, Button} from 'react-native';
 
-export default class fetchExample extends Component {
-
-  constructor() {
-    super();
-    this.state = {
-      length: "loading..."
-    };
-  }
-  componentDidMount() {
-    fetch('https://horizons-json-cors.s3.amazonaws.com/poem.txt')
-    .then((resp) => {
-      return resp.text();
-    })
-    .then((text)=> {
-      console.log(text.split(" ").length);
-      this.setState({
-        length: text.split(" ").length
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      console.log('error', err);
-    });
-  }
-
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.ios.js
-        </Text>
-        <Text style={styles.instructions}>
-          Press Cmd+R to reload,{'\n'}
-          Cmd+D or shake for dev menu
-        </Text>
-        <Text style={styles.instructions}>
-          Word count: {this.state.length}
+class Page3 extends Component{
+  render(){
+    return(
+      <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+        <Text style={{fontSize: 40}}>
+          Page 3
         </Text>
       </View>
     );
   }
+}
+
+class Page2 extends Component{
+  goTo3(){
+    this.props.navigator.push({
+      component: Page3,
+      title: 'Title of Page 3'
+    });
+  }
+  render(){
+    return(
+      <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+        <Text style={{fontSize: 40}}>
+          Page 2
+        </Text>
+        <Button title= "Go to Page 3" style={{fontSize: 20}} onPress={this.goTo3.bind(this)}>
+        </Button>
+      </View>
+    );
+  }
+}
+
+
+class Page1 extends Component{
+
+  goTo2(){
+    this.props.navigator.push({
+      component: Page2,
+      title: 'Title of Page 2'
+    });
+  }
+
+  render(){
+    return(
+      <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+        <Text style={{fontSize: 40}}>
+          Page 1
+        </Text>
+        <Button title= "Go to Page 2" style={{fontSize: 20}} onPress={this.goTo2.bind(this)}>
+        </Button>
+      </View>
+    );
+  }
+}
+
+
+export default class fetchExample extends Component {
+
+  render() {
+    return (
+      <NavigatorIOS
+        ref="nav"
+        style={{flex:1}}
+        initialRoute={{
+          component: Page1,
+          title: 'Page 1',
+          rightButtonTitle: 'Page 2',
+          onRightButtonPress: () => (this.refs.nav.push({
+            component: Page2,
+            title: 'Title of Page 2',
+            rightButtonTitle: 'Page 3',
+            onRightButtonPress: () => (this.refs.nav.push({
+              component: Page3,
+              title: 'Title of Page 3'
+            }))
+          }))
+        }}>
+
+        </NavigatorIOS>
+    );
+  }
+
+
+
 }
 
 const styles = StyleSheet.create({
