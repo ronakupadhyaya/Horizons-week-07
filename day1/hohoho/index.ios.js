@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import {
   AppRegistry,
+  Alert,
   StyleSheet,
   Text,
   View,
@@ -25,6 +26,8 @@ var hohoho = React.createClass({
   }
 });
 
+
+///// REGISTER
 var Register = React.createClass({
   registerFunction(){
     var self = this;
@@ -110,22 +113,108 @@ var Users = React.createClass({
       alert(err);
     });
   },
+  touchUser(user){
+    var self = this;
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: user._id
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if(responseJson.success) {
+        Alert.alert(
+          'You sent a message to:',
+          user.username,
+          [{text: 'Ayyy'}] // Button
+        )
+      } else {
+        Alert.alert(
+          'Dang it',
+          'Failed to send a message :/',
+          [{text: 'Shiiieznitz!'}] // Button
+        )
+      }
+    })
+    .catch((err) => {
+      /* do something if there was an error with fetching */
+      alert(err);
+    });
+  },
 
   render() {
     return(
-      <View style={{marginTop: 70, marginLeft: 10, marginRight: 10}}>
+      <View style={{marginTop: 30, marginLeft: 10, marginRight: 10, alignItems: 'center'}}>
 
       <ListView
         dataSource={this.state.dataSource}
-        renderRow={(rowData) => <Text>{rowData.username}</Text>}
+        renderRow={(rowData) => <TouchableOpacity>
+          <Text onPress={this.touchUser.bind(this, rowData)} style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center'}}>{rowData.username}</Text></TouchableOpacity>}
       />
+      </View>
+    )
+  }
+});
 
+///////// MESSAGES
+var Messages = React.createClass({
+  getInitialState(){
+    return {
+      messages: ds.cloneWithRows[]
+    }
+  },
+  componentDidMount(){
+    var self = this;
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: user._id
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if(responseJson.success) {
+        Alert.alert(
+          'You sent a message to:',
+          user.username,
+          [{text: 'Ayyy'}] // Button
+        )
+      } else {
+        Alert.alert(
+          'Dang it',
+          'Failed to send a message :/',
+          [{text: 'Shiiieznitz!'}] // Button
+        )
+      }
+    })
+    .catch((err) => {
+      /* do something if there was an error with fetching */
+      alert(err);
+    });
+  },
+  render() {
+    return(
+      <View style={{marginTop: 30, marginLeft: 10, marginRight: 10, alignItems: 'center'}}>
+
+      <ListView
+        dataSource={this.state.messages}
+        renderRow={(rowData) => <TouchableOpacity>
+          <Text style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center'}}>
+          {rowData.from.username}; {rowData.to.username}; {rowData.timestamp}
+          </Text>
+          </TouchableOpacity>}
+      />
       </View>
     )
   }
 })
-
-
 
 ////// LOGIN
 var Login = React.createClass({
