@@ -52,65 +52,16 @@ export default class myFirstRN extends Component {
     });
 
     return (
-      <View style={{flex: 1,
-          justifyContent: 'center', //vertically centered
-          alignItems: 'center' //horizontally centered
-        }}>
-        <Text>
-          I am centered
-        </Text>
+    <View style={{flex: 1,
+        marginTop:20,
+        alignItems: 'center'
+      }}>
+      <View style={{alignItems: 'center'}}>
+        <Text style={{color: 'blue', fontSize:50}}>Blue</Text>
+        <Text style={{color:'red', fontSize: 20}}>Red</Text>
       </View>
+    </View>
 
-    // 2/3rds
-      // <View style={{flex: 1}}>
-      //   <View style={{flex: 1, backgroundColor: 'red'}} ></View>
-      // <View style={{flex: 2, backgroundColor: 'blue'}} ></View>
-      // </View>
-
-    //removes item when clicked
-    // <View style={{
-    //   marginTop: 20,
-    //   flex: 1
-    // }}>
-    //   <ListView renderRow={(item) => (
-    //     <View style={{
-    //       alignItems: 'center'
-    //     }}>
-    //       <TouchableOpacity onPress={this.remove.bind(this, item)}>
-    //         <Text>{item}</Text>
-    //       </TouchableOpacity>
-    //     </View>
-    //   )} dataSource={dataSource.cloneWithRows(this.state.data)}/>
-    // </View>
-
-    // <View style={{
-    //   flex: 1,
-    //   justifyContent: 'center',
-    //   alignItems: 'center',
-    //   backgroundColor: 'red'
-    // }}>
-    //   <TouchableOpacity onPress={this.bigger.bind(this)}>
-    //     <Text style={{
-    //       fontSize: this.state.textSize
-    //     }}>
-    //       Hello
-    //     </Text>
-    //   </TouchableOpacity>
-    // </View>
-
-    // <View style={styles.container}>
-    // <Text>test</Text>
-    //   <Text style={styles.welcome}>
-    //     Welcome to React Native.
-    //   </Text>
-    //   <Text style={styles.instructions}>
-    //     To get started, edit index.ios.js
-    //   </Text>
-    //   <Text style={styles.instructions}>
-    //     Press Cmd+R to reload,{'\n'}
-    //     Cmd+D or shake for dev menu
-    //   </Text>
-    // </View>
     );
   }
 }
