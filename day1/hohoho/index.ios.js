@@ -87,6 +87,7 @@ var Users = React.createClass({
       dataSource: ds.cloneWithRows([])
     }
   },
+
   componentDidMount() {
     var self = this;
     fetch('https://hohoho-backend.herokuapp.com/users', {
@@ -148,12 +149,13 @@ var Users = React.createClass({
 
   render() {
     return(
-      <View style={{marginTop: 30, marginLeft: 10, marginRight: 10, alignItems: 'center'}}>
+      <View style={{marginLeft: 10, marginRight: 10, marginTop: 30, marginBottom: 10, alignItems: 'center'}}>
 
       <ListView
         dataSource={this.state.dataSource}
+        style={{height: 1000, margin: 10, padding: 10}}
         renderRow={(rowData) => <TouchableOpacity>
-          <Text onPress={this.touchUser.bind(this, rowData)} style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center'}}>{rowData.username}</Text></TouchableOpacity>}
+          <Text onPress={this.touchUser.bind(this, rowData)} style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center', padding: 10, margin: 10}}>{rowData.username}</Text></TouchableOpacity>}
       />
       </View>
     )
@@ -163,8 +165,9 @@ var Users = React.createClass({
 ///////// MESSAGES
 var Messages = React.createClass({
   getInitialState(){
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     return {
-      messages: ds.cloneWithRows[]
+      dataSource: ds.cloneWithRows([])
     }
   },
   componentDidMount(){
@@ -173,19 +176,15 @@ var Messages = React.createClass({
       method: 'GET',
       headers: {
         "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        to: user._id
-      })
+      }
     })
     .then((response) => response.json())
     .then((responseJson) => {
       if(responseJson.success) {
-        Alert.alert(
-          'You sent a message to:',
-          user.username,
-          [{text: 'Ayyy'}] // Button
-        )
+        const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+        self.setState({
+          dataSource: ds.cloneWithRows(responseJson.messages)
+        })
       } else {
         Alert.alert(
           'Dang it',
@@ -201,13 +200,14 @@ var Messages = React.createClass({
   },
   render() {
     return(
-      <View style={{marginTop: 30, marginLeft: 10, marginRight: 10, alignItems: 'center'}}>
+      <View style={{marginLeft: 10, marginRight: 10, marginTop: 30, marginBottom: 10, alignItems: 'center'}}>
 
       <ListView
-        dataSource={this.state.messages}
+        dataSource={this.state.dataSource}
+        style={{height: 1000}}
         renderRow={(rowData) => <TouchableOpacity>
-          <Text style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center'}}>
-          {rowData.from.username}; {rowData.to.username}; {rowData.timestamp}
+          <Text style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center', padding: 10}}>
+          From: {rowData.from.username} || To: {rowData.to.username} {rowData.timestamp}
           </Text>
           </TouchableOpacity>}
       />
@@ -226,6 +226,12 @@ var Login = React.createClass({
         users: []
     }
   },
+  messages() {
+    this.props.navigator.push({
+      component: Messages,
+      title: 'Messages'
+    })
+  },
   pressLogin() {
     var self = this;
     fetch('https://hohoho-backend.herokuapp.com/login', {
@@ -243,7 +249,9 @@ var Login = React.createClass({
       if(responseJson.success) { // need to change this later !!!!
         self.props.navigator.push({
           component: Users,
-          title: "Users"
+          title: "Users",
+          rightButtonTitle: 'Messages',
+          onRightButtonPress: this.messages
         })
       } else {
         this.setState({
@@ -261,7 +269,7 @@ var Login = React.createClass({
   register() {
     this.props.navigator.push({
       component: Register,
-      title: "Register"
+      title: "Register",
     });
   },
   render() {
