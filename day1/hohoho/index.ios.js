@@ -26,18 +26,148 @@ var hohoho = React.createClass({
 });
 
 var Register = React.createClass({
+  registerFunction(){
+    var self = this;
+    fetch('https://hohoho-backend.herokuapp.com/register', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: self.state.username,
+        password: self.state.password,
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if(responseJson.success) {
+        this.props.navigator.pop()
+      } else {
+        alert('Register failed')
+      }
+      /* do something with responseJson and go back to the Login view but
+      * make sure to check for responseJson.success! */
+    })
+    .catch((err) => {
+      /* do something if there was an error with fetching */
+      alert(err);
+    });
+  },
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Register</Text>
+      <Text style={styles.textBig}>Register</Text>
+      <TextInput
+      style={{height: 40, marginLeft: 20, marginRight: 20}}
+      placeholder="Enter your username"
+      onChangeText={(text) => this.setState({username: text})}
+      />
+      <TextInput
+      secureTextEntry={true}
+      style={{height: 40, marginLeft: 20, marginRight: 20}}
+      placeholder="Enter your password"
+      onChangeText={(text) => this.setState({password: text})}
+      />
+      <TouchableOpacity onPress={this.registerFunction}>
+      <Text>Register</Text>
+      </TouchableOpacity>
       </View>
     );
   }
 });
 
+//////// USERS
+var Users = React.createClass({
+  getInitialState(){
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    return {
+      dataSource: ds.cloneWithRows([])
+    }
+  },
+  componentDidMount() {
+    var self = this;
+    fetch('https://hohoho-backend.herokuapp.com/users', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json"
+      },
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if(responseJson.success) {
+        const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+        self.setState({
+          dataSource: ds.cloneWithRows(responseJson.users)
+        })
+      } else {
+        alert('something wrong in users')
+      }
+      /* do something with responseJson and go back to the Login view but
+      * make sure to check for responseJson.success! */
+    })
+    .catch((err) => {
+      /* do something if there was an error with fetching */
+      alert(err);
+    });
+  },
+
+  render() {
+    return(
+      <View style={{marginTop: 70, marginLeft: 10, marginRight: 10}}>
+
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={(rowData) => <Text>{rowData.username}</Text>}
+      />
+
+      </View>
+    )
+  }
+})
+
+
+
+////// LOGIN
 var Login = React.createClass({
-  press() {
-    
+  getInitialState(){
+    return {
+        username: '',
+        password: '',
+        message: '',
+        users: []
+    }
+  },
+  pressLogin() {
+    var self = this;
+    fetch('https://hohoho-backend.herokuapp.com/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: self.state.username,
+        password: self.state.password
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if(responseJson.success) { // need to change this later !!!!
+        self.props.navigator.push({
+          component: Users,
+          title: "Users"
+        })
+      } else {
+        this.setState({
+          message: responseJson.error
+        })
+      }
+      /* do something with responseJson and go back to the Login view but
+      * make sure to check for responseJson.success! */
+    })
+    .catch((err) => {
+      /* do something if there was an error with fetching */
+      alert(err);
+    });
   },
   register() {
     this.props.navigator.push({
@@ -48,10 +178,26 @@ var Login = React.createClass({
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Login to HoHoHo!</Text>
-        <TouchableOpacity onPress={this.press} style={[styles.button, styles.buttonGreen]}>
-          <Text style={styles.buttonLabel}>Tap to Login</Text>
+
+      {this.state.message.length > 0 && <Text>{this.state.message}</Text>}
+
+      <Text style={styles.textBig}>Login</Text>
+      <TextInput
+      style={{height: 40, marginLeft: 20, marginRight: 20}}
+      placeholder="Enter your username"
+      onChangeText={(text) => this.setState({username: text})}
+      />
+      <TextInput
+      secureTextEntry={true}
+      style={{height: 40, marginLeft: 20, marginRight: 20}}
+      placeholder="Enter your password"
+      onChangeText={(text) => this.setState({password: text})}
+      />
+
+      <TouchableOpacity style={[styles.button, styles.buttonGreen]} onPress={this.pressLogin}>
+          <Text style={styles.buttonLabel}>Login</Text>
         </TouchableOpacity>
+
       <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={this.register}>
           <Text style={styles.buttonLabel}>Tap to Register</Text>
         </TouchableOpacity>
@@ -89,7 +235,7 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   button: {
-    alignSelf: 'stretch', 
+    alignSelf: 'stretch',
     paddingTop: 10,
     paddingBottom: 10,
     marginTop: 10,
@@ -98,7 +244,7 @@ const styles = StyleSheet.create({
     borderRadius: 5
   },
   buttonRed: {
-    backgroundColor: '#FF585B', 
+    backgroundColor: '#FF585B',
   },
   buttonBlue: {
     backgroundColor: '#0074D9',
