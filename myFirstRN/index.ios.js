@@ -25,50 +25,31 @@ export default class myFirstRN extends Component {
 
     this.state = {
       //dataSource: dataSource.cloneWithRows(_.range(100))
-      data: _.range(100)
+      show: true
     };
 
   }
-  press(item) {
-    alert('Pressed ' + item);
-  };
 
-  bigger() {
+  remove() {
     this.setState({
-      textSize: this.state.textSize + 5
-    });
-  }
-
-  remove(item) {
-    // console.log(this.state.dataSource.rowIdentities[0].splice(item, 1));
-    this.setState({
-      data: this.state.data.filter((curItem) => (item !== curItem))
-    });
+        show: false
+      });
   }
 
   render() {
-    var dataSource = new ListView.DataSource({
-      rowHasChanged: (r1, r2) => (r1 !== r2)
-    });
 
     return (
-    <View style={styles.container}>
+      <View style={styles.container}>
+        {this.state.show &&
+          <TouchableOpacity onPress={this.remove.bind(this)} style={{
+          width: 50,
+          height: 50,
+          backgroundColor: 'red'
+          }}>
+          </TouchableOpacity>
+        }
 
-
-      <TouchableOpacity>
-        <Text style={styles.button}>Button 1</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity>
-        <Text style={styles.button}>Button 2</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity>
-        <Text style={styles.button}>Button 3</Text>
-      </TouchableOpacity>
-
-
-    </View>
+      </View>
 
     );
   }
