@@ -16,28 +16,131 @@ var hohoho = React.createClass({
     return (
       <NavigatorIOS
         initialRoute={{
-          component: Login,
-          title: "Login"
+          component: Main,
+          title: "Main"
         }}
         style={{flex: 1}}
       />
     );
   }
 });
-
+var Login = React.createClass({
+  getInitialState(){
+    return{
+      username:'',
+      password:'',
+      message:''
+    }
+  },
+  submitForm(){
+    fetch('https://hohoho-backend.herokuapp.com/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password
+      })
+    })
+    .then((resp)=> resp.json())
+    .then((respjson)=> {
+      if(!respjson.success){
+         this.setState({
+           message: 'Login not succesful'
+         })
+        }
+       else {
+        this.props.navigator.push({
+          component: Register,
+          title:"Register"
+        })
+      }
+    })
+    .catch((err)=>{
+      console.log(err);
+    })
+  },
+  render(){
+    return (
+      <View style={styles.container}>
+      {this.state.message.length>0 && <Text style={{color:'red'}}>{this.state.message}</Text>}
+        <TextInput
+        style={{height: 40, textAlign: 'center'}}
+        placeholder="Enter your username"
+        onChangeText={(text) => this.setState({username: text})}/>
+        <TextInput
+        style={{height: 40, textAlign: 'center'}}
+        placeholder="Enter your password"
+        onChangeText={(text)=> this.setState({password: text})}/>
+        <TouchableOpacity onPress={this.submitForm} style={[styles.button, styles.buttonRed]}>
+         <Text style={styles.buttonLabel}>Login</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+})
 var Register = React.createClass({
+  getInitialState() {
+    return {
+      username: '',
+      password: ''
+    };
+  },
+  submitForm() {
+    fetch('https://hohoho-backend.herokuapp.com/register', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password
+      })
+    })
+    .then((response) => response.json()) // returns a promise
+    .then((responseJson) => {
+      if (!responseJson.success) {
+        console.log("unable to register");
+      } else {
+        // success
+        this.props.navigator.pop();
+      }
+    })
+    .catch((err) => {
+      console.log("error", err);
+    })
+  },
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Register</Text>
+        <TextInput
+          style={{height: 40, textAlign: 'center'}}
+          placeholder="Enter your username"
+          onChangeText={(text) => this.setState({username: text})}
+        />
+        <TextInput
+          style={{height: 40, textAlign: 'center'}}
+          placeholder="Enter your password"
+          onChangeText={(text) => this.setState({password: text})}
+        />
+        <TouchableOpacity onPress={this.submitForm} style={[styles.button, styles.buttonRed]}>
+          <Text style={styles.buttonLabel}>Register</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 });
 
-var Login = React.createClass({
+var Main = React.createClass({
   press() {
-    
+
+  },
+  login(){
+    this.props.navigator.push({
+      component: Login,
+      title: "Login"
+    })
   },
   register() {
     this.props.navigator.push({
@@ -49,7 +152,7 @@ var Login = React.createClass({
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Login to HoHoHo!</Text>
-        <TouchableOpacity onPress={this.press} style={[styles.button, styles.buttonGreen]}>
+        <TouchableOpacity onPress={this.login} style={[styles.button, styles.buttonGreen]}>
           <Text style={styles.buttonLabel}>Tap to Login</Text>
         </TouchableOpacity>
       <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={this.register}>
@@ -89,7 +192,7 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   button: {
-    alignSelf: 'stretch', 
+    alignSelf: 'stretch',
     paddingTop: 10,
     paddingBottom: 10,
     marginTop: 10,
@@ -98,7 +201,7 @@ const styles = StyleSheet.create({
     borderRadius: 5
   },
   buttonRed: {
-    backgroundColor: '#FF585B', 
+    backgroundColor: '#FF585B',
   },
   buttonBlue: {
     backgroundColor: '#0074D9',
