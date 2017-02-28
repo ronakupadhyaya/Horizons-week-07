@@ -21,37 +21,25 @@ export default class myFirstRN extends Component {
     super();
 
     this.state = {
-      count: 0
+      numbers: _.range(100)
     };
 
   }
 
   add() {
-    this.setState({
-      count: this.state.count + 1
-    });
+    this.setState({});
   }
 
-  subtract() {
-    this.setState({
-      count: this.state.count - 1
-    });
-  }
   render() {
+    var dataSource = new ListView.DataSource({
+      rowHasChanged: (r1, r2) => (r1 !== r2)
+    });
 
     return (
-      <View style={styles.container}>
-        <Text>{this.state.count}</Text>
-
-        <TouchableOpacity onPress={this.add.bind(this)}>
-          <Text>Add</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={this.subtract.bind(this)}>
-          <Text>Subtract</Text>
-        </TouchableOpacity>
-
-      </View>
-
+        <ListView dataSource={dataSource.cloneWithRows(this.state.numbers)} renderRow={(item) => (
+          <Text>{item}</Text>
+        )}>
+        </ListView>
     );
   }
 }
@@ -60,7 +48,6 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 20,
     flex: 1,
-    flexDirection: 'column',
     alignItems: 'center',
     backgroundColor: '#FFFFFF'
   },
