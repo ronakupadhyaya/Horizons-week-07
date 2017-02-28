@@ -8,7 +8,8 @@ import {
   TextInput,
   NavigatorIOS,
   ListView,
-  Alert
+  Alert,
+  AsyncStorage
 } from 'react-native'
 
 // This is the root view
@@ -146,15 +147,26 @@ var Login = React.createClass({
       message:''
     }
   },
-  submitForm(){
+  componentDidMount() {
+    AsyncStorage.getItem('user')
+      .then((result) => {
+        var parsedUser = JSON.parse(result);
+        var username = parsedUser.username;
+        var password = parsedUser.password;
+        if (username && password) {
+          this.submitForm(username, password);
+        }
+      });
+  },
+  submitForm(username, password){
     fetch('https://hohoho-backend.herokuapp.com/login', {
       method: 'POST',
       headers: {
         "Content-Type":"application/json"
       },
       body: JSON.stringify({
-        username: this.state.username,
-        password: this.state.password
+        username: username || this.state.username,
+        password: password || this.state.password
       })
     })
     .then((resp)=> resp.json())
@@ -165,12 +177,18 @@ var Login = React.createClass({
          })
         }
        else {
-        this.props.navigator.push({
-          component: Users,
-          title:"Users",
-          rightButtonTitle: 'Messages',
-          onRightButtonPress: this.messages
-        })
+        AsyncStorage.setItem('user', JSON.stringify({
+          username: username || this.state.username,
+          password: password || this.state.password
+        }))
+        .then(() => {
+          this.props.navigator.push({
+            component: Users,
+            title:"Users",
+            rightButtonTitle: 'Messages',
+            onRightButtonPress: this.messages
+          });
+        });
       }
     })
     .catch((err)=>{
