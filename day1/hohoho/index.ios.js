@@ -1,4 +1,5 @@
 import React, {Component} from 'react'
+import Swiper from 'react-native-swiper'
 import {
   AppRegistry,
   Alert,
@@ -10,7 +11,8 @@ import {
   TextInput,
   NavigatorIOS,
   AsyncStorage,
-  ListView
+  ListView,
+  MapView
 } from 'react-native'
 
 // This is the root view
@@ -147,16 +149,61 @@ var Users = React.createClass({
       alert(err);
     });
   },
-
+  sendLocation(user){
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        var self = this;
+        fetch('https://hohoho-backend.herokuapp.com/messages', {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            to: user._id,
+            location: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            }
+          })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+          if(responseJson.success) {
+            Alert.alert(
+              'You sent your location to:',
+              user.username,
+              [{text: 'Ayyy'}] // Button
+            )
+          } else {
+            Alert.alert(
+              'Dang it',
+              'Failed to send location :/',
+              [{text: 'Shiiieznitz!'}] // Button
+            )
+          }
+        })
+        .catch((err) => {
+          /* do something if there was an error with fetching */
+          alert(err);
+        });
+      },
+      error => alert(error.message),
+      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+    );
+  },
   render() {
     return(
       <View style={{marginLeft: 10, marginRight: 10, marginTop: 30, marginBottom: 10, alignItems: 'center'}}>
-
       <ListView
         dataSource={this.state.dataSource}
         style={{height: 1000, margin: 10, padding: 10}}
         renderRow={(rowData) => <TouchableOpacity>
-          <Text onPress={this.touchUser.bind(this, rowData)} style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center', padding: 10, margin: 10}}>{rowData.username}</Text>
+          <Text onPress={this.touchUser.bind(this, rowData)}
+          onLongPress={this.sendLocation.bind(this, rowData)}
+          delayLongPress={500} // number milliseconds
+          style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center', padding: 10, margin: 10}}>
+          {rowData.username}
+          </Text>
           </TouchableOpacity>}
       />
       </View>
@@ -241,13 +288,34 @@ var Messages = React.createClass({
         <RefreshControl
           refreshing={this.state.refreshing}
           onRefresh={this.refresh.bind(this)}
-      />
-    }   dataSource={this.state.dataSource}
-        style={{height: 1000}}
-        renderRow={(rowData) => <TouchableOpacity>
+      />}
+      dataSource={this.state.dataSource}
+      style={{height: 1000}}
+      renderRow={(rowData) => <TouchableOpacity>
           <Text style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center', padding: 10}}>
           From: {rowData.from.username} || To: {rowData.to.username} {rowData.timestamp}
-          </Text>
+
+
+          {(rowData.location && rowData.location.longitude) ?
+            <View style={{width: 400, height: 200, alignItems: 'center'}}>
+            <MapView
+              style={{width: 400, height: 150, margin: 40, alignItems: 'center'}}
+
+              scrollEnabled={false}
+              region={{
+                latitude: rowData.location.latitude,
+                longitude: rowData.location.longitude,
+                longitudeDelta: 1,
+                latitudeDelta: 1
+              }}
+              annotations={[{
+                latitude: rowData.location.latitude,
+                longitude: rowData.location.longitude,
+                title: "Pinged Location"
+              }]}
+            /></View> : null }
+            </Text>
+
           </TouchableOpacity>}
       />
       </View>
