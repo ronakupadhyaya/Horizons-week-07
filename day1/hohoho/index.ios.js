@@ -33,7 +33,7 @@ var hohoho = React.createClass({
 var SwiperView = React.createClass({
   render() {
     return (
-      <Swiper style={styles.container}>
+      <Swiper style={{marginTop: 30}}>
         <Users/>
         <Messages/>
       </Swiper>
@@ -67,7 +67,7 @@ var Login = React.createClass({
           password: password
         }));
         this.props.navigator.push({
-          component: Users,
+          component: SwiperView,
           title: "Users",
           rightButtonTitle: 'Messages',
           onRightButtonPress: this.messages
