@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   TextInput,
   NavigatorIOS,
+  AsyncStorage,
   ListView
 } from 'react-native'
 
@@ -264,6 +265,40 @@ var Login = React.createClass({
         users: []
     }
   },
+  componentDidMount() {
+    var self = this;
+    AsyncStorage.getItem('user')
+    .then(result => {
+      var parsedResult = JSON.parse(result);
+      var parsedUsername = parsedResult.username;
+      var parsedPassword = parsedResult.password;
+      if (parsedUsername && parsedPassword) {
+        return fetch('https://hohoho-backend.herokuapp.com/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: parsedUsername,
+            password: parsedPassword
+          })
+        })
+        .then(response => response.json())
+        .then((responseJson) => {
+          if(responseJson.success) {
+            self.props.navigator.push({
+              component: Users,
+              title: "Users",
+              rightButtonTitle: 'Messages',
+              onRightButtonPress: this.messages
+            })
+          } // otherwise do nothing
+        });
+      }
+      // Don't really need an else clause, we don't do anything in this case.
+    })
+    .catch(err => {})
+  },
   messages() {
     this.props.navigator.push({
       component: Messages,
@@ -285,6 +320,10 @@ var Login = React.createClass({
     .then((response) => response.json())
     .then((responseJson) => {
       if(responseJson.success) { // need to change this later !!!!
+        AsyncStorage.setItem('user', JSON.stringify({
+          username: self.state.username,
+          password: self.state.password
+        }));
         self.props.navigator.push({
           component: Users,
           title: "Users",
