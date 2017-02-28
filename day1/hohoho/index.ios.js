@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   TextInput,
   NavigatorIOS,
-  ListView
+  ListView,
+  Alert
 } from 'react-native'
 
 // This is the root view
@@ -17,13 +18,126 @@ var hohoho = React.createClass({
       <NavigatorIOS
         initialRoute={{
           component: Main,
-          title: "Main"
+          title: "Main",
+
         }}
         style={{flex: 1}}
       />
     );
   }
 });
+
+var Messages = React.createClass({
+  getInitialState() {
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1._id !== r2._id});
+    return {
+      dataSource: ds.cloneWithRows([])
+    };
+  },
+  componentDidMount() {
+    fetch('https://hohoho-backend.herokuapp.com/messages')
+    .then((res) => res.json())
+    .then((respjson) => {
+      if (!respjson.success) {
+        console.log('unable to get user messages')
+      } else {
+        console.log("MY MESSAGES", respjson);
+        this.setState({
+          dataSource: this.state.dataSource.cloneWithRows(respjson.messages)
+        });
+      }
+    })
+  },
+  render() {
+    return (
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={(rowData) => {
+          return (
+            <View>
+              <Text>From: {rowData.from.username}</Text>
+              <Text>To: {rowData.to.username}</Text>
+              <Text>Message: {rowData.body}</Text>
+              <Text>When: {rowData.timestamp}</Text>
+            </View>
+          );
+        }}
+      />
+    );
+  }
+});
+
+var Users = React.createClass({
+  getInitialState() {
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1._id !== r2._id});
+    return {
+      dataSource: ds.cloneWithRows([])
+    };
+  },
+  touchUser(user) {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method:'POST',
+      headers: {
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+        to: user._id
+      })
+    })
+    .then((resp) => resp.json())
+    .then((respjson) => {
+      if (!respjson.success) {
+        console.log('hohoho failed');
+      } else {
+        Alert.alert(
+          'Success!',
+          'Your Ho Ho Ho! to ' + user.username + ' has been sent.',
+          [{text: 'Dismiss Button'}]
+        );
+      }
+    })
+  },
+  componentDidMount(){
+    fetch('https://hohoho-backend.herokuapp.com/users',{
+      method:'GET',
+    })
+    .then((resp)=>resp.json())
+    .then((respjson)=>{
+      if(!respjson.success){
+        console.log('fuck you')
+      } else {
+        this.setState({
+          dataSource: this.state.dataSource.cloneWithRows(respjson.users)
+        });
+      }
+    })
+    .catch((err) => {
+      console.log("error", err);
+    });
+  },
+  render() {
+    this.props.navigator.rightButtonTitle = 'Messages';
+    this.props.navigator.onRightButtonPress = ()=>(this.refs.navigator.push({
+      component: Messages,
+      title: 'Messages'
+    }));
+    return (
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={(rowData) => {
+          return(
+            <TouchableOpacity onPress={this.touchUser.bind(null, rowData)}>
+              <Text style={{fontSize:15, margin:5, textDecorationLine:'underline', justifyContent:'center',alignSelf:'center'}}>
+                {rowData.username}
+              </Text>
+            </TouchableOpacity>
+          )
+        }}
+      />
+    );
+  }
+});
+
 var Login = React.createClass({
   getInitialState(){
     return{
@@ -52,13 +166,21 @@ var Login = React.createClass({
         }
        else {
         this.props.navigator.push({
-          component: Register,
-          title:"Register"
+          component: Users,
+          title:"Users",
+          rightButtonTitle: 'Messages',
+          onRightButtonPress: this.messages
         })
       }
     })
     .catch((err)=>{
       console.log(err);
+    })
+  },
+  messages() {
+    this.props.navigator.push({
+      component: Messages,
+      title: "Messages"
     })
   },
   render(){
