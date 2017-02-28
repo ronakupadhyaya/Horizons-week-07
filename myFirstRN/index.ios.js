@@ -19,35 +19,36 @@ export default class myFirstRN extends Component {
 
   constructor() {
     super();
-    this.state = {
-      textSize: 40
-    };
 
     this.state = {
-      //dataSource: dataSource.cloneWithRows(_.range(100))
-      show: true
+      count: 0
     };
 
   }
 
-  remove() {
+  add() {
     this.setState({
-        show: false
-      });
+      count: this.state.count + 1
+    });
   }
 
+  subtract() {
+    this.setState({
+      count: this.state.count - 1
+    });
+  }
   render() {
 
     return (
       <View style={styles.container}>
-        {this.state.show &&
-          <TouchableOpacity onPress={this.remove.bind(this)} style={{
-          width: 50,
-          height: 50,
-          backgroundColor: 'red'
-          }}>
-          </TouchableOpacity>
-        }
+        <Text>{this.state.count}</Text>
+
+        <TouchableOpacity onPress={this.add.bind(this)}>
+          <Text>Add</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={this.subtract.bind(this)}>
+          <Text>Subtract</Text>
+        </TouchableOpacity>
 
       </View>
 
@@ -61,8 +62,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'space-between'
+    backgroundColor: '#FFFFFF'
   },
   button: {
     fontSize: 40
