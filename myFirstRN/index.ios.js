@@ -26,8 +26,10 @@ export default class myFirstRN extends Component {
 
   }
 
-  add() {
-    this.setState({});
+  remove(item) {
+    this.setState({
+      numbers: this.state.numbers.filter((curItem) => (item !== curItem))
+    });
   }
 
   render() {
@@ -36,10 +38,14 @@ export default class myFirstRN extends Component {
     });
 
     return (
+      <View style={styles.container}>
         <ListView dataSource={dataSource.cloneWithRows(this.state.numbers)} renderRow={(item) => (
-          <Text>{item}</Text>
+          <TouchableOpacity style={styles.button} onPress={this.remove.bind(this, item)}>
+            <Text>{item}</Text>
+          </TouchableOpacity>
         )}>
         </ListView>
+      </View>
     );
   }
 }
@@ -47,12 +53,11 @@ export default class myFirstRN extends Component {
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
-    flex: 1,
-    alignItems: 'center',
+
     backgroundColor: '#FFFFFF'
   },
   button: {
-    fontSize: 40
+    alignItems: 'center',
   }
 });
 
