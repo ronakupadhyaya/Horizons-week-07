@@ -30,6 +30,17 @@ var hohoho = React.createClass({
   }
 });
 
+//// SWIPING FUNCTIONALITY
+var SwiperView = React.createClass({
+  render() {
+    return (
+      <Swiper>
+        <Users/>
+        <Messages/>
+      </Swiper>
+    );
+  }
+});
 
 ///// REGISTER
 var Register = React.createClass({
@@ -393,7 +404,7 @@ var Login = React.createClass({
           password: self.state.password
         }));
         self.props.navigator.push({
-          component: Users,
+          component: SwiperView,
           title: "Users",
           rightButtonTitle: 'Messages',
           onRightButtonPress: this.messages
