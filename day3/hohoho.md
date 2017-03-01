@@ -5,15 +5,15 @@
 Your goal is to extend the [Ho! Ho! Ho! project from yesterday](../day1/hohoho)
 to add a final set of features:
 
-- After the user logs in periodically poll the `GET /messages` endpoint and
-  update the UI when new messages arrive
+- After the user logs in, always check for new messages and update the display
+  when new ones arrive
 - Display photos included in your messages
 - Ability to send photos along with your messages
 
 ## Instructions
 
-The instructions for these exercises are short and sweet to give you an
-opportunity to flex your documentation reading muscles.
+The instructions for these exercises are short and sweet to give you a chance
+to practice looking through documentation.
 
 ### Exercise 1. Always check new messages
 
@@ -25,20 +25,26 @@ yellow background to draw the user's attention.
 
 ### Exercise 2. Display photos stored in your messages
 
-Message objects in the `GET /messages` response now include a **optional** URL for
+Message objects in the `GET /messages` response now include an **optional** URL for
 a photo. If a message has an attached photo, display it below the map using
 [Images in React Native](https://facebook.github.io/react-native/docs/images.html).
 
 You can test this functionality by uploading photos using Postman.
 You'll need to make a `POST` request to `https://hohoho-backend.herokuapp.com/messages`
 using `form-data` for the body and an image file included as the `photo` parameter.
+Don't forget to first log in while using Postman.
 
 ![](img/postman.png)
 
+
 ### Exercise 3. Upload photos on long press
 
-Update your `longPress` handler in the `Users` component to get an image
+Update your `longPress` handler in the `Users` component to get prompt the user
+to pick an image from their camera roll. When the user picks an image upload
+it along with the message under the `photo` parameter.
 
+⚠️ When uploading files with `fetch()` set the `Content-Type` header
+to `multipart/form-data`. ⚠️
 
 These links will be useful on your quest:
 
@@ -80,6 +86,8 @@ upload and view images.
   ```
 
 - `POST /messages`: Sends a message/_Ho Ho Ho!_ to another user
+  - 🌟 Now also supports `Content-Type: 'multipart/form-data'` when uploading
+    files 🌟
   - Parameters:
     - `to`: the ID of the user you are sending a message to
     - 🌟 `photo`: (_Optional_) a photo file to send with the message 🌟
@@ -109,4 +117,3 @@ upload and view images.
 - [Enabling camera roll image picker](https://goshakkk.name/react-native-camera-roll-image-picker/)
 - [Uploading photos with React Native](http://doochik.com/2015/11/27/FormData-in-React-Native.html)
 - [Images in React Native](https://facebook.github.io/react-native/docs/images.html)
-- [Vibration API in React Native](https://facebook.github.io/react-native/docs/vibration.html)
