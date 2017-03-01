@@ -13,7 +13,8 @@ import {
   Button,
   TextField,
   Alert,
-  AsyncStorage
+  AsyncStorage,
+  Image
 } from 'react-native'
 
 // This is the root view
@@ -463,7 +464,9 @@ var Login = React.createClass({
   },
   render() {
     return (
-      <View style={styles.container}>
+      <View style={{flex: 1}}>
+        <Image source={{uri: 'https://www.appcoda.com/wp-content/uploads/2015/04/react-native.png'}}
+        style={{width: 400, height: 400}}>
         <Text style={styles.textBig}>Login to HoHoHo!</Text>
         <TouchableOpacity onPress={this.press} style={[styles.button, styles.buttonGreen]}>
           <Text style={styles.buttonLabel}>Tap to Login</Text>
@@ -471,6 +474,7 @@ var Login = React.createClass({
       <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={this.register}>
           <Text style={styles.buttonLabel}>Tap to Register</Text>
         </TouchableOpacity>
+      </Image>
       </View>
     );
   }
