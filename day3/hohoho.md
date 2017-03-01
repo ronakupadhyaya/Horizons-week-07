@@ -26,7 +26,7 @@ yellow background to draw the user's attention.
 ### Exercise 2. Display photos stored in your messages
 
 Message objects in the `GET /messages` response now include an **optional** URL for
-a photo. If a message has an attached photo, display it below the map using
+a photo under the `photo` key. If a message has an attached photo, display it below the map using
 [Images in React Native](https://facebook.github.io/react-native/docs/images.html).
 
 You can test this functionality by uploading photos using Postman.
