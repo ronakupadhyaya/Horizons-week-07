@@ -24,18 +24,11 @@ Your app will have the following features:
 If you haven't already, start by following the instructions in [today's warmup
 exercise](../warmup.md) to install the required components for React Native.
 
-This is going to be the first project where your frontend and backend code are
-totally separate. Your frontend will be running on a mobile phone (or in a
-mobile emulator), via React Native; your backend will be an express app, which
-you've seen many times by now. Find the scaffold for the backend app in
-`hohoho-backend/` in this folder, and find the scaffold for the frontend app in
-`hohoho-frontend/`.
+To start the frontend code in the iOS simulator run `react-native run-ios`.
+Your code should go in `index.ios.js`.
 
-You can start the backend by running `npm start` or `nodemon` in the
-`hohoho-backend/` directory.
-
-To start the frontend code in the iOS simulator, `cd` into the
-`hohoho-frontend/` directory in the terminal and run `react-native run-ios`.
+The backend is already provided for you at https://hohoho-backend.herokuapp.com/ .
+[See API documentation below.](#api)
 
 ## Part 1. Registration
 
@@ -398,7 +391,7 @@ Update your message and user views to be able to perform a
 [pull to refresh](https://facebook.github.io/react-native/docs/refreshcontrol.html).
 
 
-## Endpoint Reference - `https://hohoho-backend.herokuapp.com/`
+## <a id="api">API Reference</a>
 
 **Base URL:** https://hohoho-backend.herokuapp.com/
 

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Your goal is to extend the [Ho! Ho! Ho! project from yesterday](../day2/hohoho)
+Your goal is to extend the [Ho! Ho! Ho! project from yesterday](../day1/hohoho)
 to add a few more fun features, taking advantage of the power of mobile:
 
 - Make the login persistent by storing the user's credentials
