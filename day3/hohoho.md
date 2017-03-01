@@ -2,7 +2,7 @@
 
 ## Goal
 
-Your goal is to extend the [Ho! Ho! Ho! project from yesterday](../day1/hohoho)
+Your goal is to extend the [Ho! Ho! Ho! project](../day1/hohoho)
 to add a final set of features:
 
 - After the user logs in, always check for new messages and update the display
