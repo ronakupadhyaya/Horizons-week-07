@@ -10,7 +10,8 @@ import {
   ListView,
   Button
 } from 'react-native';
-
+const styles = require('./styles.ios.js');
+var Login = require('./login.ios.js');
 // This is the root view
 var hohoho = React.createClass({
   render() {
@@ -23,11 +24,5 @@ var hohoho = React.createClass({
   }
 });
 
-var Register = require('./register.ios.js');
-var Users = require('./users.ios.js');
-var LoginForm = require('./loginform.ios.js');
-var Login = require('./login.ios.js');
 
-const styles = require('./styles.ios.js');
-
-AppRegistry.registerComponent('hohoho', () => hohoho);
+module.exports = hohoho;
