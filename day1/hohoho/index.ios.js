@@ -8,7 +8,9 @@ import {
   TextInput,
   Alert,
   NavigatorIOS,
-  ListView
+  ListView,
+  AsyncStorage,
+  MapView
 } from 'react-native'
 
 class Messages extends Component{
@@ -27,7 +29,7 @@ class Messages extends Component{
       return response.json();
     })
     .then((responseJson) => {
-      console.log('########');
+      console.log('********************************************');
       console.log(responseJson);
       this.setState({
         dataSource: ds.cloneWithRows(responseJson.messages)
@@ -39,6 +41,8 @@ class Messages extends Component{
   }
 
   render(){
+    console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
+    console.log(this.props.navigator);
     return(
       <ListView
         dataSource={this.state.dataSource}
@@ -48,6 +52,22 @@ class Messages extends Component{
             <Text>To: {rowData.to.username}</Text>
             <Text>Message: {rowData.body}</Text>
             <Text>When: {rowData.timestamp}</Text>
+            {rowData.location && <MapView
+              style={{height: 200, margin: 40}}
+              showsUserLocation={true}
+              scrollEnabled={false}
+              region={{
+                longitude: rowData.location.latitude,
+                latitude: rowData.location.longitude,
+                longitudeDelta: 1,
+                latitudeDelta: 1
+              }}
+              annotations={[{
+                latitude: rowData.location.latitude,
+                longitude: rowData.location.longitude,
+                title: "Ethan's School"
+              }]}
+            />}
           </View>}
       />
     );
@@ -115,6 +135,64 @@ class Users extends Component{
       /* do something if there was an error with fetching */
       console.log("error: ", err);
     });
+  }
+
+  sendLocation(user){
+
+    var getPos;
+
+    navigator.geolocation.getCurrentPosition(
+
+      position => {
+        console.log("Got position:", position);
+        getPos = position;
+        console.log('blahablah');
+        console.log(getPos);
+
+        //**********************************************************************
+
+        fetch('https://hohoho-backend.herokuapp.com/messages', {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            to: user._id,
+            location: {
+              longitude: getPos.coords.longitude,
+              latitude: getPos.coords.latitude
+            }
+          })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+          /* do something with responseJson and go back to the Login view but
+          * make sure to check for responseJson.success! */
+          if(responseJson.success){
+            var username = user.username;
+            Alert.alert(
+              'Success',
+              'Successfully shared location with ' + username,
+              [{text: 'Close'}] // Button
+            );
+          }else{
+            Alert.alert(
+              'Failure',
+              'Failed to share location with ' + username,
+              [{text: 'Close'}] // Button
+            );
+          }
+        })
+        .catch((err) => {
+          /* do something if there was an error with fetching */
+          console.log("error: ", err);
+        });
+        //**********************************************************************
+
+      },
+      error => alert(error.message), {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+    );
+
 
   }
 
@@ -123,7 +201,7 @@ class Users extends Component{
       <ListView
       dataSource={this.state.dataSource}
       renderRow={(rowData) =>
-        <TouchableOpacity onPress={this.touchUser.bind(this, rowData)}>
+        <TouchableOpacity onPress={this.touchUser.bind(this, rowData)} onLongPress={this.sendLocation.bind(this, rowData)} delayLongPress={1000}>
           <View style={{backgroundColor: '#2ecc71', borderColor: '#9b59b6', borderWidth: 2.5, padding: 10}}>
             <Text>{rowData.username}</Text>
           </View>
@@ -221,8 +299,9 @@ class LoginPage extends Component{
     };
   }
 
+
+
   login(){
-    console.log('Login function');
 
     fetch('https://hohoho-backend.herokuapp.com/login', {
       method: 'POST',
@@ -236,12 +315,14 @@ class LoginPage extends Component{
     })
     .then((response) => response.json())
     .then((responseJson) => {
-      /* do something with responseJson and go back to the Login view but
-      * make sure to check for responseJson.success! */
-      console.log(responseJson);
-
       if(responseJson.success){
-        console.log(this.props);
+
+        //HERE
+        AsyncStorage.setItem('user', JSON.stringify({
+          username: this.state.username,
+          password: this.state.password
+        }));
+
         this.props.navigator.push({
           component: Users,
           title: "Users",
@@ -249,7 +330,6 @@ class LoginPage extends Component{
           onRightButtonPress: this.props.messages.bind(this)
         });
       } else{
-        console.log('Hello world');
         this.setState({
           error: responseJson.error
         });
@@ -260,6 +340,29 @@ class LoginPage extends Component{
       /* do something if there was an error with fetching */
       console.log('error', err);
     });
+  }
+
+  componentDidMount(){
+
+    AsyncStorage.getItem('user')
+    .then(result => {
+      var parsedResult = JSON.parse(result);
+      var userName = parsedResult.username;
+      var passWord = parsedResult.password;
+
+      if(userName && passWord){
+        this.setState({
+          username: userName,
+          password: passWord
+        });
+
+        // return this.login.bind(this)
+        return this.login.bind(this);
+      }
+    })
+    .then(login => login())
+    .catch(err => (console.log("error", err)))
+
   }
 
   render() {
