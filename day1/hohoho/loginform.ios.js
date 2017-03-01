@@ -13,8 +13,15 @@ import {
 const styles = require('./styles.ios.js');
 var Register = require('./register.ios.js');
 var Users = require('./users.ios.js');
-var LoginForm = React.createClass({
+var Messages = require('./messages.ios.js');
 
+var LoginForm = React.createClass({
+  messages() {
+  this.props.navigator.push({
+    component: Messages,
+    title: "Messages"
+  });
+},
   submit(){
     console.log(this);
     //post request this.state.password, this.state.username
@@ -37,7 +44,9 @@ var LoginForm = React.createClass({
          // redirect to Login view
          this.props.navigator.push({
            component: Users,
-           title: "Users"
+           title: "Users",
+           rightButtonTitle: 'Messages',
+           onRightButtonPress: this.messages
          })
        } else {
          alert("Login failed. Error: " + responseJson.error);

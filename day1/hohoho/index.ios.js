@@ -27,6 +27,7 @@ var Register = require('./register.ios.js');
 var Users = require('./users.ios.js');
 var LoginForm = require('./loginform.ios.js');
 var Login = require('./login.ios.js');
+var Messages = require('./messages.ios.js');
 
 const styles = require('./styles.ios.js');
 

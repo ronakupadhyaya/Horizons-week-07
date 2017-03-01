@@ -49,7 +49,7 @@ var Users = React.createClass({
       if (resp.success === true) {
         this.setState({
           dataSource: ds.cloneWithRows(resp.users)
-        }).bind(this);
+        });
       } else {
         alert("User loading failed. Error: " + resp.error);
       }

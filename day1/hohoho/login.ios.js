@@ -23,6 +23,9 @@ var Login = React.createClass({
   register() {
     this.props.navigator.push({component: Register, title: "Register"});
   },
+  messages(){
+    this.props.navigator.push({component: Messages, title: "Messages"});
+  },
   render() {
     return (
       <View style={styles.container}>
