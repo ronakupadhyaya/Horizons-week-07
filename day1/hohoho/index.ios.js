@@ -1,4 +1,6 @@
 import React, {Component} from 'react'
+import {MapView} from 'react-native'
+import Swiper from 'react-native-swiper'
 import {
   AppRegistry,
   StyleSheet,
@@ -10,7 +12,8 @@ import {
   ListView,
   Button,
   TextField,
-  Alert
+  Alert,
+  AsyncStorage
 } from 'react-native'
 
 // This is the root view
@@ -27,6 +30,17 @@ var hohoho = React.createClass({
     );
   }
 });
+
+var SwiperView = React.createClass({
+  render(){
+    return (
+      <Swiper>
+        <Users/>
+        <Messages/>
+      </Swiper>
+    )
+  }
+})
 
 var Users = React.createClass({
   getInitialState(){
@@ -94,13 +108,59 @@ var Users = React.createClass({
       console.error(err)
     });
   },
+  sendLocation(user){
+    navigator.geolocation.getCurrentPosition(
+      position => {
+    console.log("Got position:", position);
+    fetch('https://hohoho-backend.herokuapp.com/messages',{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to: user._id,
+        location: {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+
+        }
+      })
+    })
+    .then((resp) => resp.json())
+    .then((respJson)=>{
+      if(respJson.success){
+        Alert.alert(
+          'Successssss',
+          'Your HoHoHo' + user.username + 'has been sent',
+           'has been sent',
+          [{text: 'HoHoHo'}]
+        )
+      } else {
+        Alert.alert(
+          'Faileddddd',
+          'Failed to send to message to ' + user.username,
+          [{text: 'AYYYEEYEYEYE'}]
+        )
+      }
+    })
+    .catch((err)=>{
+      console.error(err)
+    });
+  },
+  error => alert(error.message),
+  {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+);
+  },
   render(){
     return(
       <View style={styles.container}>
         <ListView
           dataSource={this.state.dataSource}
 
-          renderRow={(rowData)=>  <TouchableOpacity onPress={this.press.bind(this,rowData)}>
+          renderRow={(rowData)=>
+          <TouchableOpacity onPress={this.press.bind(this,rowData)}
+          onLongPress={this.sendLocation.bind(this,rowData)}
+          delayLongPress={3000}>
           <Text style={{textAlign: 'center'}}>
           {rowData.username}</Text>
           </TouchableOpacity>
@@ -155,9 +215,28 @@ var Messages = React.createClass({
           <Text>From: {rowData.from.username}</Text>
           <Text>To: {rowData.to.username}</Text>
           <Text>Time: {rowData.timestamp}</Text>
+          {(rowData.location && rowData.location.longitude) ? (
+          <MapView
+            style={{height: 150, margin: 40, width: 150}}
+            showsUserLocation={true}
+            scrollEnable={false}
+            region={{
+              longitude: rowData.location.longitude,
+              latitude: rowData.location.latitude,
+              longitudeDelta: 1,
+              latitudeDelta: 1
+            }}
+            annotations={[{
+              latitude: rowData.location.longitude,
+              longitude: rowData.location.latitude,
+              title: "Ethan's School"
+            }]}
+            />
+          ) : null}
           </View>
         }
         />
+
       </View>
     )
   }
@@ -250,9 +329,13 @@ var LoginInput = React.createClass({
     .then((respJson)=>{
       console.log(respJson, 'Just logged in')
       if(respJson.success){
+        AsyncStorage.setItem('user', JSON.stringify({
+            username: this.state.username,
+            password: this.state.password
+        }));
         this.props.navigator.push({
-          component: Users,
-          title: "Users",
+          component: SwiperView,
+          title: "SwiperView",
           rightButtonTitle: 'Messages',
           onRightButtonPress: this.messages
         });
@@ -298,6 +381,54 @@ var Login = React.createClass({
       component: LoginInput,
       title: 'LoginPage'
     })
+  },
+  loginMain(username, password){
+    fetch('https://hohoho-backend.herokuapp.com/login',{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password
+      })
+    })
+    .then((resp) => resp.json())
+    .then((respJson)=>{
+      console.log(respJson, 'Just logged in')
+      if(respJson.success){
+        this.props.navigator.push({
+          component: Users,
+          title: "Users",
+          rightButtonTitle: 'Messages',
+          onRightButtonPress: this.messages
+        });
+      } else(
+        console.log('Error, username or password is incorrect')
+      )
+
+
+    })
+    .catch((err)=>{
+      console.error(err)
+    });
+
+  },
+  componentDidMount(){
+    AsyncStorage.getItem('user')
+    .then(result => {
+      var parsedResult = JSON.parse(result);
+      var username = parsedResult.username;
+      var password = parsedResult.password;
+      console.log('inside get')
+      if (username && password) {
+        console.log('get user and pass')
+        return (this.loginMain(username, password))
+        }
+      })
+      .catch(err => {
+        console.log(err)
+       })
   },
   main(){
     fetch('https://hohoho-backend.herokuapp.com/register',{
