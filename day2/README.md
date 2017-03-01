@@ -1,4 +1,4 @@
-# Day 3 exercises
+# Day 2 exercises
 
 ## Pair exercises
 
