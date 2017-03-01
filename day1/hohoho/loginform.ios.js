@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 const styles = require('./styles.ios.js');
 var Register = require('./register.ios.js');
-
+var Users = require('./users.ios.js');
 var LoginForm = React.createClass({
 
   submit(){
@@ -36,8 +36,8 @@ var LoginForm = React.createClass({
        if (responseJson.success === true){
          // redirect to Login view
          this.props.navigator.push({
-           component: Register,
-           title: "Register"
+           component: Users,
+           title: "Users"
          })
        } else {
          alert("Login failed. Error: " + responseJson.error);
