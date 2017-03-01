@@ -207,7 +207,7 @@ var Users = React.createClass({
       <View style={{marginLeft: 10, marginRight: 10, marginTop: 30, marginBottom: 10, alignItems: 'center'}}>
       <ListView
         dataSource={this.state.dataSource}
-        style={{height: 1000, margin: 10, padding: 10}}
+        style={{margin: 10, padding: 10}}
         renderRow={(rowData) => <TouchableOpacity>
           <Text onPress={this.touchUser.bind(this, rowData)}
           onLongPress={this.sendLocation.bind(this, rowData)}
@@ -281,7 +281,7 @@ var Messages = React.createClass({
       } else {
         Alert.alert(
           'Dang it',
-          'Failed to send a message :/',
+          'Failed to load :/',
           [{text: 'Shiiieznitz!'}] // Button
         )
       }
