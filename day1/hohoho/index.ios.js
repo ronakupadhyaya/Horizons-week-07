@@ -11,8 +11,10 @@ import {
   TextInput,
   NavigatorIOS,
   AsyncStorage,
+  ImagePickerIOS,
   ListView,
-  MapView
+  MapView,
+  Image
 } from 'react-native'
 
 // This is the root view
@@ -99,7 +101,8 @@ var Users = React.createClass({
   getInitialState(){
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     return {
-      dataSource: ds.cloneWithRows([])
+      dataSource: ds.cloneWithRows([]),
+      image: {}
     }
   },
   componentDidMount() {
@@ -160,6 +163,46 @@ var Users = React.createClass({
       alert(err);
     });
   },
+
+  pickPhoto(user){
+    var self = this;
+    var recipient = user;
+
+    ImagePickerIOS.openSelectDialog({}, imageUri => {
+      self.setState({ image: imageUri });
+      var body = new FormData();
+      body.append('photo', {uri: self.state.image, name: 'image.jpg', type: 'multipart/form-data'})
+      body.append('to', user._id)
+      fetch('https://hohoho-backend.herokuapp.com/messages', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "multipart/form-data"
+        },
+        body: body
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        if(responseJson.success) {
+          Alert.alert(
+            'You sent a photo to:',
+            user.username,
+            [{text: 'Ayyy'}] // Button
+          )
+        } else {
+          Alert.alert(
+            'Dang it',
+            'Failed to send a photo :/',
+            [{text: 'Shiiieznitz!'}] // Button
+          )
+        }
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        alert(err);
+      });
+    }, error => alert(error));
+
+  },
   sendLocation(user){
     navigator.geolocation.getCurrentPosition(
       position => {
@@ -210,7 +253,7 @@ var Users = React.createClass({
         style={{margin: 10, padding: 10}}
         renderRow={(rowData) => <TouchableOpacity>
           <Text onPress={this.touchUser.bind(this, rowData)}
-          onLongPress={this.sendLocation.bind(this, rowData)}
+          onLongPress={this.pickPhoto.bind(this, rowData)}
           delayLongPress={500} // number milliseconds
           style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center', padding: 10, margin: 10}}>
           {rowData.username}
@@ -226,9 +269,38 @@ var Users = React.createClass({
 var Messages = React.createClass({
   getInitialState(){
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    var self = this;
+    setInterval(function(){
+      fetch('https://hohoho-backend.herokuapp.com/messages', {
+        method: 'GET',
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        if(responseJson.success) {
+          const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+          self.setState({
+            newMessages: ds.cloneWithRows(responseJson.messages)
+          })
+        } else {
+          Alert.alert(
+            'Dang it',
+            'Failed to refresh :/',
+            [{text: 'Shiiieznitz!'}] // Button
+          )
+        }
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        alert(err);
+      });
+    }, 5000);
     return {
       dataSource: ds.cloneWithRows([]),
-      refreshing: false
+      refreshing: false,
+      newMessages: []
     }
   },
   refresh(){
@@ -294,6 +366,7 @@ var Messages = React.createClass({
   render() {
     return(
       <View style={{marginLeft: 10, marginRight: 10, marginTop: 30, marginBottom: 10, alignItems: 'center'}}>
+
       <ListView
       refreshControl={
         <RefreshControl
@@ -302,16 +375,17 @@ var Messages = React.createClass({
       />}
       dataSource={this.state.dataSource}
       style={{height: 1000}}
-      renderRow={(rowData) => <TouchableOpacity>
-          <Text style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center', padding: 10}}>
+      renderRow={(rowData) =>
+
+        <View>
+
+        {this.state.newMessages ?
+          <Text style={{borderBottomColor: 'black', backgroundColor: 'yellow', borderWidth: 1, justifyContent: 'center', padding: 10}}>
           From: {rowData.from.username} || To: {rowData.to.username} {rowData.timestamp}
-
-
           {(rowData.location && rowData.location.longitude) ?
             <View style={{width: 400, height: 200, alignItems: 'center'}}>
             <MapView
               style={{width: 400, height: 150, margin: 40, alignItems: 'center'}}
-
               scrollEnabled={false}
               region={{
                 latitude: rowData.location.latitude,
@@ -326,8 +400,39 @@ var Messages = React.createClass({
               }]}
             /></View> : null }
             </Text>
+          : null}
 
-          </TouchableOpacity>}
+        <TouchableOpacity>
+          <Text style={{borderBottomColor: 'black', borderWidth: 1, justifyContent: 'center', padding: 10}}>
+          From: {rowData.from.username} || To: {rowData.to.username} {rowData.timestamp}
+          {(rowData.location && rowData.location.longitude) ?
+            <View style={{width: 400, height: 200, alignItems: 'center'}}>
+            <MapView
+              style={{width: 400, height: 150, margin: 40, alignItems: 'center'}}
+              scrollEnabled={false}
+              region={{
+                latitude: rowData.location.latitude,
+                longitude: rowData.location.longitude,
+                longitudeDelta: 1,
+                latitudeDelta: 1
+              }}
+              annotations={[{
+                latitude: rowData.location.latitude,
+                longitude: rowData.location.longitude,
+                title: "Pinged Location"
+              }]}
+            /></View> : null }
+
+            {rowData.photo ?
+              <Image
+              style={{width: 250, height: 250, resizeMode: 'cover'}}
+              source={{
+                uri: rowData.photo
+              }}/>
+            : null}
+            </Text>
+          </TouchableOpacity>
+        </View>}
       />
       </View>
     )
