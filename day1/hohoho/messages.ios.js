@@ -45,7 +45,14 @@ var Messages = React.createClass({
       <View style={{
         flex: 1
       }}>
-        <ListView dataSource={this.state.dataSource} renderRow= {(rowData) => (<View><Text>{rowData.from.username}</Text><Text>{rowData.to.username}</Text><Text>{rowData.timestamp}</Text><Text>{rowData.message}</Text></View>)}></ListView>
+        <ListView dataSource={this.state.dataSource} renderRow= {(rowData) => (
+          <View>
+            <Text>From: {rowData.from.username}</Text>
+            <Text>To: {rowData.to.username}</Text>
+            <Text>Time: {rowData.timestamp}</Text>
+            <Text>Message: {rowData.body}</Text>
+        </View>)}>
+        </ListView>
       </View>
     )
   }
