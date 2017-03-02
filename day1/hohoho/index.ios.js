@@ -10,18 +10,18 @@ import {
   NavigatorIOS,
   ListView,
   AsyncStorage,
-  MapView
+  MapView,
+  Image,
+  ImagePickerIOS
 } from 'react-native'
+import Swiper from 'react-native-swiper'
 
 class Messages extends Component{
   constructor() {
     super();
-    var ds = new ListView.DataSource({
-      rowHasChanged: (r1,r2) => (r1 !== r2)
-    });
-
     this.state = {
-      dataSource: ds.cloneWithRows([])
+      dataSource:[],
+      difference: 0
     };
 
     fetch('https://hohoho-backend.herokuapp.com/messages')
@@ -29,10 +29,8 @@ class Messages extends Component{
       return response.json();
     })
     .then((responseJson) => {
-      console.log('********************************************');
-      console.log(responseJson);
       this.setState({
-        dataSource: ds.cloneWithRows(responseJson.messages)
+        dataSource: responseJson.messages
       });
     })
     .catch(error => {
@@ -40,35 +38,141 @@ class Messages extends Component{
     });
   }
 
+  componentDidMount(){
+
+    setInterval(() => {
+
+      fetch('https://hohoho-backend.herokuapp.com/messages')
+      .then((response) => {
+        return response.json();
+      })
+      .then((responseJson) => {
+
+        if(responseJson.messages.length > this.state.dataSource.length){
+          var diff = responseJson.messages.length - this.state.dataSource.length;
+          for(var i=0; i<diff; i++){
+            responseJson.messages[i].new = true;
+          }
+
+          this.setState({
+            dataSource: responseJson.messages,
+            difference: diff
+
+          });
+        }else{
+          this.setState({
+            dataSource: responseJson.messages,
+            difference: diff
+          });
+        }
+      })
+      .catch(error => {
+        console.log('error', error);
+      });
+
+    }, 10000);
+  }
+
+  /*
+  //****To Render a map of the location****
+  renderObj(rowData){
+    if(rowData.new){
+      return (
+        <View style={{backgroundColor: '#e74c3c', borderColor: '#527FE4', borderWidth: 5, padding: 10}}>
+          <Text>From: {rowData.from.username}</Text>
+          <Text>To: {rowData.to.username}</Text>
+          <Text>Message: {rowData.body}</Text>
+          <Text>When: {rowData.timestamp}</Text>
+
+          {rowData.location && rowData.location.longitude && rowData.location.latitude && <MapView
+            style={{height: 200, margin: 40}}
+            showsUserLocation={true}
+            scrollEnabled={false}
+            region={{
+              longitude: rowData.location.latitude,
+              latitude: rowData.location.longitude,
+              longitudeDelta: 1,
+              latitudeDelta: 1
+            }}
+            annotations={[{
+              latitude: rowData.location.latitude,
+              longitude: rowData.location.longitude,
+              title: "Ethan's School"
+            }]}
+          />}
+        </View>
+      );
+    }else{
+      return (
+        <View style={{backgroundColor: '#b6cbed', borderColor: '#527FE4', borderWidth: 5, padding: 10}}>
+          <Text>From: {rowData.from.username}</Text>
+          <Text>To: {rowData.to.username}</Text>
+          <Text>Message: {rowData.body}</Text>
+          <Text>When: {rowData.timestamp}</Text>
+          {console.log(rowData.location)}
+          {rowData.location && rowData.location.longitude && rowData.location.latitude && <MapView
+            style={{height: 200, margin: 40}}
+            showsUserLocation={true}
+            scrollEnabled={false}
+            region={{
+              longitude: rowData.location.latitude,
+              latitude: rowData.location.longitude,
+              longitudeDelta: 1,
+              latitudeDelta: 1
+            }}
+            annotations={[{
+              latitude: rowData.location.latitude,
+              longitude: rowData.location.longitude,
+              title: "Ethan's School"
+            }]}
+          />}
+        </View>
+      );
+    }
+  }
+  */
+
+  renderObj(rowData){
+    if(rowData.new){
+      return (
+        <View style={{backgroundColor: '#e74c3c', borderColor: '#527FE4', borderWidth: 5, padding: 10}}>
+          <Text>From: {rowData.from.username}</Text>
+          <Text>To: {rowData.to.username}</Text>
+          <Text>Message: {rowData.body}</Text>
+          <Text>When: {rowData.timestamp}</Text>
+
+          {rowData.photo && <Image
+            style={{height: 200, margin: 40}}
+            source={{uri: rowData.photo}}
+          />}
+        </View>
+      );
+    }else{
+      return (
+        <View style={{backgroundColor: '#b6cbed', borderColor: '#527FE4', borderWidth: 5, padding: 10}}>
+          <Text>From: {rowData.from.username}</Text>
+          <Text>To: {rowData.to.username}</Text>
+          <Text>Message: {rowData.body}</Text>
+          <Text>When: {rowData.timestamp}</Text>
+
+          {rowData.photo && <Image
+            style={{height: 200, margin: 40}}
+            source={{uri: rowData.photo}}
+          />}
+        </View>
+      );
+    }
+  }
+
   render(){
-    console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^');
-    console.log(this.props.navigator);
+    var ds = new ListView.DataSource({
+      rowHasChanged: (r1,r2) => (r1 !== r2)
+    });
+
     return(
       <ListView
-        dataSource={this.state.dataSource}
-        renderRow={(rowData) =>
-          <View style={{backgroundColor: '#b6cbed', borderColor: '#527FE4', borderWidth: 5, padding: 10}}>
-            <Text>From: {rowData.from.username}</Text>
-            <Text>To: {rowData.to.username}</Text>
-            <Text>Message: {rowData.body}</Text>
-            <Text>When: {rowData.timestamp}</Text>
-            {rowData.location && <MapView
-              style={{height: 200, margin: 40}}
-              showsUserLocation={true}
-              scrollEnabled={false}
-              region={{
-                longitude: rowData.location.latitude,
-                latitude: rowData.location.longitude,
-                longitudeDelta: 1,
-                latitudeDelta: 1
-              }}
-              annotations={[{
-                latitude: rowData.location.latitude,
-                longitude: rowData.location.longitude,
-                title: "Ethan's School"
-              }]}
-            />}
-          </View>}
+        dataSource={ds.cloneWithRows(this.state.dataSource)}
+        renderRow={(rowData) => this.renderObj(rowData)}
       />
     );
   }
@@ -137,19 +241,52 @@ class Users extends Component{
     });
   }
 
+  sendPhoto(user){
+
+    console.log('HIT HERE 111111');
+
+    ImagePickerIOS.openSelectDialog({}, imageUri => {
+
+      var formData = new FormData();
+      formData.append('photo', {
+        uri: imageUri,
+        type: 'multipart/form-data',
+        name: 'whatever.jpg'
+      });
+
+      formData.append('to', user._id);
+
+      console.log('2222222222');
+
+      fetch('https://hohoho-backend.herokuapp.com/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        body: formData
+      })
+      .then( (resp) => {
+
+        console.log('3333333333');
+        return resp.json();
+      })
+      .then((respJson) => {
+        console.log('HIT JSONRESPONSE!!!!!!');
+        console.log(respJson);
+      })
+      .catch((err) => {
+        console.log('err', err);
+      })
+    },
+    error => console.log(error));
+  }
+
   sendLocation(user){
 
     var getPos;
-
     navigator.geolocation.getCurrentPosition(
-
       position => {
-        console.log("Got position:", position);
         getPos = position;
-        console.log('blahablah');
-        console.log(getPos);
-
-        //**********************************************************************
 
         fetch('https://hohoho-backend.herokuapp.com/messages', {
           method: 'POST',
@@ -187,8 +324,6 @@ class Users extends Component{
           /* do something if there was an error with fetching */
           console.log("error: ", err);
         });
-        //**********************************************************************
-
       },
       error => alert(error.message), {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
     );
@@ -201,7 +336,7 @@ class Users extends Component{
       <ListView
       dataSource={this.state.dataSource}
       renderRow={(rowData) =>
-        <TouchableOpacity onPress={this.touchUser.bind(this, rowData)} onLongPress={this.sendLocation.bind(this, rowData)} delayLongPress={1000}>
+        <TouchableOpacity onPress={this.touchUser.bind(this, rowData)} onLongPress={this.sendPhoto.bind(this, rowData)} delayLongPress={1000}>
           <View style={{backgroundColor: '#2ecc71', borderColor: '#9b59b6', borderWidth: 2.5, padding: 10}}>
             <Text>{rowData.username}</Text>
           </View>
@@ -209,6 +344,21 @@ class Users extends Component{
       />
     );
   }
+
+  //RENDER FUNCTION TO RENDER AN ONPRESS FOR SENDING LOCATION
+  // render(){
+  //   return(
+  //     <ListView
+  //     dataSource={this.state.dataSource}
+  //     renderRow={(rowData) =>
+  //       <TouchableOpacity onPress={this.touchUser.bind(this, rowData)} onLongPress={this.sendLocation.bind(this, rowData)} delayLongPress={1000}>
+  //         <View style={{backgroundColor: '#2ecc71', borderColor: '#9b59b6', borderWidth: 2.5, padding: 10}}>
+  //           <Text>{rowData.username}</Text>
+  //         </View>
+  //       </TouchableOpacity>}
+  //     />
+  //   );
+  // }
 }
 
 // This is the root view
@@ -236,10 +386,7 @@ class Register extends Component{
       password: ''
     };
   }
-
-
   submitReg(){
-    console.log(this.state.username);
     // console.log(this.state.username);
     fetch('https://hohoho-backend.herokuapp.com/register', {
       method: 'POST',
@@ -258,30 +405,29 @@ class Register extends Component{
     .catch((err) => {
       console.log("error: ", err);
     });
-
   }
 
   render() {
     return (
       <View style={{flex:1,alignItems: 'center', justifyContent:'center'}}>
-      <TextInput
-      style={{height: 40, paddingLeft: 100}}
-      placeholder="Enter your username"
-      onChangeText={(text) => this.setState({username: text})}
-      />
-      <TextInput
-      style={{height: 40, paddingLeft: 100}}
-      secureTextEntry={true}
-      placeholder="Enter your password"
-      onChangeText={(text) => this.setState({password: text})}
-      />
-      <TouchableOpacity onPress={this.submitReg.bind(this)}>
-      <View style={{height:35, width:200, backgroundColor: '#FF585B'}}>
-      <Text style={{paddingLeft: 70, paddingTop: 8, color:'white'}}>
-      Register
-      </Text>
-      </View>
-      </TouchableOpacity>
+        <TextInput
+        style={{height: 40, paddingLeft: 100}}
+        placeholder="Enter your username"
+        onChangeText={(text) => this.setState({username: text})}
+        />
+        <TextInput
+        style={{height: 40, paddingLeft: 100}}
+        secureTextEntry={true}
+        placeholder="Enter your password"
+        onChangeText={(text) => this.setState({password: text})}
+        />
+        <TouchableOpacity onPress={this.submitReg.bind(this)}>
+        <View style={{height:35, width:200, backgroundColor: '#FF585B'}}>
+          <Text style={{paddingLeft: 70, paddingTop: 8, color:'white'}}>
+          Register
+          </Text>
+        </View>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -291,7 +437,6 @@ class LoginPage extends Component{
 
   constructor(){
     super();
-    console.log('this.props', this.props);
     this.state = {
       username: '',
       password: '',
@@ -299,10 +444,7 @@ class LoginPage extends Component{
     };
   }
 
-
-
   login(){
-
     fetch('https://hohoho-backend.herokuapp.com/login', {
       method: 'POST',
       headers: {
@@ -316,7 +458,6 @@ class LoginPage extends Component{
     .then((response) => response.json())
     .then((responseJson) => {
       if(responseJson.success){
-
         //HERE
         AsyncStorage.setItem('user', JSON.stringify({
           username: this.state.username,
@@ -324,7 +465,7 @@ class LoginPage extends Component{
         }));
 
         this.props.navigator.push({
-          component: Users,
+          component: SwiperView, //******************
           title: "Users",
           rightButtonTitle: 'Messages',
           onRightButtonPress: this.props.messages.bind(this)
@@ -368,25 +509,25 @@ class LoginPage extends Component{
   render() {
     return (
       <View style={{flex:1,alignItems: 'center', justifyContent:'center'}}>
-      <TextInput
-      style={{height: 40, paddingLeft: 100}}
-      placeholder="Enter your username"
-      onChangeText={(text) => this.setState({username: text})}
-      />
-      <TextInput
-      style={{height: 40, paddingLeft: 100}}
-      secureTextEntry={true}
-      placeholder="Enter your password"
-      onChangeText={(text) => this.setState({password: text})}
-      />
-      <TouchableOpacity onPress={this.login.bind(this)}>
-      <View style={{height:35, width:200, backgroundColor: '#FF585B'}}>
-      <Text style={{paddingLeft: 80, paddingTop: 8, color:'white'}}>
-      Login
-      </Text>
-      </View>
-      </TouchableOpacity>
-      <Text>{this.state.error}</Text>
+        <TextInput
+        style={{height: 40, paddingLeft: 100}}
+        placeholder="Enter your username"
+        onChangeText={(text) => this.setState({username: text})}
+        />
+        <TextInput
+        style={{height: 40, paddingLeft: 100}}
+        secureTextEntry={true}
+        placeholder="Enter your password"
+        onChangeText={(text) => this.setState({password: text})}
+        />
+        <TouchableOpacity onPress={this.login.bind(this)}>
+          <View style={{height:35, width:200, backgroundColor: '#FF585B'}}>
+            <Text style={{paddingLeft: 80, paddingTop: 8, color:'white'}}>
+            Login
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <Text>{this.state.error}</Text>
       </View>
     );
   }
@@ -394,7 +535,6 @@ class LoginPage extends Component{
 
 class Login extends Component{
   press() {
-    console.log('this.props.navigator', this.props.navigator);
     this.props.navigator.push({
       component: LoginPage,
       title: "Login User",
@@ -429,6 +569,20 @@ class Login extends Component{
     );
   }
 }
+
+class SwiperView extends Component{
+
+  render(){
+    return (
+      <Swiper>
+        <Users />
+        <Messages />
+      </Swiper>
+    );
+  }
+
+}
+
 
 const styles = StyleSheet.create({
   container: {
