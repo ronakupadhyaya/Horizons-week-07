@@ -280,16 +280,21 @@ var Messages = React.createClass({
       .then((response) => response.json())
       .then((responseJson) => {
         if(responseJson.success) {
-          const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-          self.setState({
-            newMessages: ds.cloneWithRows(responseJson.messages)
-          })
+          if(self.state.dataSource !== responseJson.messages) {
+              var diff = responseJson.messages.length - self.state.dataSource.length;
+              var newArr = responseJson.messages.slice(0, diff);
+              const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+              self.setState({
+                newMessages: ds.cloneWithRows(newArr)
+              })
+          }
         } else {
-          Alert.alert(
-            'Dang it',
-            'Failed to refresh :/',
-            [{text: 'Shiiieznitz!'}] // Button
-          )
+          // pretty much do nothing
+          // Alert.alert(
+          //   'Dang it',
+          //   'Failed to auto-refresh :/',
+          //   [{text: 'Shiiieznitz!'}] // Button
+          // )
         }
       })
       .catch((err) => {
