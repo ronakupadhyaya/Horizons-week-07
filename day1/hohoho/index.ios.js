@@ -1,4 +1,3 @@
-
 import React, {Component} from 'react'
 import {
   AppRegistry,
@@ -13,6 +12,7 @@ import {
   ListView,
   Alert,
   Image,
+  ScrollView,
   ImagePickerIOS
 } from 'react-native'
 
@@ -48,61 +48,216 @@ var hohoho = React.createClass({
   }
 });
 
-var Rules = React.createClass({
+const Rules = React.createClass({
+  roles() {
+    this.props.navigator.push({
+      component: Roles,
+      title: "Roles",
+    })
+  },
+  rulesshortcut() {
+    this.props.navigator.push({
+      component: Rulesshortcut,
+      title: "Rules"
+    });
+  },
+  gameplay() {
+    this.props.navigator.push({
+      component: Gameplay,
+      title: "Game Play"
+    })
+  },
+  render: function(){
+    return (
+      <ScrollView scrollsToTop={true}>
+        <View style={styles.container}>
+          <Image
+            style={{width: 375, height: 220, resizeMode: 'contain'}}
+            source={require('./img/rulesgame1.png')}></Image>
+          <Image
+            style={{width: 375, height: 270, resizeMode: 'contain'}}
+            source={require('./img/1a.png')}></Image>
+          <TouchableOpacity style={[styles.button2, styles.buttonBlue]} onPress={this.rulesshortcut}>
+          <Image
+          style={{height: 40, resizeMode: 'contain'}}
+          source={require('./img/rulesshortcut.png')}></Image>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.button2, styles.buttonPink]} onPress={this.gameplay}>
+            <Image
+              style={{height: 40, resizeMode: 'contain'}}
+              source={require('./img/gameplay.png')}></Image>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={this.roles} style={[styles.button2, styles.buttonGreen]}>
+          <Image
+          style={{height: 40, resizeMode: 'contain'}}
+          source={require('./img/roles.png')}></Image>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+  )}
+});
+
+var Roles = React.createClass({
   render() {
     return (
-      <View style={styles.container}>
-      <Text style={styles.textBig}>Register Below</Text>
-      <TextInput
-      style={{
-        height: 40,
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}
-      placeholder="Set your username"
-      onChangeText={(text) => this.setState({username: text})}
-      />
-      <TextInput
-      style={{
-        height: 40,
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}
-      placeholder="Set your password"
-      onChangeText={(text) => this.setState({password: text})}
-      />
-      <TouchableOpacity onPress={this.press} style={[styles.button, styles.buttonBlue]}>
-      <Text style={styles.buttonLabel}>Tap to Register</Text>
-      </TouchableOpacity>
+      <ScrollView scrollsToTop={true}>
+        <View style={styles.container4}>
+          <Image
+            style={{width: 360, height: 250, resizeMode: 'contain'}}
+            source={require('./img/2a.png')}></Image>
+          <Image
+            style={{width: 370, height: 350, resizeMode: 'contain'}}
+            source={require('./img/3.png')}></Image>
+          <Image
+            style={{width: 360, height: 330, resizeMode: 'contain'}}
+            source={require('./img/4a.png')}></Image>
+          <Image
+            style={{width: 365, height: 350, resizeMode: 'contain'}}
+            source={require('./img/5.png')}></Image>
+          <Image
+            style={{width: 365, height: 300, resizeMode: 'contain'}}
+            source={require('./img/6a.png')}></Image>
+          <Image
+            style={{width: 365, height: 300, resizeMode: 'contain'}}
+            source={require('./img/7a.png')}></Image>
+          <Image
+            style={{width: 365, height: 300, resizeMode: 'contain'}}
+            source={require('./img/8a.png')}></Image>
+        </View>
+      </ScrollView>
+    )}
+  });
+
+var Gameplay = React.createClass({
+  render() {
+    return (
+      <ScrollView scrollsToTop={true}>
+        <View style={styles.container4}>
+          <Image
+            style={{width: 365, height: 360, resizeMode: 'contain'}}
+            source={require('./img/9.png')}></Image>
+          <Image
+            style={{width: 365, height: 350, resizeMode: 'contain'}}
+            source={require('./img/10.png')}></Image>
+        </View>
+      </ScrollView>
+    )}
+  });
+
+  var Rulesshortcut = React.createClass({
+    render() {
+      return (
+        <ScrollView scrollsToTop={true}>
+          <View style={styles.container4}>
+            <Image
+              style={{width: 365, height: 400, resizeMode: 'contain'}}
+              source={require('./img/11.png')}></Image>
+          </View>
+        </ScrollView>
+      )}
+    })
+
+var ConnectionCode = React.createClass({
+  render() {
+    return (
+      <View style={styles.container3}>
+      <Image
+        style={{width: 140, height: 50, resizeMode: 'contain'}}
+        source={require('./img/seb85.png')}></Image>
       </View>
-    );
-  }
+    )}
+})
+var Connection = React.createClass({
+  getInitialState: function() {
+    this.state = {
+      text: 'Insert Connection Code Here',
+      something: true
+    }
+    return {
+      text: ''
+    }
+  },
+  seb85() {
+    this.props.navigator.push({
+      component: ConnectionCode,
+      title: "Connection Code",
+    })
+  },
+  render() {
+    return (
+        <View style={styles.container3}>
+            <Image
+              style={{width: 220, height: 100, resizeMode: 'contain'}}
+              source={require('./img/Connections3.png')}></Image>
+            <Image
+              style={{width: 340, height: 150, resizeMode: 'contain'}}
+              source={require('./img/connectiondescription.png')}></Image>
+
+            <TouchableOpacity style={[styles.button3, styles.buttonTan]}
+            onPress={this.seb85}>
+              <Image
+                style={{height: 44, resizeMode: 'contain'}}
+                source={require('./img/getconnectioncode.png')}></Image>
+            </TouchableOpacity>
+
+            <Image
+              style={{width: 140, height: 50, resizeMode: 'contain', opacity: 0}}
+              source={require('./img/seb85.png')}></Image>
+
+            <Image
+              style={{width: 200, height: 70, resizeMode: 'contain'}}
+              source={require('./img/insertcode.png')}></Image>
+            <TextInput
+               style={{
+                 height: 50,
+                 color: '#FFF2DA',
+                 paddingLeft: 15,
+                 fontFamily: "Avenir-Medium",
+                 borderColor: '#FFF2DA',
+                 borderWidth: 3,
+                 marginLeft: 95,
+                 marginRight: 95
+                }}
+               onChangeText={(text) => this.setState({text})}
+               value={this.state.text}
+             />
+             <TouchableOpacity style={[styles.button7, styles.buttonTan]}>
+               <Image
+                 style={{height: 44, resizeMode: 'contain'}}
+                 source={require('./img/enter.png')}></Image>
+             </TouchableOpacity>
+        </View>
+  )}
 });
+
 
 var GamePage = React.createClass({
   getInitialState: function() {
     var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-    var createPieces = () => {
-      var pieces = [];
-      _.forEach(PIECES, (value, key) => {
-        for (var i = 0; i < value; i++) {
-          pieces.push({
-            piece: key,
-            team: 'red',
-            oldPos:{},
-            newPos:{}
-          });
-        }
-      });
-      return pieces;
-    }
+    // var createPieces = () => {
+    //   var pieces = [];
+    //   _.forEach(PIECES, (value, key) => {
+    //     for (var i = 0; i < value; i++) {
+    //       pieces.push({
+    //         piece: key,
+    //         team: 'red',
+    //         oldPos:{},
+    //         newPos:{}
+    //       });
+    //     }
+    //   });
+    //   return pieces;
+    // }
 
     return {
       dataSource: ds.cloneWithRows([]),
       data: [],
-      pieces: createPieces(),
+      pieces: [],
       isStarted: false,
-      currentPlayer: 'red'
+      move:[],
+      currentPlayer: 'red',
+      team: null,
+      gameFinish: false
     };
   },
   _pressData: ({}: {[key: number]: boolean}),
@@ -110,19 +265,48 @@ var GamePage = React.createClass({
     this._pressData = {};
   },
   componentDidMount: function() {
+    console.log('here')
+    fetch("https://nameless-falls-19660.herokuapp.com/joingame", {
+      method: 'GET',
+      headers: {
+      "Content-Type": "application/json"
+    }
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        this.setState({team: responseJson.myTeam});
+        return responseJson.myTeam
+      })
+      .then((team) => {
+        console.log('FUCK YIU', team)
+            var pieces = [];
+            _.forEach(PIECES, (value, key) => {
+              for (var i = 0; i < value; i++) {
+                console.log('What is going on', team)
+                pieces.push({
+                  piece: key,
+                  team: team,
+                  oldPos:{},
+                  newPos:{}
+                });
+              }
+            });
+            return pieces;
+          }).then((pieces) => this.setState({pieces: pieces}))
+        .catch((err) => {
+          console.log('cannotsendboard!',err)
+        })
     this.setState({
       dataSource: this.state.dataSource.cloneWithRows(this._genRows({})),
     })
   },
   _genRows: function(pressData: {[key: number]: boolean}): Array<string> {
     var dataBlob = [];
-
     for (var ii = 0; ii < 8; ii++) {
       var row = [];
       for (var ij = 0; ij < 8; ij++) {
         row.push('');
       }
-
       dataBlob.push(row);
       this.setState({data: dataBlob})
     }
@@ -132,10 +316,69 @@ var GamePage = React.createClass({
     // }
     return dataBlob;
   },
+  // <Image
+  //   style={{width: 40, height: 40, resizeMode: 'contain'}}
+  //   source={require('./img/spiece.png')}></Image>
+
+  imageMap: function(item) {
+    console.log('sebastian', item)
+    if (item.team !== this.state.team) {
+      return require('./img/bowser.png')
+    }
+    if (item.piece === 'S') {
+      return require('./img/spiece.png')
+    }
+    else if (item.piece === 'B') {
+      return require('./img/bpiece.png')
+    }
+    else if (item.piece === 'F') {
+      return require('./img/fpiece.png')
+    }
+    else if (item.piece === '2') {
+      return require('./img/2piece.png')
+    }
+    else if (item.piece === '3') {
+      return require('./img/3piece.png')
+    }
+    else if (item.piece === '4') {
+      return require('./img/4piece.png')
+    }
+    else if (item.piece === '5') {
+      return require('./img/5piece.png')
+    }
+    else if (item.piece === '6') {
+      return require('./img/6piece.png')
+    }
+    else if (item.piece === '7') {
+      return require('./img/7piece.png')
+    }
+    else if (item.piece === '8') {
+      return require('./img/8piece.png')
+    }
+    else if (item.piece === '9') {
+      return require('./img/9piece.png')
+    }
+    else if (item.piece === '10') {
+      return require('./img/10piece.png')
+    }
+
+  },
   _pressRow: function(colID: number, rowID: number) {
     var row = parseInt(rowID), col = parseInt(colID);
     console.log('original ' +colID + 'col' + rowID);
-    if (5 <= row && row <= 7) {
+    var rowMin = 9;
+    var rowMax = -1;
+    if (this.state.team === 'red'){
+      console.log(this.state.team);
+      rowMin = 5;
+      rowMax = 7;
+    } else if (this.state.team === 'blue'){
+      console.log(this.state.team)
+      rowMin = 0;
+      rowMax = 2;
+    }
+    if (rowMin <= row && row <= rowMax) {
+      console.log('setting board')
       var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
       var newState = Object.assign({}, this.state);
 
@@ -178,20 +421,35 @@ var GamePage = React.createClass({
     }
   },
   _gameMove: function(colID: number, rowID: number) {
-    var row = parseInt(rowID), col = parseInt(colID);
+    var clickOne = null;
+    var clickTwo = null;
+    if (this.state.move.length === 0) {
+      if(this.state.data[colID][rowID].team!==this.state.currentPlayer || this.state.data[colID][rowID].team!==this.state.team ) {
+        console.log('noturTeam ***** ', this.state.team)
+        console.log('currentPlayer ****', this.state.currentPlayer)
+        console.log('pieceTeam **** ', this.state.data[colID][rowID].team)
+        return 'not ur team'
+      }
+      if(this.state.data[colID][rowID].piece==='B') {
+        console.log('bomb')
+        return 'flag'
+      }
+      if(this.state.data[colID][rowID].piece==='F') {
+        console.log('flag')
+        return 'flag'
+      }
+  console.log('passed all ifs...')
+     clickOne= {row: rowID, col: parseInt(colID)}
+     var newMove = [clickOne];
+     this.setState({move: newMove})
+  } else if (this.state.move.length > 0) {
+     clickTwo={row: rowID, col: parseInt(colID)}
+     var newMove = [this.state.move[0], clickTwo]
+     this.setState({move: newMove});
+  }
 
-    fetch('https://nameless-falls-19660.herokuapp.com/makemove', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            },
-            body: {
-              formData
-            },
-            .then((response) => response.json())
-            .then((responseJson) => {
-            this.setState({data: responseJson.board, moves: currentPlayer: responseJson.currentPlayer})
-            }))
+    // var row = parseInt(rowID), col = parseInt(colID);
+    //
     // var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     // var newState = Object.assign({}, this.state);
     //
@@ -212,26 +470,102 @@ var GamePage = React.createClass({
     //
     // this.setState(newState);
   },
+  clear() {
+    this.setState({move: []})
+  },
+  sendMove() {
+if(this.state.move.length===2) {
+      fetch("https://nameless-falls-19660.herokuapp.com/makemove", {
+      method: 'POST',
+      body: JSON.stringify({
+        move:this.state.move,
+        board:this.state.data
+      }),
+      headers: {
+      "Content-Type": "application/json"
+      }
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        console.log('recievedMoveResponse',responseJson)
+        this.setState({
+          data:responseJson.board,
+          dataSource:this.state.dataSource.cloneWithRows(responseJson.board),
+          move:responseJson.move,
+          currentPlayer:responseJson.currentPlayer,
+          gameFinish:responseJson.gameWon
+        })
+        return this.state.gameFinish
+        })
+        .then((finish) => {
+          if (finish) {
+          alert(this.state.team + " has won!")
+          }
+        })
+        .catch((err) => {
+          console.log('cannotsendmove!',err)
+        })
+} else {
+  alert('error plz make your move :)')
+}
+  },
   _started: function(){
-    console.log(this.state.isStarted);
     this.setState({isStarted: true});
-
+    fetch("https://nameless-falls-19660.herokuapp.com/setupboard", {
+      method: 'POST',
+      body: JSON.stringify({board:this.state.data, team: this.state.team}),
+      headers: {
+      "Content-Type": "application/json"
+      }
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        console.log('recieved initial response',responseJson)
+        console.log('DATA', this.state.data)
+        this.setState({data: responseJson.board})
+        this.setState({dataSource:this.state.dataSource.cloneWithRows(responseJson.board)})
+        console.log('DATA2 (*****) ', this.state.data)
+      }).then(() => {
+        var stateUpdate = setInterval(() => {
+          fetch("https://nameless-falls-19660.herokuapp.com/stateupdate", {
+          method: 'POST',
+          body: JSON.stringify({reqBoard: this.state.data}),
+          headers: {
+          "Content-Type": "application/json"
+          }
+          })
+          .then((response) => response.json())
+          .then((responseJson) => {
+            console.log('recieved Update',responseJson)
+            this.setState({data: responseJson.board, currentPlayer: responseJson.currPlayer})
+            this.setState({dataSource:this.state.dataSource.cloneWithRows(responseJson.board)})
+            })
+            .catch((err) => {
+              console.log('cannotGetUpdate!',err)
+            })
+        }, 1000)
+      })
+      .catch((err) => {
+          console.log('cannotsendboard!',err)
+        })
   },
   _renderRow: function(rowData: string, sectionID: number, rowID: number) {
     console.log(rowData, sectionID, rowID);
+
     return (
         <View>
           {typeof rowData === 'object' &&
             rowData.map((rowNumber, i) => (
               // <TouchableHighlight onPress={() => this._pressRow(rowID, i)}
-              <TouchableHighlight onPress={this.state.isStarted ? () => this._gameMove(rowID, i) : () => this._pressRow(rowID,i)} underlayColor='rgba(0,0,0,0)'>
+              <TouchableHighlight onPress={this.state.isStarted ? () => this._gameMove(rowID, i) : () => this._pressRow(rowID,i)} underlayColor='green'>
                 <View>
                   <View style={styles.row}>
                   {!!rowNumber && !!rowNumber.piece &&
-                    <Text style={styles.text1}>
-                      {(rowNumber.piece)}
-                    </Text>
+                    <Image
+                    style={{width: 40, height: 40, resizeMode: 'contain'}}
+                    source={this.imageMap(rowNumber)}></Image>
                   }
+
                   </View>
                 </View>
               </TouchableHighlight>
@@ -242,20 +576,34 @@ var GamePage = React.createClass({
   },
   render() {
     return (
-      <View style={styles.container}>
+      <View style={styles.container1}>
         <ListView contentContainerStyle={styles.list}
           dataSource={this.state.dataSource}
           renderRow={this._renderRow}
-
-
         />
-        {!!this.state.pieces.length && <Text style={{fontSize: 100}}>{this.state.pieces[this.state.pieces.length-1].piece}</Text>}
-
-        {!this.state.pieces.length &&
-          <TouchableOpacity style={[styles.button, styles.buttonPink]} onPress={this._started}>
-          <Text style={styles.buttonLabel}>Finished with Turn</Text>
+        {!!this.state.pieces.length && <Text style={styles.bigtext}>{this.state.pieces[this.state.pieces.length-1].piece}</Text>}
+        {!this.state.pieces.length && !this.state.isStarted &&
+          <TouchableOpacity style={[styles.button6, styles.buttonPink]} onPress={this._started}>
+            <Image
+            style={{height: 36, resizeMode: 'contain'}}
+            source={require('./img/finish.png')}></Image>
           </TouchableOpacity>
         }
+        {this.state.isStarted &&
+          <TouchableOpacity style={[styles.button4, styles.buttonGreen]} onPress={this.sendMove}>
+          <Image
+          style={{height: 34, resizeMode: 'contain'}}
+          source={require('./img/move.png')}></Image>
+          </TouchableOpacity>
+        }
+        {this.state.isStarted &&
+          <TouchableOpacity style={[styles.button5, styles.buttonBlue]} onPress={this.clear}>
+            <Image
+            style={{height: 34, resizeMode: 'contain'}}
+            source={require('./img/clear.png')}></Image>
+          </TouchableOpacity>
+        }
+
       </View>
     )
   }
@@ -271,31 +619,36 @@ var Stratizons = React.createClass({
   rules() {
     this.props.navigator.push({
       component: Rules,
-      title: "Rules & Settings "
+      title: "Instructions"
     });
   },
   connection() {
     this.props.navigator.push({
-      component: Rules,
-      title: "Connection Codes"
+      component: Connection,
+      title: "Connections"
     })
   },
 
   render() {
     return (
-      <View style={styles.container}>
+      <View style={styles.container2}>
         <Image
           style={{width: 400, height: 400, resizeMode: 'contain'}}
-          source={require('./img/Stratizons.png')}></Image>
-      <TouchableOpacity onPress={this.press} style={[styles.button, styles.buttonGreen]}>
-      <Text style={styles.buttonLabel}>Tap to Play
-      </Text>
+          source={require('./img/Stratizons1.png')}></Image>
+      <TouchableOpacity onPress={this.press} style={[styles.button2, styles.buttonGreen]}>
+        <Image
+          style={{height: 40, resizeMode: 'contain'}}
+          source={require('./img/play.png')}></Image>
       </TouchableOpacity>
-      <TouchableOpacity style={[styles.button, styles.buttonPink]} onPress={this.connection}>
-      <Text style={styles.buttonLabel}>Connection Codes</Text>
+      <TouchableOpacity style={[styles.button2, styles.buttonPink]} onPress={this.connection}>
+        <Image
+          style={{height: 40, resizeMode: 'contain'}}
+          source={require('./img/connections.png')}></Image>
       </TouchableOpacity>
-      <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={this.rules}>
-      <Text style={styles.buttonLabel}>Rules & Settings</Text>
+      <TouchableOpacity style={[styles.button2, styles.buttonBlue]} onPress={this.rules}>
+        <Image
+          style={{height: 40, resizeMode: 'contain'}}
+          source={require('./img/rules2.png')}></Image>
       </TouchableOpacity>
       </View>
     );
@@ -316,20 +669,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 44,
     height: 55,
+    backgroundColor: '#F6F6F6',
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 5,
-    borderColor: '#CCC'
+    borderColor: '#CCC',
   },
   thumb: {
     width: 64,
     height: 64
-  },
-  text: {
-    flex: 1,
-    marginTop: 5,
-    fontWeight: 'bold',
-    alignItems: 'right'
   },
   text: {
     flex: 1,
@@ -348,6 +696,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFF2DA',
+    paddingBottom: 20
+  },
+  container3: {
+    flex: 1,
+    marginTop: 60,
+    alignItems: 'center',
+    backgroundColor: '#333C56'
+  },
+  container4: {
+    flex: 1,
+    marginBottom: 20,
+    paddingBottom: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFF2DA'
+  },
+  container2: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFF2DA',
+  },
+  container1: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#BAAD97',
   },
   containerFull: {
     flex: 1,
@@ -379,21 +754,112 @@ const styles = StyleSheet.create({
     marginRight: 5,
     borderRadius: 5
   },
+  button1: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 10,
+    paddingBottom: 10,
+    marginTop: 10,
+    marginLeft: 15,
+    marginRight: 15,
+    marginBottom: 80,
+    borderRadius: 5
+  },
+  button2: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    paddingTop: 1,
+    paddingBottom: 1,
+    marginTop: 5,
+    marginLeft: 15,
+    marginRight: 15,
+    marginBottom: 5,
+    borderRadius: 5
+  },
+  button3: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    marginLeft: 30,
+    marginRight: 30,
+    marginBottom: 30,
+    borderRadius: 5
+  },
+  button4: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 5,
+    paddingBottom: 5,
+    marginTop: 18,
+    marginLeft: 13,
+    marginRight: 190,
+    marginBottom: 7,
+    borderRadius: 5
+  },
+  button5: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 5,
+    paddingBottom: 5,
+    marginTop: 7,
+    marginLeft: 13,
+    marginRight: 190,
+    marginBottom: 18,
+    borderRadius: 5
+  },
+  button6: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 5,
+    paddingBottom: 5,
+    marginTop: 40,
+    marginLeft: 30,
+    marginRight: 30,
+    marginBottom: 65,
+    borderRadius: 5
+  },
+  button7: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    marginLeft: 95,
+    marginRight: 95,
+    marginBottom: 80,
+    borderRadius: 5
+  },
+  image: {
+    marginLeft: 5,
+    marginRight: 5,
+  },
+  bigtext: {
+    fontSize: 100,
+    fontFamily: "Avenir-Medium"
+  },
   buttonRed: {
     backgroundColor: '#FF585B',
   },
   buttonBlue: {
-    backgroundColor: '#24248f',
+    backgroundColor: '#464646',
   },
   buttonPink: {
-    backgroundColor: '#99004d'
+    backgroundColor: '#333C56'
   },
   buttonGreen: {
-    backgroundColor: '#008000'
+    backgroundColor: '#013240'
+  },
+  buttonTan: {
+    backgroundColor: '#FFF2DA'
   },
   buttonLabel: {
     textAlign: 'center',
     fontSize: 16,
+    fontFamily: 'Avenir-Medium',
     color: 'white'
   }
 });
@@ -465,538 +931,3 @@ const styles = StyleSheet.create({
 // });
 
 AppRegistry.registerComponent('hohoho', () => hohoho );
-
-
-//ORIGINAL HOHOHO APPLICATION
-
-// import React, {Component} from 'react'
-// import Swiper from 'react-native-swiper'
-// import {
-//   AppRegistry,
-//   StyleSheet,
-//   Text,
-//   View,
-//   TouchableOpacity,
-//   TextInput,
-//   NavigatorIOS,
-//   ListView,
-//   refreshControl,
-//   Alert,
-//   AsyncStorage,
-//   MapView,
-//   Image,
-//   ImagePickerIOS
-// } from 'react-native'
-//
-// // This is the root view
-//
-// // export default class CameraRollPicker extends Component {
-// //   constructor() {
-// //     super();
-// //     this.state = { image: null };
-// //   }
-// //
-// //   componentDidMount() {
-// //     this.pickImage();
-// //   }
-// //
-// //   pickImage() {
-// //     // openSelectDialog(config, successCallback, errorCallback);
-// //     ImagePickerIOS.openSelectDialog({}, imageUri => {
-// //       var formData = new FormData();
-// //       formData.append('moose', {
-// //         uri: this.state.image,
-// //         type: 'image/jpeg',
-// //         name: 'whatever.jpg'
-// //       });
-// //       fetch('https://s3-upload.gomix.me/', {
-// //         method: 'POST',
-// //         headers: {
-// //           'Content-Type': 'multipart/form-data'
-// //         },
-// //         body: formData
-// //       })
-// //     }, error => console.error(error));
-// //   }
-// //
-// //   render() {
-// //     return (
-// //       <View style={{ flex: 1 }}>
-// //       {this.state.image?
-// //         <Image style={{ flex: 1 }} source={{ uri: this.state.image }} /> :
-// //         null
-// //       }
-// //       </View>
-// //     );
-// //   }
-// // }
-//
-// var hohoho = React.createClass({
-//   render() {
-//     return (
-//
-//       <NavigatorIOS
-//       initialRoute={{
-//         component: Login,
-//         title: "Main"
-//       }}
-//       style={{flex: 1}}
-//       />
-//     );
-//   }
-// });
-// var SwiperView = React.createClass({
-//   render() {
-//     return (
-//       <Swiper style={{marginTop: 30}}>
-//       <Users />
-//       <Messages />
-//       </Swiper>
-//     );
-//   }
-// });
-//
-// var Register = React.createClass({
-//   getInitialState() {
-//     return {
-//       username: '',
-//       password: ''
-//     }
-//   },
-//   register() {
-//     fetch('https://hohoho-backend.herokuapp.com/register', {
-//       method: 'POST',
-//       headers: {
-//         "Content-Type": "application/json"
-//       },
-//       body: JSON.stringify({
-//         username: this.state.username,
-//         password: this.state.password,
-//       })
-//     })
-//     .then((response) => response.json())
-//     .then((responseJson) => {
-//       /* do something with responseJson and go back to the Login view but
-//       * make sure to check for responseJson.success! */
-//       if (responseJson.success) {
-//         this.props.navigator.pop();
-//       } else {
-//         this.setState({
-//           error: responseJson.error
-//         })
-//       }
-//     })
-//     .catch((err) => {
-//       /* do something if there was an error with fetching */
-//       console.log('error', err)
-//     });
-//   },
-//   render() {
-//     return (
-//       <View style={styles.container}>
-//       <TextInput
-//       style={{height: 40, borderWidth: 2, paddingTop: 10,
-//         paddingBottom: 10,
-//         marginTop: 10,
-//         marginLeft: 5,
-//         marginRight: 5,
-//         borderRadius: 5}}
-//         placeholder="Enter your username"
-//         onChangeText={(text) => this.setState({username: text})}
-//         />
-//         <TextInput secureTextEntry={true}
-//         style={{height: 40, borderWidth: 2, paddingTop: 10,
-//           paddingBottom: 10,
-//           marginTop: 10,
-//           marginLeft: 5,
-//           marginRight: 5,
-//           borderRadius: 5}}
-//           placeholder="Enter your Password"
-//           onChangeText={(text) => this.setState({password: text})}
-//           />
-//           <TouchableOpacity style={[styles.button, styles.buttonRed]} onPress={this.register}>
-//           <Text style={styles.buttonLabel}>Register</Text>
-//           </TouchableOpacity>
-//           <Text>{this.state.error}</Text>
-//           </View>
-//         );
-//       }
-//     });
-//     var LoginPage = React.createClass({
-//       getInitialState() {
-//         return {
-//           username: '',
-//           password: ''
-//         }
-//       },
-//       register() {
-//         fetch('https://hohoho-backend.herokuapp.com/login', {
-//           method: 'POST',
-//           headers: {
-//             "Content-Type": "application/json"
-//           },
-//           body: JSON.stringify({
-//             username: this.state.username,
-//             password: this.state.password
-//           })
-//         })
-//         .then((response) => response.json())
-//         .then((responseJson) => {
-//           console.log('login responseJson', responseJson)
-//           /* do something with responseJson and go back to the Login view but
-//           * make sure to check for responseJson.success! */
-//           if (responseJson.success){
-//             AsyncStorage.setItem('user', JSON.stringify({
-//               username: this.state.username,
-//               password: this.state.password
-//             }));
-//             this.props.navigator.push({
-//               component: SwiperView,
-//               title: "SwipeView",
-//               rightButtonTitle: 'Messages',
-//               onRightButtonPress: this.messages
-//             });
-//           } else {
-//             this.setState({
-//               message: responseJson.error
-//             })
-//           }
-//         })
-//         .catch((err) => {
-//           /* do something if there was an error with fetching */
-//           console.log(err)
-//         });
-//       },
-//       messages(){
-//         this.props.navigator.push({
-//           component: Messages,
-//           title: "Messages"
-//         })
-//       },
-//       render() {
-//         return (
-//           <View style={styles.container}>
-//           <TextInput
-//           style={{height: 40, borderWidth: 2, paddingTop: 10,
-//             paddingBottom: 10,
-//             marginTop: 10,
-//             marginLeft: 5,
-//             marginRight: 5,
-//             borderRadius: 5}}
-//             placeholder="Enter your username"
-//             onChangeText={(text) => this.setState({username: text})}
-//             />
-//             <TextInput secureTextEntry={true}
-//             style={{height: 40, borderWidth: 2, paddingTop: 10,
-//               paddingBottom: 10,
-//               marginTop: 10,
-//               marginLeft: 5,
-//               marginRight: 5,
-//               borderRadius: 5}}
-//               placeholder="Enter your Password"
-//               onChangeText={(text) => this.setState({password: text})}
-//               />
-//               <TouchableOpacity style={[styles.button, styles.buttonRed]} onPress={this.register}>
-//               <Text style={styles.buttonLabel}>Login</Text>
-//               </TouchableOpacity>
-//               <Text>{this.state.error}</Text>
-//               </View>
-//             );
-//           }
-//         });
-//
-//         var Users = React.createClass({
-//           getInitialState() {
-//             const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-//             fetch('https://hohoho-backend.herokuapp.com/users')
-//             .then((response) => response.json())
-//             .then((responseJson) => {
-//               if (responseJson.success){
-//                 this.setState({
-//                   dataSource: ds.cloneWithRows(
-//                     responseJson.users
-//                   )});
-//                 } else {
-//                   console.log('error')
-//                 }
-//               });
-//               return {
-//                 dataSource: ds.cloneWithRows([])
-//               }
-//             },
-//             touchUser(user, position){
-//               fetch('https://hohoho-backend.herokuapp.com/messages', {
-//                 method: 'POST',
-//                 headers: {
-//                   "Content-Type": "application/json"
-//                 },
-//                 body: JSON.stringify({
-//                   to: user._id,
-//                   location: {
-//                     longitude: position && position.coords && position.coords.longitude ,
-//                     latitude: position && position.coords && position.coords.latitude
-//                   }
-//                 })
-//               })
-//               .then((response) => response.json())
-//               .then((responseJson) => {
-//                 if (responseJson.success){
-//                   Alert.alert(
-//                     'Alert Title',
-//                     'Your Ho Ho Ho! to ' + user.username + 'has been sent!',
-//                     [{text: 'Dismiss Button'}]
-//                   )
-//                 } else {
-//                   Alert.alert(
-//                     'Alert Title',
-//                     'Your Ho HO hO! to ' + user.username + 'could not be sent.',
-//                     [{text: 'Dismiss Butotn'}]
-//                   )
-//                 }
-//               })
-//             },
-//             sendLocation(user) {
-//               navigator.geolocation.getCurrentPosition(
-//                 position => {
-//                   console.log("Got position:", position);
-//                   this.touchUser(user, position)
-//                 },
-//                 error => alert(error.message),
-//                 {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
-//               );
-//             },
-//             render(){
-//               return (
-//                 <View style={styles.container}>
-//                 <ListView
-//                 dataSource={this.state.dataSource}
-//                 renderRow={(rowData) => <View style={styles.container}>
-//                 <TouchableOpacity
-//                 onPress={this.touchUser.bind(this, rowData)}
-//                 onLongPress={this.sendLocation.bind(this, rowData)}
-//                 delayLongPress={500}>
-//
-//                 <Text>{rowData.username}</Text></TouchableOpacity>
-//                 </View>} />
-//                 </View>
-//               )
-//             }
-//           })
-//
-//           var Messages = React.createClass({
-//             messageUpdate(){
-//               const ds = new ListView.DataSource({rowHasChanged: (r1,r2) => r1 !== r2});
-//               fetch('https://hohoho-backend.herokuapp.com/messages')
-//               .then((responseJson) => (responseJson.json()))
-//               .then((response) => {
-//                 console.log('THIS ONE', response)
-//                 if(response.success){
-//                   this.setState({
-//                     dataSource: ds.cloneWithRows(response.messages)
-//                   })
-//                 } else {
-//                   console.log('error')
-//                 }
-//               })
-//               return {
-//                 dataSource: ds.cloneWithRows([])
-//               }
-//             },
-//             getInitialState(){
-//               this.messageUpdate;
-//               return {
-//                 seen: false
-//               }
-//             },
-//
-//             componentDidMount(){
-//               var refreshMessage = setInterval(this.messageUpdate, 3000);
-//             },
-//
-//             render(){
-//               return(
-//                 <View>
-//                 <ListView
-//                 dataSource={this.state.dataSource}
-//                 renderRow={(rowData) => <View style={styles.container}>
-//                 <Text>From: {rowData.from.username}</Text>
-//                 <Text>To: {rowData.to.username}</Text>
-//                 <Text>Message: Yo</Text>
-//                 <Text>When: {rowData.timestamp}</Text>
-//                 {(rowData.location && rowData.location.longitude) ? (
-//                   <MapView
-//                   style={{flex: 1, height: 200, margin: 0, width: 200}}
-//                   showsUserLocation={true}
-//                   scrollEnabled={false}
-//                   region={{
-//                     longitude: rowData.location.longitude,
-//                     latitude: rowData.location.latitude,
-//                     longitudeDelta: 1,
-//                     latitudeDelta: 1
-//                   }}
-//                   annotations={[{
-//                     latitude: rowData.location.latitude,
-//                     longitude: rowData.location.longitude,
-//                   }]}
-//                   />
-//                 ) : null}
-//                 </View> } />
-//                 </View>
-//               )
-//             }
-//           })
-//           var Login = React.createClass({
-//             login(username, password) {
-//               console.log('inner login')
-//               fetch('https://hohoho-backend.herokuapp.com/login', {
-//                 method: 'POST',
-//                 headers: {
-//                   "Content-Type": "application/json"
-//                 },
-//                 body: JSON.stringify({
-//                   username: username,
-//                   password: password
-//                 })
-//               })
-//               .then((response) => response.json())
-//               .then((responseJson) => {
-//                 /* do something with responseJson and go back to the Login view but
-//                 * make sure to check for responseJson.success! */
-//                 if (responseJson.success){
-//                   this.props.navigator.push({
-//                     component: SwiperView,
-//                     title: "Users",
-//                     rightButtonTitle: 'Messages',
-//                     onRightButtonPress: this.messages
-//                   });
-//                 } else {
-//                   this.setState({
-//                     message: responseJson.error
-//                   })
-//                 }
-//               })
-//               .catch((err) => {
-//                 /* do something if there was an error with fetching */
-//                 console.log(err)
-//               });
-//             },
-//             messages(){
-//               this.props.navigator.push({
-//                 component: Messages,
-//                 title: "Messages"
-//               })
-//             },
-//             componentDidMount() {
-//               AsyncStorage.getItem('user')
-//               .then(result => {
-//                 console.log('inside')
-//                 var parsedResult = JSON.parse(result);
-//                 var username = parsedResult.username;
-//                 var password = parsedResult.password;
-//                 if (username && password) {
-//                   console.log('inside again')
-//                   return (this.login(username, password))
-//                 }
-//                 // Don't really need an else clause, we don't do anything in this case.
-//               })
-//               .catch(err => { /* handle the error */ })
-//             },
-//             press() {
-//               this.props.navigator.push({
-//                 component: LoginPage,
-//                 title: "Login Page"
-//               });
-//             },
-//             register() {
-//               this.props.navigator.push({
-//                 component: Register,
-//                 title: "Register"
-//               });
-//             },
-//             photo() {
-//               this.props.navigator.push({
-//                 component: CameraRollPicker,
-//                 title: 'Add Photo'
-//               })
-//             },
-//             render() {
-//               return (
-//                 <View style={styles.container}>
-//                 <Image source={{uri:'https://pngimg.com/upload_small/santa_claus/santa_claus_PNG9965.png'}}
-//                 style={{width: 200, height: 200}}/>
-//                 <Text style={styles.textBig}>Login to HoHoHo!</Text>
-//                 <TouchableOpacity onPress={this.press} style={[styles.button, styles.buttonGreen]}>
-//                 <Text style={styles.buttonLabel}>Tap to Login</Text>
-//                 </TouchableOpacity>
-//                 <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={this.register}>
-//                 <Text style={styles.buttonLabel}>Tap to Register</Text>
-//                 </TouchableOpacity>
-//                 </View>
-//               );
-//             }
-//           });
-//
-//           const styles = StyleSheet.create({
-//             container: {
-//               flex: 1,
-//               justifyContent: 'center',
-//               alignItems: 'center',
-//               backgroundColor: '#F5FCFF',
-//             },
-//             containerRegister: {
-//               flex: 1,
-//               justifyContent: 'center',
-//               backgroundColor: '#F5FCFF',
-//             },
-//             containerFull: {
-//               flex: 1,
-//               justifyContent: 'center',
-//               alignItems: 'stretch',
-//               backgroundColor: '#F5FCFF',
-//             },
-//             welcome: {
-//               fontSize: 20,
-//               textAlign: 'center',
-//               margin: 10,
-//             },
-//             instructions: {
-//               textAlign: 'center',
-//               color: '#333333',
-//               marginBottom: 5,
-//             },
-//             textBig: {
-//               fontSize: 36,
-//               textAlign: 'center',
-//               margin: 10,
-//             },
-//             register: {
-//               fontSize: 36,
-//               textAlign: 'center',
-//               margin: 10
-//             },
-//             button: {
-//               alignSelf: 'stretch',
-//               paddingTop: 10,
-//               paddingBottom: 10,
-//               marginTop: 10,
-//               marginLeft: 5,
-//               marginRight: 5,
-//               borderRadius: 5
-//             },
-//             buttonRed: {
-//               backgroundColor: '#FF585B',
-//             },
-//             buttonBlue: {
-//               backgroundColor: '#0074D9',
-//             },
-//             buttonGreen: {
-//               backgroundColor: '#2ECC40'
-//             },
-//             buttonLabel: {
-//               textAlign: 'center',
-//               fontSize: 16,
-//               color: 'white'
-//             }
-//           });
-//
-//           AppRegistry.registerComponent('hohoho', () => hohoho );
