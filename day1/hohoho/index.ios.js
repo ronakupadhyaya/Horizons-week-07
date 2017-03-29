@@ -236,6 +236,34 @@ var Users = React.createClass({
     };
   },
 
+  pickImage(user) {
+    var self = this;
+    ImagePickerIOS.openSelectDialog({}, imageUri => {
+      var photo = {
+                uri: imageUri,
+                type: 'image/jpeg',
+                name: 'photo.jpg'
+              }
+      var body = new FormData();
+              body.append('to', user._id);
+              body.append('photo', photo);
+
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          console.log("Got position:", position);
+          var location = {
+            longitude: position.coords.longitude,
+            latitude: position.coords.latitude
+          }
+          body.append('location', location);
+          self.touchUser(user, body)
+        },
+        error => alert(error.message),
+        {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+      );
+    }, error => console.error(error));
+  },
+
   _onRefresh() {
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.setState({refreshing: true});
@@ -255,26 +283,18 @@ var Users = React.createClass({
       console.log('error', err)
     });
   },
-  pickImage() {
-    // openSelectDialog(config, successCallback, errorCallback);
-    ImagePickerIOS.openSelectDialog({}, imageUri => {
-      this.setState({ image: imageUri });
-    }, error => console.error(error));
-  },
 
-  touchUser(user, longitude, latitude, photo) {
+  touchUser(user, body) {
+    if (!body) {
+      body = new FormData();
+              body.append('to', user._id);
+    }
     fetch('https://hohoho-backend.herokuapp.com/messages', {
       method: 'POST',
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "multipart/form-data"
       },
-      body: JSON.stringify({
-        to: user._id,
-        location: {
-          longitude: longitude,
-          latitude: latitude
-        }
-      })
+      body: body
     })
     .then((response) => response.json())
     .then((responseJson) => {
@@ -297,11 +317,13 @@ var Users = React.createClass({
       console.log('error', err)
     });
   },
+
   sendLocation(user) {
+    this.pickImage(user)
     navigator.geolocation.getCurrentPosition(
       position => {
         console.log("Got position:", position);
-        this.touchUser(user, position.coords.longitude, position.coords.latitude, '')
+        this.touchUser(user, position.coords.longitude, position.coords.latitude, this.state.Image)
       },
       error => alert(error.message),
       {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
@@ -322,7 +344,7 @@ var Users = React.createClass({
       renderRow={(rowData) => (
         <View style={styles.userList}>
           <TouchableOpacity
-            onPress={this.touchUser.bind(this, rowData, '', '', '')}
+            onPress={this.touchUser.bind(this, rowData, '')}
             onLongPress={this.sendLocation.bind(this, rowData)}
             delayLongPress={1000}>
             <Text style={styles.userListInner}>{rowData.username}</Text>
