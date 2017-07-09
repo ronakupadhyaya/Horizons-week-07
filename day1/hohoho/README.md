@@ -357,7 +357,7 @@ add an `onPress` handler to send a _Ho Ho Ho!_ to any user we tap.
 
 ### Creating More Components - `App.js [Users]`
 
-Now, implement `fetch` inside of your `getInitialState` to load up an array of real users rather than a list of static users.
+Now, implement `fetch` inside of your `constructor`'s this.state to load up an array of real users rather than a list of static users.
 
 ```javascript
 .then((responseJson) => {
@@ -369,9 +369,8 @@ Now, implement `fetch` inside of your `getInitialState` to load up an array of r
 }.bind(this));
 ```
 
-⚠️ **Note:** You will _not_ be able to return the `getInitialState` function inside of a `.then()`
-statement - use `this.setState` when you receive the results back from `fetch` and return an empty
-array (`ds.cloneWithRows([])`) for your `dataSource` in the `getInitialState` function. This way, your
+⚠️ **Note:** Use `this.setState` when you receive the results back from `fetch` and return an empty
+array (`ds.cloneWithRows([])`) for your `dataSource` in the `constructor`\'s this.state. This way, your
 initial state will be zero rows, but the new rows will be set once we fetch the users from the server.
 
 We will also need to modify your `render` function to handle our response correctly, since
@@ -405,7 +404,7 @@ This component should be able to accomplish the following on the tap of a row:
 
 ### Adding to Components - `App.js [Users]`
 
-First, create a new function inside of the `Users` class (the same class that we created a `getInitialState` to `fetch` existing users in the previous part) called `touchUser`. This `touchUser` will take a parameter called `user` (which we will bind later to pass us a _specific user_ every time we tap on their corresponding row in the `<ListView>`).
+First, create a new function inside of the `Users` class (the same class that we created a `constructor` to `fetch` existing users in the previous part) called `touchUser`. This `touchUser` will take a parameter called `user` (which we will bind later to pass us a _specific user_ every time we tap on their corresponding row in the `<ListView>`).
 
 Inside of this `touchUser` function, use `fetch` and create a request that sends a _Ho Ho Ho!_ to another user by the `_id` property of the parameter `user`. That is, in the `to` parameter of `POST /messages` (refer to **_Endpoints Reference_** down below!), pass in `user._id`.
 
@@ -469,9 +468,9 @@ This view will be able to _do_ the following:
 
 ### Creating & Modifying Components - `App.js [Users, Messages]`
 
-Start by creating a new class called `Messages` that has a `getInitialState` function that is similar to that of your `Users` component. Refer to **_Endpoints Reference_** for how to `fetch` all the messages sent and received by your currently logged-in user.
+Start by creating a new class called `Messages` that has a `constructor` similar to that of your `Users` component. Refer to **_Endpoints Reference_** for how to `fetch` all the messages sent and received by your currently logged-in user.
 
-> **Tip:** Base this off of the `getInitialState` of your `Users` component.  Create a `fetch` promise
+> **Tip:** Base this off of the `constructor` of your `Users` component.  Create a `fetch` promise
   that calls `setState` upon succesfully retrieving messages and return `ds.cloneWithRows[]` outside of
   the promise. Make sure this property of your state is called `messages` and not `users`!
 
@@ -501,7 +500,7 @@ export that StackNavigator)
 
 At this point, your `Login` component should have the following functions:
 
-- `getInitialState` - the initial properties of the `username` and `password` parts of the state
+- `constructor` - the initial properties of the `username` and `password` parts of the state
 - `press` - the `onPress` handler of your Login submission button (_it might not be called this, depending on the way you implemented it!_)
 - `register` - the function that navigates to the `Register` view on the stack navigator
 - `messages` (**you just created this!**) - the function that navigates to the `Messages` view on the navigator stack
