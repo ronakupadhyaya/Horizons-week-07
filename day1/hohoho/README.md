@@ -289,7 +289,8 @@ Use this knowledge to add your data source to your view upon `getInitialState`. 
 we'll make it contain a static list of friends:
 
 ```javascript
-var Users = React.createClass({
+class UsersScreen extends React.Component {
+  //navigationOptions code
   getInitialState() {
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     return {
@@ -298,7 +299,7 @@ var Users = React.createClass({
       ])
     };
   }
-})
+}
 ```
 
 Let's render the list view. Inside the main `<View>` component in the `render`
