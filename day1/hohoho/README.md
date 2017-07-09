@@ -489,7 +489,7 @@ Implement the `render()` function for the `Messages` class that displays the fol
 
 Now we need something that will navigate to this new = `Messages` view.
 
-First, modify the `Login` component of your `App.js` by **adding a function** called
+First, modify the `Users` component of your `App.js` by **adding a function** called
 `messages()` that will navigate to the messages component with `this.props.navigation.navigate`,
 just like we did with `Users` earlier. We will use this function later.
 
@@ -498,13 +498,12 @@ component earlier) so we can actually navigate to it. The navigate() function fr
 React Navigation can only go to screens that have been defined when we make and
 export that StackNavigator)
 
-At this point, your `Login` component should have the following functions:
+At this point, your `Users` component should have the following functions:
 
-- `constructor` - the initial properties of the `username` and `password` parts of the state
-- `press` - the `onPress` handler of your Login submission button (_it might not be called this, depending on the way you implemented it!_)
-- `register` - the function that navigates to the `Register` view on the stack navigator
+- `constructor` - populate the list of users
+- `touchUser` - the `onPress` handler for clicking a user from the list (_it might not be called this, depending on the way you implemented it!_)
 - `messages` (**you just created this!**) - the function that navigates to the `Messages` view on the navigator stack
-- `render` - the render function for your `Login` component
+- `render` - the render function for your `Users` component
 
 Notice a problem, we spent all this time making the Message component and a function inside
 Login that will navigate to it but we never call it. What?! Let's fix this now by adding
@@ -533,7 +532,7 @@ To do this, we make our static navigationOptions a function like so
 
 ```javascript
   static navigationOptions = ({ navigation }) => ({
-    title: 'Login',
+    title: 'Users',
     headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
   });
 ```
@@ -552,7 +551,7 @@ in a good ol componentDidMount like so...
 Add your handler function and don't forget to bind
 
 Wow, isn't that the most beautiful button you've ever seen? Now we can actually
-get to the `Messages` screen from our `Login` screen. Give it a try!
+get to the `Messages` screen from our `Users` screen. Give it a try!
 
 ### End Result, Part 5
 
