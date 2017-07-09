@@ -366,7 +366,7 @@ Now, implement `fetch` inside of your `constructor`'s this.state to load up an a
                                       * of users you receive in
                                       * the response of fetch! */)
   });
-}.bind(this));
+});
 ```
 
 ⚠️ **Note:** Use `this.setState` when you receive the results back from `fetch` and return an empty
@@ -523,8 +523,33 @@ we define the `headerRight` key to modify that portion of the header (in this ca
 ```
 
 Note how we can just throw in jsx. We could have added anything we wanted there
-but we just wanted a button with an onPress property. Add your handler function
-to that onPress. Remember what we just wrote earlier in this part.
+but we just wanted a button with an onPress property.
+
+One big problem though, this won't work. What gives? Well, react navigation won't be able to see our
+`messages` function so we're going to have to switch to dynamic navigationOptions instead of static.
+You can read up about what this means on the [official documentation](https://reactnavigation.org/docs/navigators/navigation-options) or just follow along...
+
+To do this, we make our static navigationOptions a function like so
+
+```javascript
+  static navigationOptions = ({ navigation }) => ({
+    title: 'Login',
+    headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
+  });
+```
+
+and then we need to define onRightPress within the navigators state params so let's do this
+in a good ol componentDidMount like so...
+
+```javascript
+  componentDidMount() {
+    this.props.navigation.setParams({
+      onRightPress: yourHandlerFunctionGoesHere
+    })
+  }
+```
+
+Add your handler function and don't forget to bind
 
 Wow, isn't that the most beautiful button you've ever seen? Now we can actually
 get to the `Messages` screen from our `Login` screen. Give it a try!
