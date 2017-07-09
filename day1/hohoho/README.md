@@ -5,8 +5,7 @@
 Your goal is to create a simplified clone of the [Yo
 app](https://www.justyo.co/), a "contextual messenger" that lets you send a
 simple "Yo" message to friends (if you haven't heard of Yo already, [read about
-it
-here](http://www.businessinsider.com/whats-happened-to-7-million-app-yo-now-that-the-hype-has-died-2014-9)).
+it here](http://www.businessinsider.com/whats-happened-to-7-million-app-yo-now-that-the-hype-has-died-2014-9)).
 You'll build this app using React Native and run it on the mobile platform of
 your choice, iOS or Android.
 
@@ -21,14 +20,41 @@ Your app will have the following features:
 
 ## Instructions
 
-If you haven't already, start by following the instructions in [today's warmup
-exercise](../warmup.md) to install the required components for React Native.
+If you haven't already, make sure you install the Expo XDE from https://expo.io/tools
+- We'll be using its live reloading features so can see how each line of code
+  changes (or breaks - Yikes!) our app.
+- Try loading a quick demo app I made here, https://snack.expo.io/B1V9L-kSb
+- Or perhaps you like to live on the dangerous side so try loading this app with
+  errors https://snack.expo.io/BJ9rvWkrb
+  - You don't have to fix it, but hopefully you see at least a couple problems with the code
+  - Yet even with these errors, we can load the app onto our phones
 
-To start the frontend code in the iOS simulator run `react-native run-ios`.
-Your code should go in `index.ios.js`.
+After you've opened the project in Expo XDE, you can load the app on your phone by
+clicking the `Share` button or typing the link but who's got time to type that,
+scan the QR code with the expo app and let's go!
 
-The backend is already provided for you at https://hohoho-backend.herokuapp.com/ .
-[See API documentation below.](#api)
+The backend is already provided for you (disappointing, I know) at
+https://hohoho-backend.herokuapp.com/ so take a look at the [See API documentation below.](#api)
+
+**Seriously**, go read through it **now**
+
+## Setup
+
+1. Run npm install
+2. Open the hohoho folder in Expo XDE and wait for it to finish opening
+    - Project > open Project > Select the hohoho folder
+3. Now, you can just edit the code with any text editor and Expo will live reload
+  changes on your phone for you!
+4. Expo XDE will now also stream any  **console logs/errors/warnings** from your phone to this window
+5. **Before you continue**, try launching the app on your phone now to make sure it works
+
+**IMPORTANT:** You can also reload manually if live-reloading doesn't seem to be working
+  - Live reloading can be a bit finicky ¯\\\_(ツ)\_/¯ so if you aren't
+    seeing your changes try manual reloading
+
+**Note:** If you are having **connection issues**, try publishing and then normally connecting again
+  - Still doesn't work? Move on and try again in a few minutes
+  - Still nothing? Ask for help in the queue and keep trying every now and then
 
 ## Part 1. Registration
 
@@ -46,7 +72,7 @@ Your registration screen should be able to _do_ the following:
 - Make a `POST` request to a server (API reference provided, see **_Endpoint Reference_**).
 
 
-### Creating Components - `index.ios.js [Register]`
+### Creating Components - `App.js [Register]`
 
 
 Let's create the registration screen.
@@ -110,13 +136,13 @@ about this in [Networking](https://facebook.github.io/react-native/docs/network.
 
 Awesome! If you've gotten a successful response from the server, now it's time
 to take the user to the next screen of the app. Inside your success promise
-chain, call the `this.props.navigator.pop()` to use the `NavigatorIOS` component to bring us back to our previous view - the Login view. 
+chain, call the `this.props.navigator.pop()` to use the `NavigatorIOS` component to bring us back to our previous view - the Login view.
 
 ### End Result, Part 1
 
 By the end of Part 1, make sure that you are able to access your registration view upon load of the app, enter in registration details (username and password), and successfully get a response back from the server. Upon successful registration, your app should bring you back to the Login view to login with the details you just registered with.
 
-Congratulations! You've built your first native application view - in the next part, we'll build login in much the same way we did with registration, using `fetch` for handling network requests with our backend, and calling methods on our `NavigatorIOS` to bring us into different views. 
+Congratulations! You've built your first native application view - in the next part, we'll build login in much the same way we did with registration, using `fetch` for handling network requests with our backend, and calling methods on our `NavigatorIOS` to bring us into different views.
 
 ## Part 2. Login
 
@@ -134,9 +160,9 @@ Your login view will be able to do the following:
 
 ### Creating Components - `index.ios.js [Login]`
 
-This view will be very similar to registration - we will only need to change the routes we use for `fetch` and change what happens upon success. 
+This view will be very similar to registration - we will only need to change the routes we use for `fetch` and change what happens upon success.
 
-Build two `<TextInput />` components and a `<TouchableOpacity />` component within the `render()` function of our `Login`, much the same as our `Register` component from the previous step. 
+Build two `<TextInput />` components and a `<TouchableOpacity />` component within the `render()` function of our `Login`, much the same as our `Register` component from the previous step.
 
 Create a new `onPress` handler for the `<TouchableOpacity />` component that will do the following:
 
@@ -151,7 +177,7 @@ Create a new `onPress` handler for the `<TouchableOpacity />` component that wil
   })
   ```
   - **Careful - we will replace thie later!** In the next step, we will modify this function to push the `Users` component here rather than the Register view again. We will let you know when that needs to happen!
-- If `responseJson.success` is not true, display a message with the error from the response. 
+- If `responseJson.success` is not true, display a message with the error from the response.
   - To display a message to the user, set a property to your state (with `setState`) and create a `<Text>` component like the following that updates with your state:
   ```jsx
   <Text>{this.state.message}</Text>
@@ -223,7 +249,7 @@ method for this `Users` view, add a list view component like this:
 />
 ```
 
-To tie it all together, change the `.then()` within the `fetch` of your `Login` component to 
+To tie it all together, change the `.then()` within the `fetch` of your `Login` component to
 
 ```javascript
 this.props.navigator.push({
@@ -248,8 +274,8 @@ Now, implement `fetch` inside of your `getInitialState` to load up an array of r
 ```javascript
 .then((responseJson) => {
   this.setState({
-    dataSource: ds.cloneWithRows(/* replace this with the array 
-                                      * of users you receive in 
+    dataSource: ds.cloneWithRows(/* replace this with the array
+                                      * of users you receive in
                                       * the response of fetch! */)
   });
 }.bind(this));
@@ -272,7 +298,7 @@ By Part 3, you will be able to login, register, and view all usernames returned 
 
 ## Part 4. Send a HoHoHo
 
-### Overview 
+### Overview
 
 Next, we will be handling the logic for sending a _Ho Ho Ho!_ to another user in our user list. The end result will look something like the following:
 
@@ -280,11 +306,11 @@ Next, we will be handling the logic for sending a _Ho Ho Ho!_ to another user in
 
 This component should be able to accomplish the following on the tap of a row:
 - Use `fetch` to send a request to our backend server to _Ho Ho Ho!_ another user
-- Alert with either the success or response of a _Ho Ho Ho!_ 
+- Alert with either the success or response of a _Ho Ho Ho!_
 
 ### Adding to Components - `index.ios.js [Users]`
 
-First, create a new function inside of the `Users` class (the same class that we created a `getInitialState` to `fetch` existing users in the previous part) called `touchUser`. `touchUser` will take a parameter called `user` (which we will bind later to pass us a _specific user_ every time we tap on their corresponding row in the `<ListView>`). 
+First, create a new function inside of the `Users` class (the same class that we created a `getInitialState` to `fetch` existing users in the previous part) called `touchUser`. `touchUser` will take a parameter called `user` (which we will bind later to pass us a _specific user_ every time we tap on their corresponding row in the `<ListView>`).
 
 Inside of this `touchUser` function, use `fetch` and create a request that sends a _Ho Ho Ho!_ to another user by the `_id` property of the parameter `user`. That is, in the `to` parameter of `POST /messages` (refer to **_Endpoints Reference_** down below!), pass in `user._id`.
 
@@ -312,14 +338,14 @@ Next, recall the following lines of code from the `render()` function of our `Us
 
 Here, all we are displaying is a simple `<Text>` component inside of each row of our `<ListView>` to show the username of each user. To make each of these rows "tappable," we will now wrap the `<Text>` component inside of a `<TouchableOpacity>` component, just like we did for our Login and Register buttons from earlier.
 
-Add to the `renderRow` prop of the `<ListView>` component and put the `<Text>` component returned _inside of_ a `<TouchableOpacity>` component. Pass an `onPress` prop to the `<TouchableOpacity>` that calls the `touchUser` function you wrote and pass in `rowData` to the function. 
+Add to the `renderRow` prop of the `<ListView>` component and put the `<Text>` component returned _inside of_ a `<TouchableOpacity>` component. Pass an `onPress` prop to the `<TouchableOpacity>` that calls the `touchUser` function you wrote and pass in `rowData` to the function.
 
 You can do this by binding like the following:
 ```jsx
 <TouchableOpacity onPress={this.touchUser.bind(this, rowData)}... />
 ```
 
-The goal here is to call `touchUser` on pressing any of the rows and pass in an object to the `touchUser` function representing the user corresponding to the row. 
+The goal here is to call `touchUser` on pressing any of the rows and pass in an object to the `touchUser` function representing the user corresponding to the row.
 
 The `touchUser` function will then take the `_id` of the user object passed in and create a request to send the _Ho Ho Ho!_
 
@@ -331,7 +357,7 @@ By Part 4, you will now be able to tap on anyone's name and send them your very 
 
 ### Overview
 
-For this part, we will create a new view that displays all messages sent and received from a current user. This view will look something like the following: 
+For this part, we will create a new view that displays all messages sent and received from a current user. This view will look something like the following:
 
 ![](img/messages.png)
 
@@ -341,7 +367,7 @@ This view will be able to _do_ the following:
 
 ### Creating, Modifying Components - `index.ios.js [Users, Messages]`
 
-Start by creating a new class called `Messages` that has a `getInitialState` function that is similar to that of your `Users` component. Refer to **_Endpoints Reference_** for how to `fetch` all the messages sent and received by your currently logged-in user. 
+Start by creating a new class called `Messages` that has a `getInitialState` function that is similar to that of your `Users` component. Refer to **_Endpoints Reference_** for how to `fetch` all the messages sent and received by your currently logged-in user.
 
 > **Tip:** Base this off of the `getInitialState` of your `Users` component.  Create a `fetch` promise that calls `setState` upon succesfully retrieving messages and return `ds.cloneWithRows[]` outside of the promise. Make sure this property of your state is called `messages` and not `users`!
 
@@ -353,7 +379,7 @@ Implement the `render()` function for the `Messages` class that displays the fol
 
 <sub>*Where `aMessage` represents any message object as part of the  `responseJson.messages` array!</sub>
 
-> **Tip:** Again, this should be based off of the `render` function of your `Users` component. Create a `<ListView>` that renders rows of messages with the contents above. 
+> **Tip:** Again, this should be based off of the `render` function of your `Users` component. Create a `<ListView>` that renders rows of messages with the contents above.
 
 We will now modify our `Users` view to allow the view to present our newly created `Messages` view.
 
@@ -361,7 +387,7 @@ First, modify the `Login` component of your `index.ios.js` file to **add a funct
 
 At this point, your `Login` component should have the following functions:
 
-- `getInitialState` - the initial properties of the `username` and `password` parts of the state 
+- `getInitialState` - the initial properties of the `username` and `password` parts of the state
 - `press` - the `onPress` handler of your Login submission button (_it might not be called this, depending on the way you implemented it!_)
 - `register` - the function that pushes the `Register` view onto the navigator stack
 - `messages` (**you just created this!**) - the function that pushes the `Messages` view onto the navigator stack
@@ -471,7 +497,7 @@ was successful.
     ]
   }
   ```
-  
+
 - `POST /messages`: Sends a message/_Ho Ho Ho!_ to another user
   - Parameters:
     - `to`: the ID of the user you are sending a message to
