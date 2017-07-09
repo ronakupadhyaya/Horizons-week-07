@@ -60,6 +60,15 @@ https://hohoho-backend.herokuapp.com/ so take a look at the [See API documentati
   - Still nothing? Resist the urge to flip a table and ask for help in the
     queue + keep trying every now and then
 
+## File Structure
+assets/ : Contains any static app assets like images <br />
+img/ : Contains images used in this readme <br />
+App.js : The primary Expo file. Today, all of your react native code will go into this file
+app.json : The Expo app configuration file
+
+
+README.md: this file
+
 ## Part 1. Registration
 
 ### Overview
