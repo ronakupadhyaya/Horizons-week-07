@@ -52,9 +52,13 @@ https://hohoho-backend.herokuapp.com/ so take a look at the [See API documentati
   - Live reloading can be a bit finicky ¯\\\_(ツ)\_/¯ so if you aren't
     seeing your changes try manual reloading
 
-**Note:** If you are having **connection issues**, try publishing and then normally connecting again
-  - Still doesn't work? Move on and try again in a few minutes
-  - Still nothing? Ask for help in the queue and keep trying every now and then
+**Note:** If you are having **connection issues**... (in order)
+  - Make sure you don't have duplicate apps open in the background of your phone
+  - Move on and try again in a couple minutes
+  - Try publishing and then normally connecting again
+  - Press restart and/or restarting expo itself
+  - Still nothing? Ignore the urge to flip any tables and ask for help in the
+    queue + keep trying every now and then
 
 ## Part 1. Registration
 
