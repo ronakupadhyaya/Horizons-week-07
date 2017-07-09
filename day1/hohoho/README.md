@@ -54,7 +54,7 @@ https://hohoho-backend.herokuapp.com/ so take a look at the [See API documentati
 
 **Note:** If you are having **connection issues**... (in order)
   - Make sure you don't have duplicate apps open in the background of your phone
-  - Move on and try again in a couple minutes
+  - Move on and try again in a couple minutes \- this usually does work, be patient
   - Try publishing and then normally connecting again
   - Press restart and/or restarting expo itself
   - Still nothing? Ignore the urge to flip any tables and ask for help in the
@@ -81,11 +81,19 @@ Your registration screen should be able to _do_ the following:
 
 Let's create the registration screen.
 
-The first thing you'll notice is the boilerplate code for `NavigatorIOS` inside the
-root component at the top of `index.ios.js`, which allows us to
-move forward and backward among a series of screens in our app, for instance,
-from a Login screen to a Main screen. Don't worry too much about this for now.
-Just use the boilerplate code to build these two screens.
+The first thing you'll notice are two react components for our login and register
+screens. Don't worry, react native uses much of the exact same code and syntax from
+React. See, your practically a react native developer already, now you just need to
+learn how to use the extra features we have over plain react.
+
+Further down, we have the boilerplate code for `React Navigation` as the
+default export at the top of `App.js`. This specifies all of the components that we
+wish to visit as screens of our app and which one is displayed initially.
+
+We can use this navigator later to move forward and backward among a series of
+screens in our app, for instance, from a Login screen to a Main screen. Don't
+worry too much about this for now. The boilerplate code is already setup to work
+with our two starting screens (register and login).
 
 On the registration screen, use `TextInput` components for the form fields, with a
 callback to pass the value to the state, like this:
@@ -98,14 +106,24 @@ callback to pass the value to the state, like this:
 />
 ```
 
-You can find more information in [Handling text input](https://facebook.github.io/react-native/docs/handling-text-input.html).
+Remember you may need to add/fix style for the above. Never just blindly copy
+and paste code. You can find more information in [Handling text input](https://facebook.github.io/react-native/docs/handling-text-input.html).
+
+> **Tip:** Is the TextInput component something we need to import? It's **always** a good
+  idea to look at the docs + example code for any react native component we want to use
 
 You will need two of these `<TextInput />` components, once for maintaining a state for `username`, and another storing state for `password`. Both of these will be used upon submitting the registration!
 
-Then you'll need a submit button. Use `TouchableOpacity` for this, with an
-`onPress` handler. If you need an example for `TouchableOpacity`, take a look at the scaffolding for the `<Login />` component we provided for you. If you want to hide the user input (say, for passwords), add the prop: `secureTextEntry={true}`.
+Now you need a way to actually use these two input fields so let's create ourselves a
+submit button. Use `TouchableOpacity` for this, with an `onPress` handler (sound familiar?).
+If you need an example for `TouchableOpacity`, take a look at the scaffolding for the
+`<Login />` component we provided for you OR better yet, the official react native
+documentation. If you want to hide the user input (say, for passwords), you can
+simply add the prop: `secureTextEntry={true}`.
 
-> **Tip:** We also created some preset styles, such as `styles.button` and `styles.buttonBlue` , `styles.buttonGreen`, and `styles.buttonRed`. Feel free to add your own in the `StyleSheet` at the bottom!
+> **Tip:** We've also created some preset styles, such as `styles.button`, `styles.buttonBlue`,
+`styles.buttonGreen`, and `styles.buttonRed`. Feel free to add your own styles in the
+`StyleSheet` at the bottom or use ours!
 
 Once you've got and validated the input values, you can make an HTTP POST
 request with the username and password to the backend route like this:
@@ -136,17 +154,25 @@ an HTTP request. The syntax is slightly different, since `fetch` returns a
 promise. The `then` clause contains a success and an error handler. Read more
 about this in [Networking](https://facebook.github.io/react-native/docs/network.html).
 
-⚠️ **Warning:** Make sure to call `.then(response => response.json())` (like above) **before any other `.then` statements** to turn the raw response into JSON that you can process in subsequent `.then`'s.
+⚠️ **Warning:** Make sure to call `.then(response => response.json())` (like above) **before any other `.then` statements** (since each .then is run one after another) to turn the raw response into JSON that you can process in subsequent `.then`'s.
 
 Awesome! If you've gotten a successful response from the server, now it's time
-to take the user to the next screen of the app. Inside your success promise
-chain, call the `this.props.navigator.pop()` to use the `NavigatorIOS` component to bring us back to our previous view - the Login view.
+to take the user to the next screen of the app. Sounds scary but don't worry, the
+`React Navigation` library makes it easy. Inside your success promise chain, call
+`this.props.navigation.back()` to use the stack navigator we mentioned earlier to
+bring us back to our previous view - the Login screen.
+
+> **Tip:** If for some reason you haven't tested your code yet, \- you rebel \-
+  test **now** before continuing on to part 2. You always want to test as often
+  as possible because the longer you wait the more errors could build up and make it
+  so much harder to debug them all at once
+
 
 ### End Result, Part 1
 
 By the end of Part 1, make sure that you are able to access your registration view upon load of the app, enter in registration details (username and password), and successfully get a response back from the server. Upon successful registration, your app should bring you back to the Login view to login with the details you just registered with.
 
-Congratulations! You've built your first native application view - in the next part, we'll build login in much the same way we did with registration, using `fetch` for handling network requests with our backend, and calling methods on our `NavigatorIOS` to bring us into different views.
+Congratulations! You've built your first native application view - in the next part, we'll build login in much the same way we did with registration, using `fetch` for handling network requests with our backend, and calling methods on `this.props.navigation` to bring us into different views.
 
 ## Part 2. Login
 
