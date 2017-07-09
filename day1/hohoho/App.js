@@ -3,7 +3,9 @@ import {
   StyleSheet,
   View,
   Text,
-  TouchableOpacity
+  TouchableOpacity,
+  TextInput,
+  ListView
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 

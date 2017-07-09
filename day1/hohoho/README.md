@@ -33,7 +33,7 @@ After you've opened the project in Expo XDE, you can load the app on your phone 
 clicking the `Share` button or typing the link but who's got time to type that,
 scan the QR code with the expo app and let's go!
 
-The backend is already provided for you (disappointing, I know) at
+The backend is already hosted and provided for you at
 https://hohoho-backend.herokuapp.com/ so take a look at the [See API documentation below.](#api)
 
 **Seriously**, go read through it **now**
@@ -57,7 +57,7 @@ https://hohoho-backend.herokuapp.com/ so take a look at the [See API documentati
   - Move on and try again in a couple minutes \- this usually does work, be patient
   - Try publishing and then normally connecting again
   - Press restart and/or restarting expo itself
-  - Still nothing? Ignore the urge to flip any tables and ask for help in the
+  - Still nothing? Resist the urge to flip a table and ask for help in the
     queue + keep trying every now and then
 
 ## Part 1. Registration
@@ -109,7 +109,7 @@ callback to pass the value to the state, like this:
 Remember you may need to add/fix style for the above. Never just blindly copy
 and paste code. You can find more information in [Handling text input](https://facebook.github.io/react-native/docs/handling-text-input.html).
 
-> **Tip:** Is the TextInput component something we need to import? It's **always** a good
+> **Tip:** Note that TextInput component is something we imported. It's **always** a good
   idea to look at the docs + example code for any react native component we want to use
 
 You will need two of these `<TextInput />` components, once for maintaining a state for `username`, and another storing state for `password`. Both of these will be used upon submitting the registration!
@@ -208,7 +208,7 @@ component, which will do the following:
   this.props.navigation.navigate('screenNameGoesHere')
   ```
   - **Careful - we will replace this later!** In the next step, we will modify this
-    function (and the react navigation stack router) to navigate to a `Users` screen
+    function (and the react navigation stack navigator) to navigate to a `Users` screen
     rather than the Register screen again. We will let you know when that needs to happen!
 - If `responseJson.success` is not true, display a message with the error from the response.
   - To display a message to the user, set a property to your state (with `setState`) and create a `<Text>` component like the following that updates with your state:
@@ -235,15 +235,33 @@ Your users view will be able to do the following:
 - Display the result of this `fetch` in a list view with all usernames of each user
 - Upon tapping any of the displayed users, another `fetch` should be called to send a "HoHoHo" to the tapped user (from the user that is logged in)
 
-We'll break this down into sections: first, we'll just handle displaying a list of users, and then, we'll use `fetch` to display the correct list of users.
+We'll break this down into sections: first, we'll just handle displaying a list of
+users, and then, we'll use `fetch` to display the correct list of users.
 
-### Creating Components - `index.ios.js [Users]`
+### Creating Components - `App.js [Users]`
 
 The main screen of your app is going to contain a list of the user's friends;
-tapping one of them would "Ho! Ho! Ho!" them. The easiest and most natural way
-to display a list of data in React Native is by [Using a ListView](https://facebook.github.io/react-native/docs/using-a-listview.html).
+tapping one of them would "Ho! Ho! Ho!" them.
 
-Take a look at the top of your `index.ios.js` and spot a line that looks like:
+Create the Users component and include this variable that you may have notice in
+our other two components...
+
+```javascript
+  static navigationOptions = {
+    title: 'Users' //you put the title you want to be displayed here
+  };
+```
+
+This variable essentially tells React Navigation how you want to display the screen.
+Here, we only set the title of the screen but using this same variable, we could
+change colors, add buttons to the header bar, and a number of other things. We'll
+get back to this later. Just know that while not required, you need it if you want to
+display a title in the header bar of the screen.
+
+The easiest and most natural way to display a list of data in React Native is by
+[Using a ListView](https://facebook.github.io/react-native/docs/using-a-listview.html).
+
+Take a look at the top of your `App.js` and spot a line that looks like:
 
 ```javascript
 import {
@@ -252,7 +270,8 @@ import {
 } from 'react-native'
 ```
 
-This import statement allows us to use `ListView` throughout the rest of our app - we've done this for you!
+This import statement allows us to use `ListView` throughout the rest of our
+app \- we've done this for you!
 
 Next, we need to add something called a _data source_ to the state for the
 `Users` component. In React you learned to do this using the
@@ -266,7 +285,7 @@ var Users = React.createClass({
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     return {
       dataSource: ds.cloneWithRows([
-        'Moose', 'Lane', 'Josh', 'Ethan', 'Elon', 'Darwish', 'Abhi Fitness'
+        'Moose', 'Corey', 'Allie', 'Jay', 'Graham', 'Darwish', 'Abhi Fitness'
       ])
     };
   }
@@ -283,25 +302,50 @@ method for this `Users` view, add a list view component like this:
 />
 ```
 
-To tie it all together, change the `.then()` within the `fetch` of your `Login` component to
+Now that we've created our `Users` component, we can add it to the stack navigator
+Take a look at the object we pass in as the first parameter to StackNavigator...
 
 ```javascript
-this.props.navigator.push({
-  component: Users,
-  title: "Users"
-})
+  {
+    Login: {
+      screen: LoginScreen,
+    },
+    Register: {
+      screen: RegisterScreen,
+    },
+  }
 ```
 
-This will make sure that after Login, our view changes to the new Users view instead of back to our Registration view.
+Any guesses as to what we need to change so we can navigate to this new Users
+component/screen? Yep, we're just going to add a new key called `Users` that contains
+an object with the key `screen` and value `componentName` so in total, something like this...
+
+```
+  Users: {
+    screen: ComponentNameGoesHere
+  }
+```
+
+To tie it all together, we go back and modify the `.then()` within the `fetch`
+of your `Login` component to
+
+```javascript
+this.props.navigation.navigate('Users')
+```
+
+This will make sure that after Login, our view changes to the new Users screen
+instead of back to our Registration screen.
 
 Boom! Now we have a list of friends in our app. Kinda. Of course,
 there's no data yet, so the list never changes and you can't add to it, but,
 hey, if you're gonna have a static list of friends, that's a hell of a list!
 
 ### Checkpoint, Part 3
-At this point, you should be able to register, login, and view a static list of users that currently do nothing. In the next section, we will fetch a list of users and add an `onPress` handler to send a _Ho Ho Ho!_ to any user we tap.
+At this point, you should be able to register, login, and view a static list of users
+that currently do nothing. In the next section, we will fetch a list of users and
+add an `onPress` handler to send a _Ho Ho Ho!_ to any user we tap.
 
-### Creating More Components - `index.ios.js [Users]`
+### Creating More Components - `App.js [Users]`
 
 Now, implement `fetch` inside of your `getInitialState` to load up an array of real users rather than a list of static users.
 
@@ -315,9 +359,14 @@ Now, implement `fetch` inside of your `getInitialState` to load up an array of r
 }.bind(this));
 ```
 
-⚠️ **Note:** You will _not_ be able to return the `getInitialState` function inside of a `.then()` statement - use `this.setState` when you receive the results back from `fetch` and return an empty array (`ds.cloneWithRows([])`) for your `dataSource` in the `getInitialState` function. This way, your initial state will be zero rows, but the new rows will be set once we fetch the users from the server.
+⚠️ **Note:** You will _not_ be able to return the `getInitialState` function inside of a `.then()`
+statement - use `this.setState` when you receive the results back from `fetch` and return an empty
+array (`ds.cloneWithRows([])`) for your `dataSource` in the `getInitialState` function. This way, your
+initial state will be zero rows, but the new rows will be set once we fetch the users from the server.
 
-We will also need to modify your `render` function to handle our response correctly, since `responseJson` is now an array of _objects_. Change the `<Text>` component within each `renderRow` of your `<ListView />` to:
+We will also need to modify your `render` function to handle our response correctly, since
+`responseJson` is now an array of _objects_. Change the `<Text>` component within each `renderRow` of
+your `<ListView />` to:
 
 ```jsx
 <ListView
@@ -329,6 +378,8 @@ We will also need to modify your `render` function to handle our response correc
 ### End Result, Part 3
 
 By Part 3, you will be able to login, register, and view all usernames returned by our backend. Tapping them will do nothing yet, but we will take care of that in the next part!
+
+> **Tip:** Again, now would be a great time to test everything you've written so far if you haven't already
 
 ## Part 4. Send a HoHoHo
 
@@ -342,13 +393,13 @@ This component should be able to accomplish the following on the tap of a row:
 - Use `fetch` to send a request to our backend server to _Ho Ho Ho!_ another user
 - Alert with either the success or response of a _Ho Ho Ho!_
 
-### Adding to Components - `index.ios.js [Users]`
+### Adding to Components - `App.js [Users]`
 
-First, create a new function inside of the `Users` class (the same class that we created a `getInitialState` to `fetch` existing users in the previous part) called `touchUser`. `touchUser` will take a parameter called `user` (which we will bind later to pass us a _specific user_ every time we tap on their corresponding row in the `<ListView>`).
+First, create a new function inside of the `Users` class (the same class that we created a `getInitialState` to `fetch` existing users in the previous part) called `touchUser`. This `touchUser` will take a parameter called `user` (which we will bind later to pass us a _specific user_ every time we tap on their corresponding row in the `<ListView>`).
 
 Inside of this `touchUser` function, use `fetch` and create a request that sends a _Ho Ho Ho!_ to another user by the `_id` property of the parameter `user`. That is, in the `to` parameter of `POST /messages` (refer to **_Endpoints Reference_** down below!), pass in `user._id`.
 
-Within the `.then` of this `fetch` (_don't forget to `.json()` the response with another `.then` before this!_), we want to alert based on whether or not the request completed successfuly or not. Here is an example of how we display an [alert with React Native](https://facebook.github.io/react-native/docs/alert.html):
+Within the `.then` of this `fetch` (_**don't forget** to `.json()` the response with another `.then` before this!_), we want to alert based on whether or not the request completed successfully or not. Here is an example of how we display an [alert with React Native](https://facebook.github.io/react-native/docs/alert.html):
 
 ```javascript
 Alert.alert(
@@ -359,7 +410,8 @@ Alert.alert(
 
 ```
 
-If `responseJson.success` is true, display an alert that says "Your _Ho Ho Ho!_ to `THE_USERNAME` has been sent!" If not, display an alert with an error saying "Your _Ho Ho Ho!_ to `THE USERNAME` could not be sent."
+If `responseJson.success` is true, display an alert that says "Your _Ho Ho Ho!_ to `THE_USERNAME` has
+been sent!" If not, display an alert with an error saying "Your _Ho Ho Ho!_ to `THE USERNAME` could not be sent."
 
 Next, recall the following lines of code from the `render()` function of our `Users` view component:
 
@@ -370,9 +422,13 @@ Next, recall the following lines of code from the `render()` function of our `Us
 />
 ```
 
-Here, all we are displaying is a simple `<Text>` component inside of each row of our `<ListView>` to show the username of each user. To make each of these rows "tappable," we will now wrap the `<Text>` component inside of a `<TouchableOpacity>` component, just like we did for our Login and Register buttons from earlier.
+Here, all we are displaying is a simple `<Text>` component inside of each row of our `<ListView>` to
+show the username of each user. To make each of these rows "tappable," we will now wrap the `<Text>`
+component inside of a `<TouchableOpacity>` component, just like we did for our Login and Register buttons from earlier.
 
-Add to the `renderRow` prop of the `<ListView>` component and put the `<Text>` component returned _inside of_ a `<TouchableOpacity>` component. Pass an `onPress` prop to the `<TouchableOpacity>` that calls the `touchUser` function you wrote and pass in `rowData` to the function.
+Add to the `renderRow` prop of the `<ListView>` component and put the `<Text>` component returned
+_inside of_ a `<TouchableOpacity>` component. Pass an `onPress` prop to the `<TouchableOpacity>` that
+calls the `touchUser` function you wrote and pass in `rowData` to the function.
 
 You can do this by binding like the following:
 ```jsx
@@ -385,13 +441,15 @@ The `touchUser` function will then take the `_id` of the user object passed in a
 
 ### End Result, Part 4
 
-By Part 4, you will now be able to tap on anyone's name and send them your very own _Ho Ho Ho!_ You aren't able to receive any _Ho Ho Ho!_'s yet, though - we'll fix that in the next part!
+By Part 4, you will now be able to tap on anyone's name and send them your very own _Ho Ho Ho!_ You
+aren't able to receive any _Ho Ho Ho!_'s yet, though - we'll fix that in the next part!
 
 ## Part 5. Messages list
 
 ### Overview
 
-For this part, we will create a new view that displays all messages sent and received from a current user. This view will look something like the following:
+For this part, we will create a new view that displays all messages sent and received
+from a current user. This view will look something like the following:
 
 ![](img/messages.png)
 
@@ -399,11 +457,16 @@ This view will be able to _do_ the following:
 - Display all messages sent and received from a logged-in user
 - (_Optional_) Visually distinguish between messages sent and messages received
 
-### Creating, Modifying Components - `index.ios.js [Users, Messages]`
+### Creating & Modifying Components - `App.js [Users, Messages]`
 
 Start by creating a new class called `Messages` that has a `getInitialState` function that is similar to that of your `Users` component. Refer to **_Endpoints Reference_** for how to `fetch` all the messages sent and received by your currently logged-in user.
 
-> **Tip:** Base this off of the `getInitialState` of your `Users` component.  Create a `fetch` promise that calls `setState` upon succesfully retrieving messages and return `ds.cloneWithRows[]` outside of the promise. Make sure this property of your state is called `messages` and not `users`!
+> **Tip:** Base this off of the `getInitialState` of your `Users` component.  Create a `fetch` promise
+  that calls `setState` upon succesfully retrieving messages and return `ds.cloneWithRows[]` outside of
+  the promise. Make sure this property of your state is called `messages` and not `users`!
+
+Additionally, don't forget about the `navigationOptions` static variable. We want a title!
+Reference how we've done it in other classes if you need to.
 
 Implement the `render()` function for the `Messages` class that displays the following details about our message:
 
@@ -415,28 +478,47 @@ Implement the `render()` function for the `Messages` class that displays the fol
 
 > **Tip:** Again, this should be based off of the `render` function of your `Users` component. Create a `<ListView>` that renders rows of messages with the contents above.
 
-We will now modify our `Users` view to allow the view to present our newly created `Messages` view.
+Now we need something that will navigate to this new = `Messages` view.
 
-First, modify the `Login` component of your `index.ios.js` file to **add a function** called `messages()` that will push the messages component with `this.props.navigator.push`, just like we've been pushing views to the stack before. We will use this function later.
+First, modify the `Login` component of your `App.js` by **adding a function** called
+`messages()` that will navigate to the messages component with `this.props.navigation.navigate`,
+just like we did with `Users` earlier. We will use this function later.
+
+Now, add the Message Component as a screen to the Stack Navigator (just we did with the `Users`
+component earlier) so we can actually navigate to it. The navigate() function from
+React Navigation can only go to screens that have been defined when we make and
+export that StackNavigator)
 
 At this point, your `Login` component should have the following functions:
 
 - `getInitialState` - the initial properties of the `username` and `password` parts of the state
 - `press` - the `onPress` handler of your Login submission button (_it might not be called this, depending on the way you implemented it!_)
-- `register` - the function that pushes the `Register` view onto the navigator stack
-- `messages` (**you just created this!**) - the function that pushes the `Messages` view onto the navigator stack
+- `register` - the function that navigates to the `Register` view on the stack navigator
+- `messages` (**you just created this!**) - the function that navigates to the `Messages` view on the navigator stack
 - `render` - the render function for your `Login` component
 
-Next, add a couple more properties to the object that we push onto the `Navigator` stack when we push the `Users` view - this should be in the `.then()` of your `press()` function, where you call `fetch` to send a login request. Within this `this.props.navigator.push` function, where you pass in `{component: Users, title: "Users"}`, add the following properties:
+Notice a problem, we spent all this time making the Message component and a function inside
+Login that will navigate to it but we never call it. What?! Let's fix this now by adding
+a button to the header bar at the top of this Login screen. We do this by modifying
+`LoginScreen`'s `navigationOptions` variable.
 
-```javascript
-{
-  rightButtonTitle: 'Messages',
-  onRightButtonPress: this.messages
-}
+We mentioned earlier that this variable can do a lot and more specifically, one
+thing we can do is add a header button. Just like we defined the `title` key for a title,
+we define the `headerRight` key to modify that portion of the header (in this case, to add a button).
+
+```
+  <Button
+    title='Messages'
+    onPress={}
+  />
 ```
 
-This will create a new button on the `Users` view when we navigate to it that says "Messages," which will take us to the `Messages` component when tapped.
+Note how we can just throw in jsx. We could have added anything we wanted there
+but we just wanted a button with an onPress property. Add your handler function
+to that onPress. Remember what we just wrote earlier in this part.
+
+Wow, isn't that the most beautiful button you've ever seen? Now we can actually
+get to the `Messages` screen from our `Login` screen. Give it a try!
 
 ### End Result, Part 5
 
