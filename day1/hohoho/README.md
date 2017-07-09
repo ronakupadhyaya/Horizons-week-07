@@ -284,16 +284,16 @@ app \- we've done this for you!
 
 Next, we need to add something called a _data source_ to the state for the
 `Users` component. In React you learned to do this using the
-`getInitialState` lifecycle method!
-Use this knowledge to add your data source to your view upon `getInitialState`. For now
-we'll make it contain a static list of friends:
+`constructor`! Use this knowledge to add your data source to your view upon
+`state`. For now we'll make it contain a static list of friends:
 
 ```javascript
 class UsersScreen extends React.Component {
   //navigationOptions code
-  getInitialState() {
+  constructor(props) {
+    super(props);
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-    return {
+    this.state = {
       dataSource: ds.cloneWithRows([
         'Moose', 'Corey', 'Allie', 'Jay', 'Graham', 'Darwish', 'Abhi Fitness'
       ])
