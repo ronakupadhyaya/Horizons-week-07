@@ -159,7 +159,7 @@ about this in [Networking](https://facebook.github.io/react-native/docs/network.
 Awesome! If you've gotten a successful response from the server, now it's time
 to take the user to the next screen of the app. Sounds scary but don't worry, the
 `React Navigation` library makes it easy. Inside your success promise chain, call
-`this.props.navigation.back()` to use the stack navigator we mentioned earlier to
+`this.props.navigation.goBack()` to use the stack navigator we mentioned earlier to
 bring us back to our previous view - the Login screen.
 
 > **Tip:** If for some reason you haven't tested your code yet, \- you rebel \-
@@ -188,25 +188,28 @@ Your login view will be able to do the following:
 - Use `fetch` to verify a user that is logging in with the above inputs
 - Push a new view upon success, and display an error upon failed authentication
 
-### Creating Components - `index.ios.js [Login]`
+### Creating Components - `App.js [Login]`
 
 This view will be very similar to registration - we will only need to change the routes we use for `fetch` and change what happens upon success.
 
-Build two `<TextInput />` components and a `<TouchableOpacity />` component within the `render()` function of our `Login`, much the same as our `Register` component from the previous step.
+Build two `<TextInput />` components and a `<TouchableOpacity />` component within the `render()`
+function of our `Login`, much like we did for our `Register` component in the previous step.
 
-Create a new `onPress` handler for the `<TouchableOpacity />` component that will do the following:
+Use the defined `press()` provided as the `onPress` handler for that `<TouchableOpacity />`
+component, which will do the following:
 
-- Calls `fetch` for requesting the login route and checking if the user's input matches a valid login.
+- Call `fetch` to request the login route and checking if the user's input matches a valid login.
   - Refer to the **_Endpoint Reference_** below for how to call our login route.
-- If the `responseJson.success` is true, continue and push a new view - a view that displays all the users (we will create that next - for now, you can push the Register view again).
-  - **Remember:** pushing the registration view will look like:
+- If the `responseJson.success` is true, continue and navigate to a new view - a
+  screen that displays all the users (we will create that next so for now,
+  you can just navigate to the Register view).
+  - **Remember:** navigating to the registration view will look like:
   ```javascript
-  this.props.navigator.push({
-    component: Register,
-    title: "Register"
-  })
+  this.props.navigation.navigate('screenNameGoesHere')
   ```
-  - **Careful - we will replace thie later!** In the next step, we will modify this function to push the `Users` component here rather than the Register view again. We will let you know when that needs to happen!
+  - **Careful - we will replace this later!** In the next step, we will modify this
+    function (and the react navigation stack router) to navigate to a `Users` screen
+    rather than the Register screen again. We will let you know when that needs to happen!
 - If `responseJson.success` is not true, display a message with the error from the response.
   - To display a message to the user, set a property to your state (with `setState`) and create a `<Text>` component like the following that updates with your state:
   ```jsx
@@ -216,7 +219,8 @@ Create a new `onPress` handler for the `<TouchableOpacity />` component that wil
 ### End Result, Part 2
 At the end of Part 2, you should be able to both register and login; successful logins will bring up the registration view again, but we will change this in the next part.
 
-**Note that all new requests will now automatically be authenticated, thanks to cookies!** No need to store a username, password, or token for this simple app.
+**Note that all new requests will now automatically be authenticated, thanks to cookies!**
+ No need to store a username, password, or token for this simple app.
 
 ## Part 3. User list
 ### Overview
