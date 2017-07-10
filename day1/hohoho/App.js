@@ -7,19 +7,20 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
+  RefreshControl
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
 
 //Screens
-class LoginScreen extends React.Component {
+class HomeScreen extends React.Component {
   static navigationOptions = {
     title: 'Login'
   };
 
-  press() {
-
+  login() {
+    this.props.navigation.navigate('Login');
   }
   register() {
     this.props.navigation.navigate('Register');
@@ -28,8 +29,8 @@ class LoginScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Login to HoHoHo!</Text>
-        <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, styles.buttonGreen]}>
+        <Text style={styles.textBig}>Welcome to HoHoHo!</Text>
+        <TouchableOpacity onPress={ () => {this.login()} } style={[styles.button, styles.buttonGreen]}>
           <Text style={styles.buttonLabel}>Tap to Login</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={ () => {this.register()} }>
@@ -40,30 +41,302 @@ class LoginScreen extends React.Component {
   }
 }
 
-class RegisterScreen extends React.Component {
+
+class LoginScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      error: ''
+    }
+  }
   static navigationOptions = {
-    title: 'Register'
+    title: 'Login'
   };
+
+  press() {
+    fetch('https://hohoho-backend.herokuapp.com/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if (responseJson.success){
+        this.props.navigation.navigate('Users')
+      } else {
+        this.setState({
+          error: responseJson.error
+        })
+      }
+    })
+    .catch((err) => {
+      alert('fetch failed');
+    });
+  }
 
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Register</Text>
+        <TextInput
+          style={{height: 40, margin: 5, borderWidth: 1, padding: 5}}
+          placeholder="Enter your username"
+          onChangeText={(text) => this.setState({username: text})}
+        />
+        <TextInput
+          style={{height: 40, margin: 5, borderWidth: 1, padding: 5}}
+          placeholder="Enter your password"
+          onChangeText={(text) => this.setState({password: text})}
+          secureTextEntry={true}
+        />
+        <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, styles.buttonGreen]}>
+          <Text style={styles.buttonLabel}>Login</Text>
+        </TouchableOpacity>
+        <Text>{this.state.error}</Text>
       </View>
     )
   }
 }
 
+class RegisterScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      username: '',
+      password: ''
+    }
+  }
+  static navigationOptions = {
+    title: 'Register'
+  };
+
+  onSubmit() {
+    if (this.state.username !== '' && this.state.password !== '') {
+      fetch('https://hohoho-backend.herokuapp.com/register', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: this.state.username,
+          password: this.state.password
+        })
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        this.props.navigation.goBack()
+      })
+      .catch((err) => {
+        alert('username or password was not valid');
+      });
+    }
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <TextInput
+          style={{height: 40, margin: 5, borderWidth: 1, padding: 5}}
+          placeholder="Enter your username"
+          onChangeText={(text) => this.setState({username: text})}
+        />
+        <TextInput
+          style={{height: 40, margin: 5, borderWidth: 1, padding: 5}}
+          placeholder="Enter your password"
+          onChangeText={(text) => this.setState({password: text})}
+          secureTextEntry={true}
+        />
+        <TouchableOpacity onPress={() => this.onSubmit()} style={[styles.button, styles.buttonBlue]}>
+          <Text style={styles.buttonLabel}>Register</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+}
+
+class UsersScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      users: []
+    }
+  }
+  static navigationOptions = ({ navigation }) => ({
+    title: 'Users',
+    headerRight: <Button title='Messages' onPress={() => navigation.navigate('Messages')} />
+  });
+
+  sendHoHoHo(userId) {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: userId
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if (responseJson.success) {
+        alert('Your HOHOHO was sent! :)')
+      } else {
+        alert(responseJson.error)
+      }
+    })
+    .catch((err) => {
+      alert(err);
+    });
+  }
+
+  componentDidMount() {
+    fetch('https://hohoho-backend.herokuapp.com/users', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if (responseJson.success) {
+        this.setState({
+          users: responseJson.users
+        })
+      } else {
+        alert(responseJson.error)
+      }
+    })
+    .catch((err) => {
+      alert(err);
+    });
+  }
+
+  render() {
+    var dataSource = new ListView.DataSource({
+      rowHasChanged: (r1, r2) => (r1 !== r2)
+    });
+    return (
+      <View>
+        <ListView renderRow={(item) => (<View style={{alignItems: 'center', borderWidth: 1, padding: 3}}>
+          <TouchableOpacity onPress={() => this.sendHoHoHo(item._id)}>
+            <Text>{item.username}</Text>
+          </TouchableOpacity>
+        </View>)} dataSource={dataSource.cloneWithRows(this.state.users)}/>
+      </View>
+    )
+  }
+}
+
+class MessagesScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      messages: [],
+      refreshing: false
+    }
+  }
+  static navigationOptions = {
+    title: 'Messages'
+  };
+
+  fetchData() {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if (responseJson.success) {
+        this.setState({
+          messages: responseJson.messages,
+          refreshing: false
+        })
+      } else {
+        alert(responseJson.error)
+      }
+    })
+    .catch((err) => {
+      alert(err);
+    });
+  }
+
+  componentDidMount() {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if (responseJson.success) {
+        this.setState({
+          messages: responseJson.messages
+        })
+      } else {
+        alert(responseJson.error)
+      }
+    })
+    .catch((err) => {
+      alert(err);
+    });
+  }
+
+  _onRefresh() {
+    this.setState({refreshing: true});
+    this.fetchData();
+  }
+
+  render() {
+    var dataSource = new ListView.DataSource({
+      rowHasChanged: (r1, r2) => (r1 !== r2)
+    });
+    return (
+      <ListView renderRow={(item) => (<View style={{alignItems: 'center', borderWidth: 1, padding: 3}}>
+        <TouchableOpacity>
+          <Text>From: {item.from.username}</Text>
+          <Text>To: {item.to.username}</Text>
+          <Text>Message: {item.body}</Text>
+          <Text>When: {item.timestamp}</Text>
+        </TouchableOpacity>
+      </View>)} dataSource={dataSource.cloneWithRows(this.state.messages)}
+      refreshControl={
+        <RefreshControl
+          refreshing={this.state.refreshing}
+          onRefresh={this._onRefresh.bind(this)}
+        />
+      }
+    />
+    )
+  }
+}
+
+
 
 //Navigator
 export default StackNavigator({
+  Home: {
+    screen: HomeScreen,
+  },
   Login: {
     screen: LoginScreen,
   },
   Register: {
     screen: RegisterScreen,
   },
-}, {initialRouteName: 'Login'});
+  Users: {
+    screen: UsersScreen
+  },
+  Messages: {
+    screen: MessagesScreen
+  }
+}, {initialRouteName: 'Home'});
 
 
 //Styles
