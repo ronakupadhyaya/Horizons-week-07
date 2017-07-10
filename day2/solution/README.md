@@ -1,5 +1,4 @@
 # Notes
   - did not do styling
   - did not do input validation
-  - did not do bonus
-  - https://expo.io/@core16/hohoho-day1
+  - https://expo.io/@core16/hohoho-day2
