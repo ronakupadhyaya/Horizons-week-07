@@ -18,21 +18,65 @@ class LoginScreen extends React.Component {
     title: 'Login'
   };
 
-  press() {
+  constructor() {
+    super();
+  this.state= {
+    username:'',
+    password:'',
+    message:''
+  };
+  }
 
+  press() {
+    fetch('https://hohoho-backend.herokuapp.com/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username: this.state.username,
+      password: this.state.password,
+    })
+  })
+  .then((response) => response.json())
+  .then((responseJson) => {
+    /* do something with responseJson and go back to the Login view but
+     * make sure to check for responseJson.success! */
+     console.log(responseJson.success)
+     if (responseJson.success) {
+       this.props.navigation.navigate('Users');
+     } else {
+       this.setState({message: "Login Error"})
+     }
+  })
+  .catch((err) => {
+    /* do something if there was an error with fetching */
+    console.log('Error', err)
+  });
   }
   register() {
     this.props.navigation.navigate('Register');
   }
 
+
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Login to HoHoHo!</Text>
+        <Text>{this.state.message}</Text>
+        <TextInput style={{padding: 10, height: 40}}
+          placeholder="Enter your username"
+          onChangeText={(text)=> this.setState({username: text})}
+        />
+        <TextInput style={{padding: 10, height: 40}}
+          placeholder="Enter password"
+          secureTextEntry={true} onChangeText={(text)=> this.setState({password: text})}
+        />
+
         <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, styles.buttonGreen]}>
           <Text style={styles.buttonLabel}>Tap to Login</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={ () => {this.register()} }>
+        <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={() => {this.register()}}>
           <Text style={styles.buttonLabel}>Tap to Register</Text>
         </TouchableOpacity>
       </View>
@@ -44,15 +88,101 @@ class RegisterScreen extends React.Component {
   static navigationOptions = {
     title: 'Register'
   };
+    constructor() {
+      super();
+    this.state= {};
+    }
+
+  registerSubmit() {
+    fetch('https://hohoho-backend.herokuapp.com/register', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username: this.state.username,
+      password: this.state.password,
+    })
+  })
+  .then((response) => response.json())
+  .then((responseJson) => {
+    /* do something with responseJson and go back to the Login view but
+     * make sure to check for responseJson.success! */
+     console.log(responseJson.success)
+     if (responseJson.success) {
+       this.props.navigation.navigate('Login');
+     }
+  })
+  .catch((err) => {
+    /* do something if there was an error with fetching */
+    console.log('Error', err)
+  });
+    }
 
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Register</Text>
+        <TextInput style={{padding: 10, height: 40}}
+          placeholder="Enter your username"
+          onChangeText={(text)=> this.setState({username: text})}
+        />
+        <TextInput style={{padding: 10, height: 40}}
+          placeholder="Enter password"
+          secureTextEntry={true} onChangeText={(text)=> this.setState({password: text})}
+        />
+        <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={()=> {this.registerSubmit()}}>
+          <Text style={styles.buttonLabel}>Submit</Text>
+        </TouchableOpacity>
       </View>
     )
   }
 }
+
+class UsersScreen extends React.Component {
+  static navigationOptions = {
+    title: 'Users'
+  };
+
+  constructor() {
+    super();
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.state = {
+      dataSource: ds.cloneWithRows([])
+    };
+  }
+
+  componentDidMount() {
+    fetch('https://hohoho-backend.herokuapp.com/users', {
+      method: 'GET'
+  })
+  .then((response) => response.json())
+  .then((responseJson) => {
+    /* do something with responseJson and go back to the Login view but
+     * make sure to check for responseJson.success! */
+     if (responseJson.success) {
+       this.setState({dataSource: ds.cloneWithRows(responseJson.users)})
+     }
+  })
+  .catch((err) => {
+    /* do something if there was an error with fetching */
+    console.log('Error', err)
+  });
+  }
+
+  render() {
+    return (
+      <View>
+      <ListView
+          dataSource={this.state.dataSource}
+          renderRow={(rowData) => <Text>{rowData.username}</Text>}
+          />
+      </View>
+    )
+  }
+}
+
+
 
 
 //Navigator
@@ -62,6 +192,9 @@ export default StackNavigator({
   },
   Register: {
     screen: RegisterScreen,
+  },
+  Users: {
+    screen: UsersScreen,
   },
 }, {initialRouteName: 'Login'});
 
