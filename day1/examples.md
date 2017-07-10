@@ -1,10 +1,6 @@
 # React Native Self Directed Examples
 
 - **All videos have the password `horizonites`**
-- Before you jump in
-- Keep [lesson slides](http://lessons.horizonsbootcamp.com/week07/day1.html)
-  open in your browser. Lesson slides contain code samples and links to
-  essential documentation.
 - You can write all your solutions in the same project. You don't need to
   create a new React Native project for each secion.
 - Ask for help early and often! 🙋
@@ -90,9 +86,11 @@
 
     Result: https://cl.ly/0X2X3a2U283J
 
-## Section 5: Multiple pages with Navigator
+## Section 5: Multiple pages with React Navigation
 
 ### [Watch me](https://vimeo.com/205850145)
+
+### [Reference: React Navigation](https://reactnavigation.org/docs/intro/)
 
 1. Implement a navigator with two pages:
 

@@ -1,8 +1,8 @@
 # Week 7 Day 1 Exercises
 
-## Individual Exercises
+## Morning Videos & Individual Exercises
 
-1. [React Native Individual Exercises](examples.md)
+1. [React Native Videos and Exercises](examples.md)
 
 ## Pair Programming Exercise
 
