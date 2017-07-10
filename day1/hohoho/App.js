@@ -19,7 +19,7 @@ class LoginScreen extends React.Component {
   };
 
   press() {
-
+    this.props.navigation.navigate('Login')
   }
   register() {
     this.props.navigation.navigate('Register');
@@ -41,29 +41,141 @@ class LoginScreen extends React.Component {
 }
 
 class RegisterScreen extends React.Component {
+    constructor(){
+        super();
+        this.state = {
+            username: '',
+            password: ''
+        };
+
+    }
   static navigationOptions = {
     title: 'Register'
   };
+
+  registerReq = () => {
+      console.log(this.state.username);
+      if (typeof this.state.username !== "string" || typeof this.state.password !== "string"){
+          return;
+      }
+
+      fetch('https://hohoho-backend.herokuapp.com/register', {
+          method: 'POST',
+          headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+              username: this.state.username,
+              password: this.state.password,
+          })
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+          if(responseJson.success) {
+        console.log(responseJson)
+              this.props.navigation.goBack()
+          }
+          /* do something with responseJson and go back to the Login view but
+          * make sure to check for responseJson.success! */
+      })
+      .catch((err) => {
+          /* do something if there was an error with fetching */
+          console.log("Failure!!!!", err)
+      });
+
+  }
 
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Register</Text>
+        <TextInput style={{height:40, width: 200}}
+        placeholder="Username"
+        onChangeText={(text) => this.setState({username: text})}/>
+        <TextInput style={{height:40, width: 200}}
+        placeholder="Password"
+        onChangeText={(text) => this.setState({password: text})}
+        secureTextEntry={true}/>
+        <Button onPress={this.registerReq} style={styles.buttonRed} title="Register"/>
+
       </View>
     )
   }
 }
 
+class Login extends React.Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            username: '',
+            password: '',
+        }
+    }
+
+    loginReq = () => {
+        console.log('this functon called')
+        if (typeof this.state.username !== "string" || typeof this.state.password !== "string"){
+            return;
+        }
+        console.log('nade it here')
+        fetch('https://hohoho-backend.herokuapp.com/login', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: this.state.username,
+                password: this.state.password,
+            })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+            console.log('responseJson is : ',  responseJson)
+            if(responseJson.success) {
+                this.props.navigation.navigate('page1')
+            }
+            /* do something with responseJson and go back to the Login view but
+            * make sure to check for responseJson.success! */
+        })
+        .catch((err) => {
+            /* do something if there was an error with fetching */
+            console.log("Failure!!!!", err)
+        });
+    }
+
+    render(){
+        return(
+            <View style={styles.container}>
+                <Text style={styles.textBig}>Login</Text>
+                <TextInput style={{height:40, width: 200}}
+                placeholder="Username"
+                onChangeText={(text) => this.setState({username: text})}/>
+                <TextInput style={{height:40, width: 200}}
+                placeholder="Password"
+                onChangeText={(text) => this.setState({password: text})}
+                secureTextEntry={true}/>
+                <Button onPress={this.loginReq} style={styles.buttonRed} title="Login"/>
+            </View>
+        )
+    }
+
+}
 
 //Navigator
 export default StackNavigator({
-  Login: {
+  Home: {
     screen: LoginScreen,
+  },
+  Login: {
+      screen: Login,
   },
   Register: {
     screen: RegisterScreen,
   },
-}, {initialRouteName: 'Login'});
+  page1: {
+    screen: LoginScreen,
+  }
+}, {initialRouteName: 'Home'});
 
 
 //Styles
