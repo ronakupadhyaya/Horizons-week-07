@@ -1,65 +1,72 @@
-import React, {Component} from 'react'
+import React from 'react';
 import {
-  AppRegistry,
   StyleSheet,
-  Text,
   View,
+  Text,
   TouchableOpacity,
   TextInput,
-  NavigatorIOS,
-  ListView
-} from 'react-native'
+  ListView,
+  Alert,
+  Button
+} from 'react-native';
+import { StackNavigator } from 'react-navigation';
 
-// This is the root view
-var hohoho = React.createClass({
+
+//Screens
+class LoginScreen extends React.Component {
+  static navigationOptions = {
+    title: 'Login'
+  };
+
+  press() {
+
+  }
+  register() {
+    this.props.navigation.navigate('Register');
+  }
+
   render() {
     return (
-      <NavigatorIOS
-        initialRoute={{
-          component: Login,
-          title: "Login"
-        }}
-        style={{flex: 1}}
-      />
-    );
+      <View style={styles.container}>
+        <Text style={styles.textBig}>Login to HoHoHo!</Text>
+        <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, styles.buttonGreen]}>
+          <Text style={styles.buttonLabel}>Tap to Login</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={ () => {this.register()} }>
+          <Text style={styles.buttonLabel}>Tap to Register</Text>
+        </TouchableOpacity>
+      </View>
+    )
   }
-});
+}
 
-var Register = React.createClass({
+class RegisterScreen extends React.Component {
+  static navigationOptions = {
+    title: 'Register'
+  };
+
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Register</Text>
       </View>
-    );
+    )
   }
-});
+}
 
-var Login = React.createClass({
-  press() {
-    
-  },
-  register() {
-    this.props.navigator.push({
-      component: Register,
-      title: "Register"
-    });
-  },
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.textBig}>Login to HoHoHo!</Text>
-        <TouchableOpacity onPress={this.press} style={[styles.button, styles.buttonGreen]}>
-          <Text style={styles.buttonLabel}>Tap to Login</Text>
-        </TouchableOpacity>
-      <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={this.register}>
-          <Text style={styles.buttonLabel}>Tap to Register</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-});
 
+//Navigator
+export default StackNavigator({
+  Login: {
+    screen: LoginScreen,
+  },
+  Register: {
+    screen: RegisterScreen,
+  },
+}, {initialRouteName: 'Login'});
+
+
+//Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -89,7 +96,7 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   button: {
-    alignSelf: 'stretch', 
+    alignSelf: 'stretch',
     paddingTop: 10,
     paddingBottom: 10,
     marginTop: 10,
@@ -98,7 +105,7 @@ const styles = StyleSheet.create({
     borderRadius: 5
   },
   buttonRed: {
-    backgroundColor: '#FF585B', 
+    backgroundColor: '#FF585B',
   },
   buttonBlue: {
     backgroundColor: '#0074D9',
@@ -112,5 +119,3 @@ const styles = StyleSheet.create({
     color: 'white'
   }
 });
-
-AppRegistry.registerComponent('hohoho', () => hohoho );
