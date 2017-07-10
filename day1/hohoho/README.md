@@ -21,11 +21,11 @@ Your app will have the following features:
 ## Instructions
 
 If you haven't already, make sure you install the Expo XDE from https://expo.io/tools
-- We'll be using its live reloading features so can see how each line of code
+- We'll be using its live reloading features so we can see how each line of code
   changes (or breaks - Yikes!) our app.
-- Try loading a quick demo app I made here, https://snack.expo.io/B1V9L-kSb
-- Or perhaps you like to live on the dangerous side so try loading this app with
-  errors https://snack.expo.io/BJ9rvWkrb
+- Now, try loading our demo app (built by our amazing TA, Corey): https://snack.expo.io/B1V9L-kSb
+- Or perhaps, if you'd like to live on the dangerous side, so try loading this app with
+  errors: https://snack.expo.io/BJ9rvWkrb
   - You don't have to fix it, but hopefully you see at least a couple problems with the code
   - Yet even with these errors, we can load the app onto our phones
 
@@ -61,13 +61,14 @@ https://hohoho-backend.herokuapp.com/ so take a look at the [See API documentati
     queue + keep trying every now and then
 
 ## File Structure
-assets/ : Contains any static app assets like images <br />
-img/ : Contains images used in this readme <br />
-App.js : The primary Expo file. Today, all of your react native code will go into this file
-app.json : The Expo app configuration file
 
-
-README.md: this file
+| File/Folder | Description |
+| ----------- | ----------- |
+| assets/ | Contains any static app assets like images <br /> |
+| img/ | Contains images used in this readme <br /> |
+| App.js | The primary Expo file. Today, all of your react native code will go into this file |
+| app.json | The Expo app configuration file |
+| README.md | this file |
 
 ## Part 1. Registration
 
@@ -213,17 +214,19 @@ component, which will do the following:
   screen that displays all the users (we will create that next so for now,
   you can just navigate to the Register view).
   - **Remember:** navigating to the registration view will look like:
-  ```javascript
-  this.props.navigation.navigate('screenNameGoesHere')
-  ```
+
+    ```javascript
+    this.props.navigation.navigate('screenNameGoesHere')
+    ```
   - **Careful - we will replace this later!** In the next step, we will modify this
     function (and the react navigation stack navigator) to navigate to a `Users` screen
     rather than the Register screen again. We will let you know when that needs to happen!
 - If `responseJson.success` is not true, display a message with the error from the response.
   - To display a message to the user, set a property to your state (with `setState`) and create a `<Text>` component like the following that updates with your state:
-  ```jsx
-  <Text>{this.state.message}</Text>
-  ```
+
+    ```jsx
+    <Text>{this.state.message}</Text>
+    ```
 
 ### End Result, Part 2
 At the end of Part 2, you should be able to both register and login; successful logins will bring up the registration view again, but we will change this in the next part.
@@ -256,9 +259,9 @@ Create the Users component and include this variable that you may have notice in
 our other two components...
 
 ```javascript
-  static navigationOptions = {
-    title: 'Users' //you put the title you want to be displayed here
-  };
+static navigationOptions = {
+  title: 'Users' //you put the title you want to be displayed here
+};
 ```
 
 This variable essentially tells React Navigation how you want to display the screen.
@@ -316,14 +319,14 @@ Now that we've created our `Users` component, we can add it to the stack navigat
 Take a look at the object we pass in as the first parameter to StackNavigator...
 
 ```javascript
-  {
-    Login: {
-      screen: LoginScreen,
-    },
-    Register: {
-      screen: RegisterScreen,
-    },
-  }
+{
+  Login: {
+    screen: LoginScreen,
+  },
+  Register: {
+    screen: RegisterScreen,
+  },
+}
 ```
 
 Any guesses as to what we need to change so we can navigate to this new Users
@@ -331,9 +334,9 @@ component/screen? Yep, we're just going to add a new key called `Users` that con
 an object with the key `screen` and value `componentName` so in total, something like this...
 
 ```
-  Users: {
-    screen: ComponentNameGoesHere
-  }
+Users: {
+  screen: ComponentNameGoesHere
+}
 ```
 
 To tie it all together, we go back and modify the `.then()` within the `fetch`
@@ -515,10 +518,10 @@ thing we can do is add a header button. Just like we defined the `title` key for
 we define the `headerRight` key to modify that portion of the header (in this case, to add a button).
 
 ```
-  <Button
-    title='Messages'
-    onPress={}
-  />
+<Button
+  title='Messages'
+  onPress={}
+/>
 ```
 
 Note how we can just throw in jsx. We could have added anything we wanted there
@@ -531,21 +534,21 @@ You can read up about what this means on the [official documentation](https://re
 To do this, we make our static navigationOptions a function like so
 
 ```javascript
-  static navigationOptions = ({ navigation }) => ({
-    title: 'Users',
-    headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
-  });
+static navigationOptions = ({ navigation }) => ({
+  title: 'Users',
+  headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
+});
 ```
 
 and then we need to define onRightPress within the navigators state params so let's do this
 in a good ol componentDidMount like so...
 
 ```javascript
-  componentDidMount() {
-    this.props.navigation.setParams({
-      onRightPress: yourHandlerFunctionGoesHere
-    })
-  }
+componentDidMount() {
+  this.props.navigation.setParams({
+    onRightPress: yourHandlerFunctionGoesHere
+  })
+}
 ```
 
 Add your handler function and don't forget to bind
@@ -598,54 +601,54 @@ was successful.
 - `GET /users`: Get all registered users in HoHoHo
   - Example response:
 
-  ```javascript
-  {
-    "success": true,
-    "users": [
-      {
-        "username": "moose",
-        "_id": "57844cbdbedf35366e2690d3"
-      },
-      {
-        "username": "dar",
-        "_id": "57846e7666b869d88ad96430"
-      },
-      {
-        "username": "other",
-        "_id": "57846fea0ccbba228cd1479e"
-      },
-      {
-        "username": "other2",
-        "_id": "57846ff00ccbba228cd1479f"
-      }
-    ]
-  }
-  ```
+    ```javascript
+    {
+      "success": true,
+      "users": [
+        {
+          "username": "moose",
+          "_id": "57844cbdbedf35366e2690d3"
+        },
+        {
+          "username": "dar",
+          "_id": "57846e7666b869d88ad96430"
+        },
+        {
+          "username": "other",
+          "_id": "57846fea0ccbba228cd1479e"
+        },
+        {
+          "username": "other2",
+          "_id": "57846ff00ccbba228cd1479f"
+        }
+      ]
+    }
+    ```
 
 - `GET /messages`: Get messages sent to and from current user
   - Example response:
 
-  ```javascript
-  {
-    "success": true,
-    "messages": [
-      {
-        "_id": "57846f6cafacd3988b4362e6",
-        "to": {
-          "_id": "57846e7666b869d88ad96430",
-          "username": "dar"
-        },
-        "from": {
-          "_id": "57844cbdbedf35366e2690d3",
-          "username": "moose"
-        },
-        "__v": 0,
-        "body": "Yo",
-        "timestamp": "2016-07-12T04:17:48.304Z"
-      }
-    ]
-  }
-  ```
+    ```javascript
+    {
+      "success": true,
+      "messages": [
+        {
+          "_id": "57846f6cafacd3988b4362e6",
+          "to": {
+            "_id": "57846e7666b869d88ad96430",
+            "username": "dar"
+          },
+          "from": {
+            "_id": "57844cbdbedf35366e2690d3",
+            "username": "moose"
+          },
+          "__v": 0,
+          "body": "Yo",
+          "timestamp": "2016-07-12T04:17:48.304Z"
+        }
+      ]
+    }
+    ```
 
 - `POST /messages`: Sends a message/_Ho Ho Ho!_ to another user
   - Parameters:
@@ -655,16 +658,17 @@ was successful.
     - `400`: There was an error saving to database
     - `200`: The _Ho Ho Ho!_ was sent!
   - Example response:
-  ```javascript
-  {
-    "success": true,
-    "message": {
-    "__v": 0,
-    "to": "57849dac19a9131100ab2fe5",
-    "from": "578533b8787e661100aec76a",
-    "_id": "5785397a787e661100aec7d6",
-    "body": "HoHoHo",
-    "timestamp": "2016-07-12T18:39:54.406Z"
+
+    ```javascript
+    {
+      "success": true,
+      "message": {
+        "__v": 0,
+        "to": "57849dac19a9131100ab2fe5",
+        "from": "578533b8787e661100aec76a",
+        "_id": "5785397a787e661100aec7d6",
+        "body": "HoHoHo",
+        "timestamp": "2016-07-12T18:39:54.406Z"
+      }
     }
-  }
-  ```
+    ```
