@@ -21,45 +21,69 @@ class App extends React.Component {
   };
 
   componentDidMount () {
-    AsyncStorage.getItem('region')
-      .then((region)=>{
+    AsyncStorage.getItem('location')
+      .then((location)=>{
         const newState = {
-          longitude: JSON.parse(region).longitude,
-          latitude: JSON.parse(region).latitude
+          longitude: JSON.parse(location).longitude,
+          latitude: JSON.parse(location).latitude
       };
+      console.log("newState: ",newState);
       this.setState(newState);
-      console.log("set new state completed!",newState);
     });
   };
 
   onChangeLocation (cityName) {
     switch (cityName) {
       case 'Istanbul':
-        this.setState({
+        AsyncStorage.setItem('location',JSON.stringify({
           longitude: 28.952338,
           latitude: 41.003423
-        });
+        }))
+          .then(()=>{
+            this.setState({
+              longitude: 28.952338,
+              latitude: 41.003423
+            });
+          })
         break;
       case 'Hong Kong':
-        this.setState({
+        AsyncStorage.setItem('location',JSON.stringify({
           longitude: 114.171995,
           latitude: 22.294074
-        });
+        }))
+          .then(()=>{
+            this.setState({
+              longitude: 114.171995,
+              latitude: 22.294074
+            });
+          })
         break;
       case 'Sydney':
-          this.setState({
-            longitude: 151.220345,
-            latitude: -33.866174
-          });
+        AsyncStorage.setItem('location',JSON.stringify({
+          longitude: 151.220345,
+          latitude: -33.866174
+        }))
+          .then(()=>{
+            this.setState({
+              longitude: 151.220345,
+              latitude: -33.866174
+            });
+          })
         break;
       case 'Here':
         navigator.geolocation.getCurrentPosition(
           (success)=>{
-            this.setState({
-            longitude: success.coords.longitude,
-            latitude: success.coords.latitude
-            });
-          },
+            AsyncStorage.setItem('location', JSON.stringify({
+              longitude: success.coords.longitude,
+              latitude: success.coords.latitude
+            }))
+              .then(()=>{
+                this.setState({
+                longitude: success.coords.longitude,
+                latitude: success.coords.latitude
+                });
+              });
+            },
           (error)=>{console.log("ERROR getting current location",error);},
           {}
         );
@@ -77,7 +101,7 @@ class App extends React.Component {
 
 
   render() {
-    AsyncStorage.getItem('region').then((region)=>{console.log(region);});
+    console.log("this.state: ",this.state);
     return (
       <View style={{
           flex: 1
@@ -117,15 +141,14 @@ class App extends React.Component {
           </TouchableOpacity>
         </View>
         <MapView
+          provider={"google"}
           style={{flex: 7}}
           region={{
             latitude: this.state.latitude,
             longitude: this.state.longitude,
             latitudeDelta: 10,
             longitudeDelta: 10,
-          }}
-          onRegionChangeComplete={(region)=>{AsyncStorage.setItem('region',JSON.stringify(region))}}
-        />
+          }}/>
       </View>
     );
   }

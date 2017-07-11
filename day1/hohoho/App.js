@@ -8,10 +8,31 @@ import {
   ListView,
   Alert,
   Button,
-  RefreshControl
+  RefreshControl,
+  AsyncStorage
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
+import {
+  Location,
+  Permissions,
+  MapView
+} from 'expo';
+import Swiper from 'react-native-swiper';
 
+class SwiperScreen extends React.Component {
+  static navigationOptions = {
+    title: 'HoHoHo!'
+  };
+
+  render() {
+    return (
+      <Swiper>
+        <UsersScreen/>
+        <MessagesScreen/>
+      </Swiper>
+    );
+  }
+}
 
 //Screens
 class LoginScreen extends React.Component {
@@ -27,22 +48,33 @@ class LoginScreen extends React.Component {
     title: 'Login'
   };
 
-  toUserScreen() {
-      fetch('https://hohoho-backend.herokuapp.com/login',{
-          method:'POST',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            username: this.state.username,
-            password: this.state.password,
-          })
-        })
-      .then((response) => {
-        return response.json()})
+  componentDidMount() {
+    AsyncStorage.getItem('user')
+    .then(result => {
+      const parsedResult = JSON.parse(result);
+      this.setState({
+        username: parsedResult.username,
+        password: parsedResult.password
+      });
+      this.checkCredential()
       .then((responseJson) => {
           if(responseJson.success) {
-            this.props.navigation.navigate('Users');
+            this.props.navigation.navigate('Swiper');
+          }
+          })
+      })
+    .catch(err => {console.log("Error in Persistent Login!",err);})
+  };
+
+  toUserScreen() {
+      this.checkCredential()
+      .then((responseJson) => {
+          if(responseJson.success) {
+            AsyncStorage.setItem('user',JSON.stringify({
+              username: this.state.username,
+              password: this.state.password,
+            }))
+            .then(()=>{this.props.navigation.navigate('Swiper');})
           } else {
             alert("Login failed!")
           }
@@ -51,6 +83,21 @@ class LoginScreen extends React.Component {
           console.log("Login Error: ", e)
       })
   }
+
+  checkCredential() {
+    return fetch('https://hohoho-backend.herokuapp.com/login',{
+        method:'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: this.state.username,
+          password: this.state.password,
+        })
+      })
+    .then((response) => response.json())
+    .catch((e)=>{console.log("Error Check Credential! ", e);});
+  };
 
   toRegister() {
     this.props.navigation.navigate('Register');
@@ -112,8 +159,6 @@ class RegisterScreen extends React.Component {
         })
         .then((response) => response.json())
         .then((responseJson) => {
-          /* do something with responseJson and go back to the Login view but
-           * make sure to check for responseJson.success! */
            if(responseJson.success) {
                this.toLogin().bind(this);
            } else {
@@ -121,7 +166,6 @@ class RegisterScreen extends React.Component {
            }
         })
         .catch((err) => {
-          /* do something if there was an error with fetching */
           console.log("Registration Error: ", err)
         });
   }
@@ -210,6 +254,39 @@ class UsersScreen extends React.Component {
       .catch((err) => {
         console.log("Hohoho Error: ", err)
       });
+  };
+
+  sendLocation = async(user) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      console.log("permission to send location not granted!");
+    }
+    let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+    fetch('https://hohoho-backend.herokuapp.com/messages',{
+        method:'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          to: user._id,
+          location: {
+            longitude: location.coords.longitude,
+            latitude: location.coords.latitude
+          }
+        })
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+         if(responseJson.success) {
+             Alert.alert("Success","Your Hohoho & Location to "+user.username+" has been sent!", [{text: 'Got it'}])
+         } else {
+             alert("Failed to Hohoho!")
+         }
+      })
+      .catch((err) => {
+        console.log("Hohoho Error: ", err)
+      });
+
   }
 
   render() {
@@ -224,8 +301,11 @@ class UsersScreen extends React.Component {
             />
           }
           renderRow={(item)=>(
-            <View style={{padding:3, borderWidth:1, borderColor:"lightgrey"}}>
-              <TouchableOpacity onPress={this.hohohoTo.bind(this,item)}>
+            <View style={{padding:4, borderWidth:1, borderColor:"lightgrey"}}>
+              <TouchableOpacity
+                onPress={this.hohohoTo.bind(this,item)}
+                onLongPress={this.sendLocation.bind(this,item)}
+                delayLongPress={400}>
                   <Text style={{fontSize:20}}>{item.username}</Text>
               </TouchableOpacity>
           </View>
@@ -271,11 +351,26 @@ class MessagesScreen extends React.Component {
         <View style={styles.containerFull}>
           <ListView
             renderRow={(item)=>(
-            <View style={{flex:1, padding: 3, flexDirection:'column', justifyContent:'flex-start', alignItems:'flex-start', borderBottomWidth: 1, borderBottomWidth: 1, borderColor: "lightgrey"}}>
-              <Text style={{fontSize:10}}>From: {item.from.username}</Text>
-              <Text style={{fontSize:10}}>To: {item.to.username}</Text>
-              <Text style={{fontSize:10}}>Message: {item.body}</Text>
-              <Text style={{fontSize:10}}>When: {item.timestamp}</Text>
+            <View style={{flex: 1,flexDirection:'column', borderBottomWidth: 1, borderColor: "lightgrey"}}>
+              <View style={{flex:1, padding: 3, flexDirection:'column', justifyContent:'flex-start', alignItems:'flex-start'}}>
+                <Text style={{fontSize:10}}>From: {item.from.username}</Text>
+                <Text style={{fontSize:10}}>To: {item.to.username}</Text>
+                <Text style={{fontSize:10}}>Message: {item.body}</Text>
+                <Text style={{fontSize:10}}>When: {item.timestamp}</Text>
+              </View>
+              <MapView
+                style={{height:50}}
+                showsUserLocation={true}
+                scrollEnabled={false}
+                region={
+                  {
+                  longitude: (item.location)?item.location.longitude:-122.409604,
+                  latitude: (item.location)?item.location.latitude:37.771631,
+                  longitudeDelta: 0.05,
+                  latitudeDelta: 0.05
+                }
+              }
+              />
             </View>
           )}
             dataSource={ds.cloneWithRows(this.state.messageList)}>
@@ -299,6 +394,9 @@ export default StackNavigator({
   },
   Messages: {
     screen: MessagesScreen
+  },
+  Swiper: {
+    screen: SwiperScreen
   }
 }, {initialRouteName: 'Login'});
 
