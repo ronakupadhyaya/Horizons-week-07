@@ -8,7 +8,8 @@ import {
   ListView,
   Alert,
   RefreshControl,
-  Button
+  Button,
+  AsyncStorage
 } from 'react-native';
 // import {Container, List, Content, ListItem} from 'native-base';
 import { StackNavigator } from 'react-navigation';
@@ -83,7 +84,6 @@ class Messages extends React.Component {
 }
 
 class UsersScreen extends React.Component {
-
     constructor(props){
         super(props);
         const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
@@ -97,7 +97,7 @@ class UsersScreen extends React.Component {
         headerRight: <Button title='Messages' onPress={() => navigation.state.params.onRightPress()}>
             {/* headerRight: <Button title='Messages' onPress={() => props.navigation.navigate('Messages')}> */}
         </Button>
-});
+    });
 
     componentDidMount() {
         this.props.navigation.setParams({
@@ -195,7 +195,22 @@ class LoginScreen extends React.Component {
     title: 'Login'
   };
 
-  press(username, password) {
+  componentDidMount() {
+      AsyncStorage.getItem('user')
+      .then(result => {
+          var parsedResult = JSON.parse(result);
+          var username = parsedResult.username;
+          var password = parsedResult.password;
+          if (username && password) {
+              return this.login(username, password)
+                // .then(resp => resp.json())
+                // .then( resp => console.log(resp))
+        }
+    })
+    .catch(err => {console.log(err)})
+    }
+
+  login(username, password) {
       fetch('https://hohoho-backend.herokuapp.com/login', {
         method: 'POST',
         headers: {
@@ -209,6 +224,11 @@ class LoginScreen extends React.Component {
       .then((response) => response.json())
       .then((responseJson) => {
          if(responseJson.success){
+             console.log('responsejson', responseJson);
+             AsyncStorage.setItem('user', JSON.stringify({
+                 username: username,
+                 password: password
+             }));
              return this.props.navigation.navigate('Users');
          }else{
              alert(responseJson.error);
@@ -251,7 +271,7 @@ class LoginScreen extends React.Component {
               onChangeText={(text) => this.setPassword(text)}
               secureTextEntry={true}
           ></TextInput>
-          <TouchableOpacity onPress={ () => {this.press(this.state.username, this.state.password)} } style={[styles.button, styles.buttonGreen]}>
+          <TouchableOpacity onPress={ () => {this.login(this.state.username, this.state.password)} } style={[styles.button, styles.buttonGreen]}>
               <Text style={styles.buttonLabel}>Tap to Login</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={ () => {this.register()} }>
