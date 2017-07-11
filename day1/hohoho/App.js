@@ -140,9 +140,10 @@ class RegisterScreen extends React.Component {
 }
 
 class UsersScreen extends React.Component {
-  static navigationOptions = {
-    title: 'Users'
-  };
+  static navigationOptions = ({ navigation}) => ({
+    title: 'Users',
+    headerRight: <Button title='Messages' onPress={()=> {navigation.state.params.onRightPress()}}/>
+  });
 
   constructor() {
     super();
@@ -153,6 +154,10 @@ class UsersScreen extends React.Component {
   }
 
   componentDidMount() {
+    this.props.navigation.setParams({
+      onRightPress: this.messages.bind(this)
+    })
+
     fetch('https://hohoho-backend.herokuapp.com/users', {
       method: 'GET'
   })
@@ -161,7 +166,84 @@ class UsersScreen extends React.Component {
     /* do something with responseJson and go back to the Login view but
      * make sure to check for responseJson.success! */
      if (responseJson.success) {
+       const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
        this.setState({dataSource: ds.cloneWithRows(responseJson.users)})
+     }
+  })
+  .catch((err) => {
+    /* do something if there was an error with fetching */
+    console.log('Error', err)
+  });
+  }
+
+  touchUser(user) {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      to: user._id
+    })
+  })
+  .then((response) => response.json())
+  .then((responseJson) => {
+     console.log(responseJson.success)
+     if (responseJson.success) {
+       Alert.alert("Alert", "Your HoHoHo! to " + user.username + " has been sent!", [{text: 'Dismiss Button'}])
+     } else {
+       Alert.alert("Alert", "XXX Your HoHoHo! to " + user.username + " could not be sent. XXX", [{text: 'Dismiss Button'}])
+     }
+  })
+  .catch((err) => {
+    console.log('Error', err)
+  });
+  }
+
+  messages() {
+    this.props.navigation.navigate('Messages')
+  }
+
+  render() {
+    return (
+      <View style={{justifyContent: 'center'}}>
+      <ListView
+          dataSource={this.state.dataSource}
+          renderRow={(rowData) => <View style={{alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: 10}}>
+          <TouchableOpacity onPress={this.touchUser.bind(this, rowData)}>
+          <Text style={{fontSize:20}}>{rowData.username}</Text>
+          </TouchableOpacity>
+          </View>}
+          />
+      </View>
+    )
+  }
+}
+
+
+class Messages extends React.Component {
+  static navigationOptions = {
+    title: 'Messages'
+  };
+  constructor() {
+    super();
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.state = {
+      dataSource: ds.cloneWithRows([])
+    };
+  }
+
+  componentDidMount() {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'GET'
+  })
+  .then((response) => response.json())
+  .then((responseJson) => {
+    /* do something with responseJson and go back to the Login view but
+     * make sure to check for responseJson.success! */
+     if (responseJson.success) {
+       const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+       this.setState({dataSource: ds.cloneWithRows(responseJson.messages)})
      }
   })
   .catch((err) => {
@@ -172,18 +254,21 @@ class UsersScreen extends React.Component {
 
   render() {
     return (
-      <View>
+      <View style={{justifyContent: 'center'}}>
       <ListView
           dataSource={this.state.dataSource}
-          renderRow={(rowData) => <Text>{rowData.username}</Text>}
+          renderRow={(aMessage) =>
+            <View>
+          <Text style={{fontSize:20}}>{aMessage.from.username}</Text>
+          <Text style={{fontSize:20}}>{aMessage.to.username}</Text>
+          <Text style={{fontSize:10}}>{aMessage.timestamp}</Text>
+          </View>
+        }
           />
       </View>
     )
   }
 }
-
-
-
 
 //Navigator
 export default StackNavigator({
@@ -195,6 +280,9 @@ export default StackNavigator({
   },
   Users: {
     screen: UsersScreen,
+  },
+  Messages: {
+    screen: Messages
   },
 }, {initialRouteName: 'Login'});
 
