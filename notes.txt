@@ -1,0 +1,30 @@
+TouchableOpacity
+
+ListView
+<ListView 
+	renderRow={item => <View/>}
+	dataSource={this.state.dataSource}
+/>
+
+var dataSource = new ListView.DataSource({
+	rowHasChanged: (r1, r2) => (r1 !== r2),
+});
+
+this.state = {
+	dataSource: dataSource.cloneWithRows(_.range(100)),
+};
+
+datasource
+
+
+fetch alt to ajax calls
+fetch(url).then(resp => resp.json()).then(...).catch(err => ());
+
+
+
+const Navigation = StackNavigator({
+	Home: {screen: App},
+	...
+})
+
+this.props.navigation.navigate(page)
