@@ -41,14 +41,60 @@ class LoginScreen extends React.Component {
 }
 
 class RegisterScreen extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      username: '',
+      password: ''
+    }
+  }
   static navigationOptions = {
     title: 'Register'
   };
+
+ gg() {
+  fetch('https://hohoho-backend.herokuapp.com/register', {
+   method: 'POST',
+   headers: {
+     "Content-Type": "application/json"
+   },
+   body: JSON.stringify({
+     username: this.state.username,
+     password: this.state.password,
+   })
+ })
+// .then((resp) => resp.json())
+      .then((respJson) => {
+        console.log(respJson);
+        if (respJson.success) {
+          console.log('success!')
+        }
+      })
+      .catch((err) => {
+        console.log('error', err);
+      })
+    }
+
+
 
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Register</Text>
+        <TextInput
+          style={{height: 40, margin: 20}}
+          placeholder="Enter your username"
+          onChangeText={(text) => {this.setState({username: text})}}
+        />
+        <TextInput
+          style={{height: 40, margin: 20}}
+          placeholder="Enter your password"
+          secureTextEntry={true}
+          onChangeText={(text) => this.setState({password: text})}
+        />
+        <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={() => this.gg() }>
+          <Text style={styles.buttonLabel}>Submit</Text>
+        </TouchableOpacity>
       </View>
     )
   }
