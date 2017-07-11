@@ -16,10 +16,26 @@ class Users extends React.Component {
     super();
     const dataSource = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
-      dataSource: dataSource.cloneWithRows([
-        'Moose', 'Corey', 'Allie', 'Jay', 'Graham', 'Darwish', 'Abhi Fitness'
-      ])
-    }
+      dataSource: dataSource.cloneWithRows([])
+      }
+      //fetch
+    fetch('https://hohoho-backend.herokuapp.com/users', {
+        method: 'GET',
+        headers: {
+          "Content-Type": "application/json"
+        },
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        console.log('responseJSON', responseJson);
+        this.setState({
+          dataSource: dataSource.cloneWithRows(responseJson.users)
+        });
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        console.log('error', err);
+      });
   }
 
   static navigationOptions = {
@@ -30,12 +46,64 @@ class Users extends React.Component {
     return (
       <View style={styles.container}>
         <ListView
-          renderRow={item => <Text>{item}</Text>}
+          renderRow={item => <Text>{item.username}</Text>}
           dataSource = {this.state.dataSource}
         />
       </View>
     )
   }
 }
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
+  },
+  containerFull: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'stretch',
+    backgroundColor: '#F5FCFF',
+  },
+  welcome: {
+    fontSize: 20,
+    textAlign: 'center',
+    margin: 10,
+  },
+  instructions: {
+    textAlign: 'center',
+    color: '#333333',
+    marginBottom: 5,
+  },
+  textBig: {
+    fontSize: 36,
+    textAlign: 'center',
+    margin: 10,
+  },
+  button: {
+    alignSelf: 'stretch',
+    paddingTop: 10,
+    paddingBottom: 10,
+    marginTop: 10,
+    marginLeft: 5,
+    marginRight: 5,
+    borderRadius: 5
+  },
+  buttonRed: {
+    backgroundColor: '#FF585B',
+  },
+  buttonBlue: {
+    backgroundColor: '#0074D9',
+  },
+  buttonGreen: {
+    backgroundColor: '#2ECC40'
+  },
+  buttonLabel: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: 'white'
+  }
+});
 
 export default Users;
