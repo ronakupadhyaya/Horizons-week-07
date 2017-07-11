@@ -13,6 +13,88 @@ import { StackNavigator } from 'react-navigation';
 
 
 //Screens
+
+class Users extends React.Component {
+    static navigationOptions = {
+        title: 'Users'
+    };
+
+    constructor(){
+        super();
+        this.state = {
+            dataSource: ds.cloneWithRows([]),
+        }
+
+        fetch('https://hohoho-backend.herokuapp.com/users', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json"
+            },
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+            this.setState({
+                dataSource: ds.cloneWithRows(
+                    responseJson.map((user) => user))
+                });
+            });
+            .catch((err) => {
+                /* do something if there was an error with fetching */
+                console.log("Failure!!!!", err)
+            });
+
+    }
+
+    touchUser = (user) => {
+        fetch('https://hohoho-backend.herokuapp.com/messages', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                to: user._id
+            })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+            let alertMsg;
+            if(responseJson.success) {
+                this.props.navigation.goBack()
+                Alert.alert(
+                    "Success",
+                    "HOHOH, "+ user.username + " has been sent",
+                    [{text: 'Dismiss Button'}] // Button
+                )
+            }else{
+                Alert.alert(
+                    "Failure",
+                    "see title",
+                    [{text: 'Dismiss Button'}] // Button
+                )
+            }
+
+            /* do something with responseJson and go back to the Login view but
+            * make sure to check for responseJson.success! */
+        })
+        .catch((err) => {
+            /* do something if there was an error with fetching */
+            console.log("Failure!!!!", err)
+        });
+    }
+    render() {
+        return (
+            <View style={styles.container}>
+                <ListView
+                    dataSource={this.state.dataSource}
+                    renderRow={(user) => <TouchableOpacity onPress={this.touchUser(user)}>
+                    <Text>{user.username}</Text>
+                </TouchableOpacity>}
+                />
+            </View>
+        )}
+    }
+
+
 class LoginScreen extends React.Component {
   static navigationOptions = {
     title: 'Login'
@@ -132,7 +214,7 @@ class Login extends React.Component {
         .then((responseJson) => {
             console.log('responseJson is : ',  responseJson)
             if(responseJson.success) {
-                this.props.navigation.navigate('page1')
+                this.props.navigation.navigate('Users')
             }
             /* do something with responseJson and go back to the Login view but
             * make sure to check for responseJson.success! */
@@ -172,8 +254,8 @@ export default StackNavigator({
   Register: {
     screen: RegisterScreen,
   },
-  page1: {
-    screen: LoginScreen,
+  Users: {
+    screen: Users,
   }
 }, {initialRouteName: 'Home'});
 
