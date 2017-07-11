@@ -10,13 +10,16 @@ import {
   Button,
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
+import { Location, Permissions } from 'expo';
 
 class Users extends React.Component {
   constructor(props) {
     super(props);
     const dataSource = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
-      dataSource: dataSource.cloneWithRows([])
+      dataSource: dataSource.cloneWithRows([]),
+      lat: '',
+      long: ''
       }
       //fetch
     fetch('https://hohoho-backend.herokuapp.com/users', {
@@ -72,8 +75,53 @@ class Users extends React.Component {
       });
   }
 
-  message() {
-     this.props.navigation.navigate('Messages');
+  sendLocation = async(user) => {
+      let { status } = await Permissions.askAsync(Permissions.LOCATION);
+      if (status !== 'granted') {
+        console.log('User rejects to share location!')
+      } else {
+        let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+        this.setState({lat: location.coords.latitude, long: location.coords.longitude})
+        console.log('LOCATION', location);
+      }
+      //fetch and share location with other user
+      this.longTouchUser(user)
+  }
+
+  longTouchUser(user) {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          to: user._id,
+          location: {
+            longitude: this.state.long,
+            latitude: this.state.lat
+          }
+        })
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        /* do something with responseJson and go back to the Login view but
+         * make sure to check for responseJson.success! */
+         if (responseJson.success) {
+           console.log('hi');
+           Alert.alert(
+             'Your Ho Ho Ho ' + user.username
+           )
+         } else {
+           Alert.alert(
+             'Your Ho Ho Ho to ' + user.username + ' could not be sent'
+           )
+         }
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        console.log('error', err);
+      });
+
   }
 
   render() {
@@ -82,12 +130,18 @@ class Users extends React.Component {
 
         <ListView
           renderRow={item =>
-            <TouchableOpacity onPress={this.touchUser.bind(this, item)}>
+            <TouchableOpacity
+                onPress={this.touchUser.bind(this, item)}
+                onLongPress={this.sendLocation.bind(this, item)}
+            >
             <Text style={styles.username}>{item.username}</Text>
             </TouchableOpacity>
           }
           dataSource = {this.state.dataSource}
         />
+        <Text style={styles.username}>Location:</Text>
+        <Text style={styles.username}>{this.state.lat}</Text>
+        <Text style={styles.username}>{this.state.long}</Text>
       </View>
     )
   }
