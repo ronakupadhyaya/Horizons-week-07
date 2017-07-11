@@ -10,13 +10,23 @@ import {
   Button,
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
+import Users from './Users';
 
 
 class LoginScreen extends React.Component {
-  static navigationOptions = {
-    title: 'Login'
-  };
+  static navigationOptions = ({ navigation }) => ({
+    title: 'Users',
+    headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
+  });
 
+  componentDidMount() {
+  this.props.navigation.setParams({
+    onRightPress: this.message.bind(this)
+    })
+  }
+  message() {
+     this.props.navigation.navigate('Messages');
+  }
   press() {
     this.props.navigation.navigate('TapToLogin');
   }

@@ -11,15 +11,14 @@ import {
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
-class Users extends React.Component {
+class Messages extends React.Component{
   constructor(props) {
     super(props);
     const dataSource = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
       dataSource: dataSource.cloneWithRows([])
       }
-      //fetch
-    fetch('https://hohoho-backend.herokuapp.com/users', {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
         method: 'GET',
         headers: {
           "Content-Type": "application/json"
@@ -27,8 +26,9 @@ class Users extends React.Component {
       })
       .then((response) => response.json())
       .then((responseJson) => {
+        console.log('responseJSON', responseJson);
         this.setState({
-          dataSource: dataSource.cloneWithRows(responseJson.users)
+          dataSource: dataSource.cloneWithRows(responseJson.messages)
         });
       })
       .catch((err) => {
@@ -37,61 +37,27 @@ class Users extends React.Component {
       });
   }
 
-  static navigationOptions = {
-    title: 'Users'
-  };
-
-  touchUser(user) {
-    fetch('https://hohoho-backend.herokuapp.com/messages', {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          to: user._id
-        })
-      })
-      .then((response) => response.json())
-      .then((responseJson) => {
-        /* do something with responseJson and go back to the Login view but
-         * make sure to check for responseJson.success! */
-         if (responseJson.success) {
-           console.log('hi');
-           Alert.alert(
-             'Your Ho Ho Ho ' + user.username
-           )
-         } else {
-           Alert.alert(
-             'Your Ho Ho Ho to ' + user.username + ' could not be sent'
-           )
-         }
-      })
-      .catch((err) => {
-        /* do something if there was an error with fetching */
-        console.log('error', err);
-      });
-  }
-
-  message() {
-     this.props.navigation.navigate('Messages');
-  }
-
   render() {
     return (
       <View style={styles.container}>
-
-        <ListView
-          renderRow={item =>
-            <TouchableOpacity onPress={this.touchUser.bind(this, item)}>
-            <Text style={styles.username}>{item.username}</Text>
-            </TouchableOpacity>
-          }
-          dataSource = {this.state.dataSource}
-        />
+          <ListView
+            renderRow={item => {
+              return (
+                <View>
+                <Text style={styles.username}>To: {item.to.username}</Text>
+                <Text style={styles.username}>From: {item.from.username}</Text>
+                <Text style={styles.username}>When: {item.timestamp}</Text>
+                </View>
+              )
+              }
+            }
+            dataSource = {this.state.dataSource}
+          />
       </View>
     )
   }
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -151,4 +117,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default Users;
+export default Messages;

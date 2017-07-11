@@ -14,6 +14,7 @@ import RegisterScreen from './Register';
 import TapToLogin from './TapToLogin';
 import Users from './Users';
 import LoginScreen from './Login';
+import Messages from './Messages';
 
 
 export default StackNavigator({
@@ -28,6 +29,9 @@ export default StackNavigator({
   },
   Users: {
     screen: Users,
+  },
+  Messages: {
+    screen: Messages,
   }
 }, {initialRouteName: 'Login'});
 
