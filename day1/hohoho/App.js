@@ -65,7 +65,7 @@ class LoginScreen extends React.Component {
                    username: username,
                    password: password
                }));
-               return this.props.navigation.navigate('UsersScreen');
+               return this.props.navigation.navigate('SwiperScreen');
            }else{
                alert(responseJson.error);
                console.log('error in fetchlogin', responseJson.error);
@@ -100,7 +100,7 @@ class LoginScreen extends React.Component {
 
         AsyncStorage.setItem('user', JSON.stringify({username: this.state.username, password: this.state.password}));
 
-        this.props.navigation.navigate('UsersScreen');
+        this.props.navigation.navigate('SwiperScreen');
       } else {
 
         this.setState({message: responseJson.error});
@@ -278,7 +278,6 @@ class UsersScreen extends React.Component {
 
 }
 
-
 longTouchUser(user,lat,long) {
   //todo (reduce code with long touchUser)
   fetch('https://hohoho-backend.herokuapp.com/messages', {
@@ -312,8 +311,6 @@ longTouchUser(user,lat,long) {
   });
 
 }
-
-
 
   getUsers(ds) {
     fetch('https://hohoho-backend.herokuapp.com/users', {method: 'GET'}).then((response) => response.json()).then((responseJson) => {
@@ -462,6 +459,22 @@ class Messages extends React.Component {
   }
 }
 
+
+class SwiperScreen extends React.Component {
+  static navigationOptions = {
+    title: 'HoHoHo!'
+  };
+
+  render() {
+    return (
+      <Swiper>
+        <UsersScreen />
+        <Messages />
+      </Swiper>
+    );
+  }
+}
+
 //Navigator
 export default StackNavigator({
   Login: {
@@ -475,6 +488,9 @@ export default StackNavigator({
   },
   Messages: {
     screen: Messages
+  },
+  SwiperScreen: {
+    screen: SwiperScreen
   }
 }, {initialRouteName: 'Login'});
 
