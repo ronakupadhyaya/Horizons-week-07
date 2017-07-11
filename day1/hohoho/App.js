@@ -13,8 +13,7 @@ import {
 } from 'react-native';
 import {StackNavigator} from 'react-navigation';
 
-import { Location, Permissions, MapView } from 'expo'; // import map handlers and views
-
+import {Location, Permissions, MapView} from 'expo'; // import map handlers and views
 
 import Swiper from 'react-native-swiper'
 
@@ -30,58 +29,80 @@ class LoginScreen extends React.Component {
     }
   }
 
-
   componentDidMount() {
-        AsyncStorage.getItem('user')
-        .then(result => {
-            var parsedResult = JSON.parse(result);
-            var username = parsedResult.username;
-            var password = parsedResult.password;
-            if (username && password) {
-                this.login(username, password)
-                  // .then(resp => resp.json())
-                  // .then( resp => console.log(resp))
-          }
-      })
-      .catch(err => {console.log(err)})
+    //   AsyncStorage.getItem('user')
+    //   .then(result => {
+    //       var parsedResult = JSON.parse(result);
+    //       var username = parsedResult.username;
+    //       var password = parsedResult.password;
+    //       if (username && password) {
+    //           this.login(username, password)
+    //
+    //     }
+    // })
+    // .catch(err => {console.log(err)})
+
+    AsyncStorage.getItem('user')
+    .then(result => {
+      var parsedResult = JSON.parse(result);
+      var username = parsedResult.username;
+      var password = parsedResult.password;
+      if (username && password) {
+        return this.login(username, password);
+      } else {
+        throw new Error('no username found')
       }
+    })
+    .catch((E) => {
+      console.log('no username found', E);
+    })
+    .then(resp => resp ? resp.json() : null)
+    .then((resp) => {
+      if (resp) {
+        this.props.navigation.navigate('SwiperScreen');
+      }
+      console.log('resp');
+    })
+      // Don't really need an else clause, we don't do anything in this case.
+    .catch(err => {/* handle the error */
+      alert('invalid username or password')
+    })
+  }
 
-    login(username, password) {
-        fetch('https://hohoho-backend.herokuapp.com/login', {
-          method: 'POST',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            username: username,
-            password: password,
-          })
-        })
-        .then((response) => response.json())
-        .then((responseJson) => {
-           if(responseJson.success){
-               console.log('responsejson', responseJson);
-               AsyncStorage.setItem('user', JSON.stringify({
-                   username: username,
-                   password: password
-               }));
-               return this.props.navigation.navigate('SwiperScreen');
-           }else{
-               alert(responseJson.error);
-               console.log('error in fetchlogin', responseJson.error);
-               this.setState({error: responseJson.error});
-           }
-        })
-        .catch((err) => {
-            console.log('caught error in catch of login', err);
-            alert(err)
-          /* do something if there was an error with fetching */
-        });
+  login(username, password) {
 
-    }
+  return fetch('https://hohoho-backend.herokuapp.com/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({username: username, password: password})
+    })
 
 
+    // fetch('https://hohoho-backend.herokuapp.com/login', {
+    //   method: 'POST',
+    //   headers: {
+    //     "Content-Type": "application/json"
+    //   },
+    //   body: JSON.stringify({username: username, password: password})
+    // }).then((response) => response.json()).then((responseJson) => {
+    //   if (responseJson.success) {
+    //     console.log('responsejson', responseJson);
+    //     AsyncStorage.setItem('user', JSON.stringify({username: username, password: password}));
+    //     return this.props.navigation.navigate('SwiperScreen');
+    //   } else {
+    //     alert(responseJson.error);
+    //     console.log('error in fetchlogin', responseJson.error);
+    //     this.setState({error: responseJson.error});
+    //   }
+    // }).catch((err) => {
+    //   console.log('caught error in catch of login', err);
+    //   alert(err)
+    //   /* do something if there was an error with fetching */
+    // });
 
+  }
 
   static navigationOptions = {
     title: 'Login'
@@ -267,50 +288,53 @@ class UsersScreen extends React.Component {
   }
 
   sendLocation = async(user) => {
-    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    let {status} = await Permissions.askAsync(Permissions.LOCATION);
     if (status !== 'granted') {
       alert("please refresh the page and approve the location Permissions to continue")
-    }else{
+    } else {
       let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
       console.log(location)
-      this.longTouchUser(user,location.coords.latitude,location.coords.longitude);
+      this.longTouchUser(user, location.coords.latitude, location.coords.longitude);
     }
 
-}
+  }
 
-longTouchUser(user,lat,long) {
-  //todo (reduce code with long touchUser)
-  fetch('https://hohoho-backend.herokuapp.com/messages', {
-    method: 'POST',
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({to: user._id,   location: {
-    longitude: long,
-    latitude: lat
-  }})
-  }).then((response) => response.json()).then((responseJson) => {
-    //console.log("response",responseJson);
-    if (responseJson.success) {
-      Alert.alert('Alert Title', `Your Ho Ho Ho! to ${user.username} locartion is ${lat} and ${long}`, [
-        {
-          text: 'Dismiss Button'
+  longTouchUser(user, lat, long) {
+    //todo (reduce code with long touchUser)
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: user._id,
+        location: {
+          longitude: long,
+          latitude: lat
         }
-      ] // button
-      )
-    } else {
-      Alert.alert('Error', `${responseJson.error}`, [
-        {
-          text: 'Dismiss Button'
-        }
-      ] // button
-      )
-    }
-  }).catch((err) => {
-    alert(err);
-  });
+      })
+    }).then((response) => response.json()).then((responseJson) => {
+      //console.log("response",responseJson);
+      if (responseJson.success) {
+        Alert.alert('Alert Title', `Your Ho Ho Ho! to ${user.username} locartion is ${lat} and ${long}`, [
+          {
+            text: 'Dismiss Button'
+          }
+        ] // button
+        )
+      } else {
+        Alert.alert('Error', `${responseJson.error}`, [
+          {
+            text: 'Dismiss Button'
+          }
+        ] // button
+        )
+      }
+    }).catch((err) => {
+      alert(err);
+    });
 
-}
+  }
 
   getUsers(ds) {
     fetch('https://hohoho-backend.herokuapp.com/users', {method: 'GET'}).then((response) => response.json()).then((responseJson) => {
@@ -425,25 +449,23 @@ class Messages extends React.Component {
           <Text >To : {rowData.to.username}</Text>
           <Text>Message : {rowData.body}</Text>
           <Text >Time : {rowData.timestamp}</Text>
-
-          {rowData.location ?
-                                              <MapView
-                                                  style={{flex: 1, minHeight: 70, minWidth: 80}}
-                                                  showsUserLocation={true}
-                                                  scrollEnabled={false}
-                                                  region={{
-                                                      longitude: rowData.location.longitude,
-                                                      latitude: rowData.location.latitude,
-                                                      longitudeDelta: 0.05,
-                                                      latitudeDelta: 0.05
-                                                  }}
-                                              >
-                                                  <MapView.Marker
-                                                      coordinate={{latitude: rowData.location.latitude, longitude: rowData.location.longitude}}
-                                                  />
-                                              </MapView>
-                                          : console.log('there was no location data')}
-
+          {rowData.location
+            ? <MapView style={{
+                flex: 1,
+                minHeight: 70,
+                minWidth: 80
+              }} showsUserLocation={true} scrollEnabled={false} region={{
+                longitude: rowData.location.longitude,
+                latitude: rowData.location.latitude,
+                longitudeDelta: 0.05,
+                latitudeDelta: 0.05
+              }}>
+                <MapView.Marker coordinate={{
+                  latitude: rowData.location.latitude,
+                  longitude: rowData.location.longitude
+                }}/>
+              </MapView>
+            : console.log('there was no location data')}
         </View>} refreshControl={< RefreshControl refreshing = {
           this.state.refreshing
         }
@@ -459,7 +481,6 @@ class Messages extends React.Component {
   }
 }
 
-
 class SwiperScreen extends React.Component {
   static navigationOptions = {
     title: 'HoHoHo!'
@@ -467,9 +488,13 @@ class SwiperScreen extends React.Component {
 
   render() {
     return (
-      <Swiper>
-        <UsersScreen />
-        <Messages />
+      <Swiper style={{}} dot={<View style={{backgroundColor: 'rgba(255,255,255,.3)', width: 13, height: 13, borderRadius: 7, marginLeft: 7, marginRight: 7}} />}
+            activeDot={<View style={{backgroundColor: '#fff', width: 13, height: 13, borderRadius: 7, marginLeft: 7, marginRight: 7}} />}
+            paginationStyle={{
+              bottom: 70
+            }}>
+        <UsersScreen/>
+        <Messages/>
       </Swiper>
     );
   }
