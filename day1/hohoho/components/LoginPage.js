@@ -39,8 +39,6 @@ export default class LoginPage extends React.Component {
       })
     })
     .then((response) => {
-      console.log('response in login', response);
-      console.log('type res', typeof response);
       if (response.status === 200) {
         self.props.navigation.navigate('Users');
       } else {

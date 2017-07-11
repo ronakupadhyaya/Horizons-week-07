@@ -14,6 +14,7 @@ import LoginScreen from './components/LoginScreen'
 import RegisterScreen from './components/RegisterScreen'
 import Users from './components/Users'
 import LoginPage from './components/LoginPage'
+import Messages from './components/Messages'
 
 //Navigator
 export default StackNavigator({
@@ -28,6 +29,9 @@ export default StackNavigator({
   },
   Users: {
     screen: Users
+  },
+  Messages: {
+    screen: Messages
   }
 }, {initialRouteName: 'Login'});
 

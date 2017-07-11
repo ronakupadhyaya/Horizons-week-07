@@ -13,10 +13,8 @@ import { StackNavigator } from 'react-navigation';
 import styles from '../assets/styles'
 
 export default class Users extends React.Component {
-  //navigationOptions code
   static navigationOptions = {
-    title: 'Login',
-    // headerRight: 'Message'
+    title: 'Users'
   };
   constructor(props) {
     super(props);
@@ -26,55 +24,77 @@ export default class Users extends React.Component {
       ]
     };
   }
-  componentDidMount() {
-    var self = this;
-    fetch('https://hohoho-backend.herokuapp.com/users')
-      .then(response => {
-        console.log(response);
-        return response.json();
-      })
-      .then((data) =>
-        self.setState({users: data.users})
-      );
-  }
 
-  send(id) {
+  send(item) {
+    console.log('item in users', item);
     fetch('https://hohoho-backend.herokuapp.com/messages', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        to: self.state.username,
+        to: item._id,
       })
     })
     .then((response) => {
-      console.log('response in login', response);
+      console.log('response in users', response);
       console.log('type res', typeof response);
       if (response.status === 200) {
-        self.props.navigation.navigate('Users');
+        this.messages(item.username, true);
       } else {
-        self.setState({wrongPassword: true})
+        this.messages(item.username, false);
       }
+    })
+    .catch(err => {
+      console.log('err in users', err);
     })
   }
 
+  messages(name, couldSend) {
+    if (couldSend) {
+      alert('You sent a Hohoho to ' + name +'!');
+    } else {
+      alert('You failed to send a Hohoho to ' + name +'!');
+    }
+  }
+
+  goToMessages() {
+    this.props.navigation.navigate('Messages')
+  }
+
+  componentDidMount() {
+    var self = this;
+    fetch('https://hohoho-backend.herokuapp.com/users')
+      .then(response => {
+        return response.json();
+      })
+      .then((data) =>
+        self.setState({users: data.users})
+      );
+  }
   render() {
+    var self = this;
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     return(
-      <ListView renderRow={((item) => (<View>
-          <Text
-            style={{
-            fontSize: 20,
-            color: 'blue'
-            }}
-            onPress={(id) => this.send(item._id)}
-          >
-            {item.username}
-          </Text>
-      </View>) )}
-       dataSource={ds.cloneWithRows(this.state.users)}
+      <View style={styles.container}>
+        <ListView
+          dataSource={ds.cloneWithRows(this.state.users)}
+          renderRow={((item) => (
+          <View>
+            <TouchableOpacity onPress={this.send.bind(this, item)}>
+              <Text
+                style={{
+                  fontSize: 20,
+                  color: 'blue'
+                }}>{item.username}
+              </Text>
+            </TouchableOpacity>
+          </View>) )}
         ></ListView>
+          <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={ () => {this.goToMessages()} }>
+            <Text style={styles.buttonLabel}>Messages</Text>
+          </TouchableOpacity>
+      </View>
     )
   }
 }
