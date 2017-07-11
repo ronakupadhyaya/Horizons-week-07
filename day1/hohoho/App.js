@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 // import {Container, List, Content, ListItem} from 'native-base';
 import { Location, Permissions, MapView } from 'expo';
+import Swiper from 'react-native-swiper';
 import { StackNavigator } from 'react-navigation';
 
 
@@ -58,31 +59,6 @@ class Messages extends React.Component {
                 <ListView
                     dataSource={this.state.dataSource}
                     renderRow={(rowData) => {
-                        // if(rowData.location) {
-                        //     console.log('there was data in message', rowData.location.longitude);
-                        //     return (<View style={styles.message}>
-                        //         <Text style={{flex: 1}}>To: {rowData.to.username}</Text>
-                        //         <MapView
-                        //             style={{flex: 1, minHeight: 50, minWidth: 80}}
-                        //             showsUserLocation={true}
-                        //             scrollEnabled={false}
-                        //             region={{
-                        //                     longitude: rowData.location.longitude,
-                        //                     latitude: rowData.location.latitude,
-                        //                     longitudeDelta: 0.05,
-                        //                     latitudeDelta: 0.05
-                        //             }}/>
-                        //     </View>)
-                        // } else {
-                        //     return (
-                        //         <View style={styles.message}>
-                        //             <Text>To: {rowData.to.username}</Text>
-                        //             <Text>From: {rowData.from.username}</Text>
-                        //             <Text>Message: {rowData.body}</Text>
-                        //             <Text>When: {rowData.timestamp}</Text>
-                        //         </View>
-                        //     )
-                        // }
                         return (
                             <View style={styles.message}>
                                 <Text>To: {rowData.to.username}</Text>
@@ -98,8 +74,8 @@ class Messages extends React.Component {
                                         region={{
                                             longitude: rowData.location.longitude,
                                             latitude: rowData.location.latitude,
-                                            longitudeDelta: 0.05,
-                                            latitudeDelta: 0.05
+                                            longitudeDelta: 0.015,
+                                            latitudeDelta: 0.015
                                         }}
                                     >
                                         <MapView.Marker
@@ -138,17 +114,17 @@ class UsersScreen extends React.Component {
 
     static navigationOptions = ({navigation}) => ({
     // static navigationOptions = (props) => ({
-        title: 'Users',
-        headerRight: <Button title='Messages' onPress={() => navigation.state.params.onRightPress()}>
-            {/* headerRight: <Button title='Messages' onPress={() => props.navigation.navigate('Messages')}> */}
-        </Button>
+        title: 'Users'
+        // headerRight: <Button title='Messages' onPress={() => navigation.state.params.onRightPress()}>
+        //     {/* headerRight: <Button title='Messages' onPress={() => props.navigation.navigate('Messages')}> */}
+        // </Button>
     });
 
-    componentDidMount() {
-        this.props.navigation.setParams({
-            onRightPress: () => this.messages()
-        })
-    }
+    // componentDidMount() {
+    //     this.props.navigation.setParams({
+    //         onRightPress: () => this.messages()
+    //     })
+    // }
 
   messages() {
       this.props.navigation.navigate('Messages')
@@ -205,8 +181,10 @@ class UsersScreen extends React.Component {
           if(responseJson.success){
               if(coords){
                   console.log('successfuly sent location', requestBody);
+                  Alert.alert('Success', `Your Ho Ho Ho to ${user.username} has been sent!`, [{text: 'Dismiss Button'}])
+              } else {
+                 Alert.alert('Success', `You sent a Ho Ho Ho to ${user.username} with your Location!`, [{text: 'Dismiss Button'}])
               }
-              Alert.alert('Success', `Your Ho Ho Ho to ${user.username} has been sent!`, [{text: 'Dismiss Button'}])
           } else{
               Alert.alert('Uh oh', `Your Ho Ho Ho to ${user.username} coudl nto be sent!`, [{text: 'Dismiss Button'}])
           }
@@ -227,12 +205,14 @@ class UsersScreen extends React.Component {
       return (
           <View style={{flex: 1}}>
               <ListView
+                //   style={{paddingBottom: 10}}
+                  //   removeClippedSubviews={true}
                   dataSource={this.state.dataSource}
                   renderRow={(rowData) => {return (
                       <TouchableOpacity
                           onPress={this.touchUser.bind(this,rowData)}
                           onLongPress={this.sendLocation.bind(this, rowData)}
-                          delayLongPress={2000}
+                          delayLongPress={800}
                       >
                           <Text style={styles.row}>{rowData.username}</Text>
                       </TouchableOpacity>
@@ -248,8 +228,8 @@ class UsersScreen extends React.Component {
                           colors={['#ff0000', '#00ff00', '#0000ff']}
                           progressBackgroundColor="#ffff00"
                       />}
-              ></ListView>
-          </View>
+              />
+              </View>
       )
   }
 }
@@ -270,7 +250,7 @@ class LoginScreen extends React.Component {
           var username = parsedResult.username;
           var password = parsedResult.password;
           if (username && password) {
-              this.login(username, password)
+              return this.login(username, password)
                 // .then(resp => resp.json())
                 // .then( resp => console.log(resp))
         }
@@ -297,7 +277,7 @@ class LoginScreen extends React.Component {
                  username: username,
                  password: password
              }));
-             return this.props.navigation.navigate('Users');
+             return this.props.navigation.navigate('HoHoHo');
          }else{
              alert(responseJson.error);
              console.log('error in fetchlogin', responseJson.error);
@@ -432,6 +412,26 @@ class RegisterScreen extends React.Component {
   }
 }
 
+class SwiperScreen extends React.Component {
+  static navigationOptions = {
+    title: 'HoHoHo'
+  };
+
+  render() {
+    return (
+      <Swiper style={{}}
+          //   loop={false}
+          //   showsPagination={true}
+          showsButtons={true}
+          dot={(<View style={{backgroundColor:'rgba(0,0,0,.2)', width: 8, height: 8,borderRadius: 4, marginLeft: 3, marginRight: 3, marginTop: 3, marginBottom: 3,}} />)}
+          buttonWrapperStyle={{backgroundColor: 'transparent', flexDirection: 'row', position: 'absolute', top: 0, left: 0, flex: 1, paddingHorizontal: 10, paddingVertical: 10, justifyContent: 'space-between', alignItems: 'center'}}
+      >
+          <UsersScreen />
+          <Messages />
+      </Swiper>
+    );
+  }
+}
 
 //Navigator
 export default StackNavigator({
@@ -446,7 +446,10 @@ export default StackNavigator({
   },
   Messages: {
       screen: Messages
-  }
+  },
+  HoHoHo: {
+      screen: SwiperScreen
+  },
 }, {initialRouteName: 'Login'});
 
 
