@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  AsyncStorage,
   StyleSheet,
   View,
   Text,
@@ -12,6 +13,11 @@ import {
 } from 'react-native';
 import {StackNavigator} from 'react-navigation';
 
+import { Location, Permissions, MapView } from 'expo'; // import map handlers and views
+
+
+import Swiper from 'react-native-swiper'
+
 //Screens
 class LoginScreen extends React.Component {
 
@@ -23,6 +29,59 @@ class LoginScreen extends React.Component {
       message: ''
     }
   }
+
+
+  componentDidMount() {
+        AsyncStorage.getItem('user')
+        .then(result => {
+            var parsedResult = JSON.parse(result);
+            var username = parsedResult.username;
+            var password = parsedResult.password;
+            if (username && password) {
+                this.login(username, password)
+                  // .then(resp => resp.json())
+                  // .then( resp => console.log(resp))
+          }
+      })
+      .catch(err => {console.log(err)})
+      }
+
+    login(username, password) {
+        fetch('https://hohoho-backend.herokuapp.com/login', {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password,
+          })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+           if(responseJson.success){
+               console.log('responsejson', responseJson);
+               AsyncStorage.setItem('user', JSON.stringify({
+                   username: username,
+                   password: password
+               }));
+               return this.props.navigation.navigate('UsersScreen');
+           }else{
+               alert(responseJson.error);
+               console.log('error in fetchlogin', responseJson.error);
+               this.setState({error: responseJson.error});
+           }
+        })
+        .catch((err) => {
+            console.log('caught error in catch of login', err);
+            alert(err)
+          /* do something if there was an error with fetching */
+        });
+
+    }
+
+
+
 
   static navigationOptions = {
     title: 'Login'
@@ -38,6 +97,9 @@ class LoginScreen extends React.Component {
     }).then((response) => response.json()).then((responseJson) => {
       //console.log("response",responseJson);
       if (responseJson.success) {
+
+        AsyncStorage.setItem('user', JSON.stringify({username: this.state.username, password: this.state.password}));
+
         this.props.navigation.navigate('UsersScreen');
       } else {
 
@@ -160,18 +222,17 @@ class UsersScreen extends React.Component {
     })
     this.state = {
       dataSource: ds.cloneWithRows([]),
-       refreshing: false
+      refreshing: false
     }
     this.getUsers(ds);
   }
   static navigationOptions = (props) => ({
-    title: 'Users',
-   headerRight:   <TouchableOpacity onPress={()=> props.navigation.navigate('Messages')}>
-          <Text>Messages</Text>
-        </TouchableOpacity>
+    title: 'Users', headerRight: <TouchableOpacity onPress={() => props.navigation.navigate('Messages')}>
+        <Text>Messages</Text>
+      </TouchableOpacity>
   });
 
-  messages(){
+  messages() {
     this.props.navigation.navigate('Messages')
   }
 
@@ -181,21 +242,23 @@ class UsersScreen extends React.Component {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({to:user._id})
+      body: JSON.stringify({to: user._id})
     }).then((response) => response.json()).then((responseJson) => {
       //console.log("response",responseJson);
       if (responseJson.success) {
-        Alert.alert(
-  'Alert Title',
-  `Your Ho Ho Ho! to ${user.username}`,
-  [{text: 'Dismiss Button'}] // button
-)
+        Alert.alert('Alert Title', `Your Ho Ho Ho! to ${user.username}`, [
+          {
+            text: 'Dismiss Button'
+          }
+        ] // button
+        )
       } else {
-        Alert.alert(
-  'Error',
-  `${responseJson.error}`,
-  [{text: 'Dismiss Button'}] // button
-)
+        Alert.alert('Error', `${responseJson.error}`, [
+          {
+            text: 'Dismiss Button'
+          }
+        ] // button
+        )
       }
     }).catch((err) => {
       alert(err);
@@ -203,12 +266,63 @@ class UsersScreen extends React.Component {
 
   }
 
+  sendLocation = async(user) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      alert("please refresh the page and approve the location Permissions to continue")
+    }else{
+      let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+      console.log(location)
+      this.longTouchUser(user,location.coords.latitude,location.coords.longitude);
+    }
+
+}
+
+
+longTouchUser(user,lat,long) {
+  //todo (reduce code with long touchUser)
+  fetch('https://hohoho-backend.herokuapp.com/messages', {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({to: user._id,   location: {
+    longitude: long,
+    latitude: lat
+  }})
+  }).then((response) => response.json()).then((responseJson) => {
+    //console.log("response",responseJson);
+    if (responseJson.success) {
+      Alert.alert('Alert Title', `Your Ho Ho Ho! to ${user.username} locartion is ${lat} and ${long}`, [
+        {
+          text: 'Dismiss Button'
+        }
+      ] // button
+      )
+    } else {
+      Alert.alert('Error', `${responseJson.error}`, [
+        {
+          text: 'Dismiss Button'
+        }
+      ] // button
+      )
+    }
+  }).catch((err) => {
+    alert(err);
+  });
+
+}
+
+
+
   getUsers(ds) {
     fetch('https://hohoho-backend.herokuapp.com/users', {method: 'GET'}).then((response) => response.json()).then((responseJson) => {
       //   console.log('respoisnejson is', responseJson);
       if (responseJson.success) {
         //  console.log('success', responseJson);
-      const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
+        const ds = new ListView.DataSource({
+          rowHasChanged: (r1, r2) => r1 !== r2
+        })
         this.setState({
           refreshing: false,
           dataSource: ds.cloneWithRows(responseJson.users)
@@ -226,9 +340,9 @@ class UsersScreen extends React.Component {
   }
 
   _onRefresh() {
-      console.log('ON REFRESH CALLED');
-      this.setState({refreshing: true});
-      this.getUsers();
+    console.log('ON REFRESH CALLED');
+    this.setState({refreshing: true});
+    this.getUsers();
   }
   render() {
     return (
@@ -238,28 +352,22 @@ class UsersScreen extends React.Component {
 
         {/*
                */}
-        <ListView dataSource={this.state.dataSource} renderRow={(rowData) =>
-            <TouchableOpacity onPress={this.touchUser.bind(this, rowData)}>
-               <Text style={styles.row}>{rowData.username}</Text>
-              </TouchableOpacity>
-         }
-         refreshControl={
-             <RefreshControl
-                 refreshing={this.state.refreshing}
-                 onRefresh={this._onRefresh.bind(this)}
-                 tintColor="#ff0000"
-                 title="Loading..."
-                 titleColor="#00ff00"
-                 colors={['#ff0000', '#00ff00', '#0000ff']}
-                 progressBackgroundColor="#ffff00"
-             />}
-             >
-        </ListView>
+        <ListView dataSource={this.state.dataSource} renderRow={(rowData) => <TouchableOpacity onPress={this.touchUser.bind(this, rowData)} onLongPress={this.sendLocation.bind(this, rowData)} delayLongPress={300}>
+          <Text style={styles.row}>{rowData.username}</Text>
+        </TouchableOpacity>} refreshControl={< RefreshControl refreshing = {
+          this.state.refreshing
+        }
+        onRefresh = {
+          this._onRefresh.bind(this)
+        }
+        tintColor = "#ff0000" title = "Loading..." titleColor = "#00ff00" colors = {
+          ['#ff0000', '#00ff00', '#0000ff']
+        }
+        progressBackgroundColor = "#ffff00" />}></ListView>
       </View>
     )
   }
 }
-
 
 class Messages extends React.Component {
   constructor(props) {
@@ -282,7 +390,9 @@ class Messages extends React.Component {
       //   console.log('respoisnejson is', responseJson);
       if (responseJson.success) {
         //  console.log('success', responseJson);
-        const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
+        const ds = new ListView.DataSource({
+          rowHasChanged: (r1, r2) => r1 !== r2
+        })
         this.setState({
           refreshing: false,
           dataSource: ds.cloneWithRows(responseJson.messages)
@@ -299,9 +409,9 @@ class Messages extends React.Component {
   }
 
   _onRefresh() {
-      console.log('ON REFRESH CALLED');
-      this.setState({refreshing: true});
-      this.getMessages();
+    console.log('ON REFRESH CALLED');
+    this.setState({refreshing: true});
+    this.getMessages();
   }
 
   render() {
@@ -310,35 +420,47 @@ class Messages extends React.Component {
         flex: 1
       }}>
 
-
-{/* <TouchableOpacity onPress={this.touchUser.bind(this, rowData)}>
+        {/* <TouchableOpacity onPress={this.touchUser.bind(this, rowData)}>
             </TouchableOpacity> */}
 
-        <ListView dataSource={this.state.dataSource} renderRow={(rowData) =>
-            <View style={styles.messageBox}>
-               <Text >from : {rowData.from.username}</Text>
-             <Text >To : {rowData.to.username}</Text>
-           <Text>Message : {rowData.body}</Text>
-         <Text >Time : {rowData.timestamp}</Text>
-        </View>
-         }
-         refreshControl={
-             <RefreshControl
-                 refreshing={this.state.refreshing}
-                 onRefresh={this._onRefresh.bind(this)}
-                 tintColor="#ff0000"
-                 title="Loading..."
-                 titleColor="#00ff00"
-                 colors={['#ff0000', '#00ff00', '#0000ff']}
-                 progressBackgroundColor="#ffff00"
-             />}>
-        </ListView>
+        <ListView dataSource={this.state.dataSource} renderRow={(rowData) => <View style={styles.messageBox}>
+          <Text >from : {rowData.from.username}</Text>
+          <Text >To : {rowData.to.username}</Text>
+          <Text>Message : {rowData.body}</Text>
+          <Text >Time : {rowData.timestamp}</Text>
+
+          {rowData.location ?
+                                              <MapView
+                                                  style={{flex: 1, minHeight: 70, minWidth: 80}}
+                                                  showsUserLocation={true}
+                                                  scrollEnabled={false}
+                                                  region={{
+                                                      longitude: rowData.location.longitude,
+                                                      latitude: rowData.location.latitude,
+                                                      longitudeDelta: 0.05,
+                                                      latitudeDelta: 0.05
+                                                  }}
+                                              >
+                                                  <MapView.Marker
+                                                      coordinate={{latitude: rowData.location.latitude, longitude: rowData.location.longitude}}
+                                                  />
+                                              </MapView>
+                                          : console.log('there was no location data')}
+
+        </View>} refreshControl={< RefreshControl refreshing = {
+          this.state.refreshing
+        }
+        onRefresh = {
+          this._onRefresh.bind(this)
+        }
+        tintColor = "#ff0000" title = "Loading..." titleColor = "#00ff00" colors = {
+          ['#ff0000', '#00ff00', '#0000ff']
+        }
+        progressBackgroundColor = "#ffff00" />}></ListView>
       </View>
     )
   }
 }
-
-
 
 //Navigator
 export default StackNavigator({
