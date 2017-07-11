@@ -17,8 +17,6 @@ class App extends React.Component {
     this.state = {
       lat: 41.067841,
       long: 29.045258,
-      initialLat: 10,
-      initialLong: 10,
     }
   }
 
@@ -61,19 +59,18 @@ class App extends React.Component {
 
 onRegionChange = (region) => {
   AsyncStorage.setItem('region', JSON.stringify(region))
-  .then(() => {
-    console.log(region)
-  })
 }
 
-componenetDidMount = () => {
+componentDidMount() {
+  console.log('COMPONENT DID MOUNT RAN \n')
   AsyncStorage.getItem('region')
     .then((result) => {
-      console.log(result)
+      const res = JSON.parse(result)
       this.setState({
-        initialLat: region.latitude,
-        initialLong: region.longitude,
+        lat: res.latitude,
+        long: res.longitude,
       })
+        console.log('state is: ', this.state)
     })
 }
 
@@ -117,12 +114,6 @@ componenetDidMount = () => {
           </TouchableOpacity>
         </View>
         <MapView style={{flex: 7}}
-          initialRegion={{
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.025,
-            latitude: this.state.initialLat,
-            longitude: this.state.initialLong,
-          }}
         region={{
           latitude: this.state.lat,
           longitude: this.state.long,
