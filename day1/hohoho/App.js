@@ -12,7 +12,8 @@ import {
   AsyncStorage
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-
+import { Location, Permissions, MapView } from 'expo';
+import Swiper from 'react-native-swiper'
 
 
 //Screens
@@ -237,12 +238,53 @@ class UsersScreen extends React.Component {
     this.props.navigation.navigate('Messages');
   }
 
+  sendLocation = async(user) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      Alert.alert("Alert", "App does not have access to your location to share", [{text: 'Dismiss Button'}]);
+    }
+    let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+    return this.longTouchUser(user, location);
+  }
+
+  longTouchUser(user, location) {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: user._id,
+        location: {
+          longitude: location.coords.longitude,
+          latitude: location.coords.latitude
+        }
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      //  console.log(responseJson.success)
+      if (responseJson.success) {
+        Alert.alert("Alert", "Your HoHoHo! AND Location to " + user.username + " has been sent!", [{text: 'Dismiss Button'}])
+      } else {
+        Alert.alert("Alert", "XXX Your HoHoHo! AND Location to " + user.username + " could not be sent. XXX", [{text: 'Dismiss Button'}])
+      }
+    })
+    .catch((err) => {
+      console.log('Error', err)
+    });
+  }
+
   render() {
     return (
       <View>
         <ListView
           dataSource={this.state.dataSource}
-          renderRow={(rowData) => <TouchableOpacity onPress={this.touchUser.bind(this, rowData)}><Text>{rowData.username}</Text></TouchableOpacity>}
+          renderRow={(rowData) => <TouchableOpacity
+            onPress={this.touchUser.bind(this, rowData)}
+            onLongPress={this.sendLocation.bind(this, rowData)}
+            delayLongPress={2000}>
+            <Text>{rowData.username}</Text></TouchableOpacity>}
         />
       </View>
     )
@@ -303,6 +345,29 @@ class MessagesScreen extends React.Component {
     });
   }
 
+  buildMapView(location){
+    console.log('building MapView...')
+    return(
+      <MapView
+        style={{flex: 1,
+        width: 500,
+        height: 120
+      }}
+        showsUserLocation={true}
+        scrollEnabled={false}
+        region={{
+          longitude: location.longitude,
+          latitude: location.latitude,
+          longitudeDelta: 1,
+          latitudeDelta: 1
+        }}
+      />
+    )
+  }
+  fun(rowData){
+    console.log(rowData);
+  }
+
   render() {
     return (
       <View>
@@ -314,10 +379,29 @@ class MessagesScreen extends React.Component {
             />
           }
           dataSource={this.state.dataSource}
-          renderRow={(rowData) => <TouchableOpacity><Text>To: {rowData.to.username} Message: {rowData.body} From: {rowData.from.username} time: {rowData.timestamp}</Text></TouchableOpacity>}
+          renderRow={(rowData) => <TouchableOpacity style={{borderBottomWidth: 2}}>
+            <Text>To: {rowData.to.username} Message: {rowData.body} From: {rowData.from.username} time: {rowData.timestamp}</Text>
+            {rowData.location && rowData.location.longitude ? this.buildMapView(rowData.location) : this.fun(rowData)}
+          </TouchableOpacity>}
         />
       </View>
     )
+  }
+}
+
+class SwiperScreen extends React.Component {
+  static navigationOptions = {
+    title: 'HoHoHo!'
+  };
+
+  render() {
+    return (
+      <Swiper>
+        // First component
+        // Second component
+        // Third component
+      </Swiper>
+    );
   }
 }
 
@@ -331,6 +415,9 @@ export default StackNavigator({
   Login: {
     screen: LoginScreen,
   },
+  // Swiper: {
+  //   screen: SwiperScreen,
+  // },
   Register: {
     screen: RegisterScreen,
   },
