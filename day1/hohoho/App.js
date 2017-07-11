@@ -94,7 +94,7 @@ class RegisterScreen extends React.Component {
 
 class LoginScreen extends React.Component {
   static navigationOptions = {
-    title: 'Register'
+    title: 'Login'
   };
   constructor(props) {
     super(props);
@@ -144,10 +144,10 @@ class LoginScreen extends React.Component {
 }
 
 class UserListScreen extends React.Component {
-    static navigationOptions = {
+    static navigationOptions = ({ navigation }) => ({
       title: 'Users',
       headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
-    };
+    });
 
     constructor(props) {
       super(props);
@@ -181,17 +181,30 @@ class UserListScreen extends React.Component {
       console.log(userId);
       fetch('https://hohoho-backend.herokuapp.com/messages', {
         method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
           to: userId
         })
       })
       .then(response => response.json())
       .then(responseJson => {
-        Alert.alert(
+        if (responseJson.success) {
+          Alert.alert(
           'Message Sent!',
           'Your Ho Ho Ho! was sent to the user',
           [{text: 'Dismiss Button'}] // Button
-        )
+          )
+        }
+        else {
+          Alert.alert(
+          'Error!',
+          'Message could not send',
+          [{text: 'Dismiss Button'}] // Button
+          )
+        }
+        
       })
       .catch(err => console.log('ERROR: Your message could not be sent! ', err));
     }
@@ -230,7 +243,7 @@ class MessagesScreen extends React.Component {
     })
     .then(response => response.json())
     .then(responseJson => {
-      console.log("Messages: ", responseJson.users.map(messagesObj => messagesObj.messages));
+      console.log("Messages: ", responseJson.messages.map(messagesObj => messagesObj.messages));
       this.setState({
         dataSource: this.state.dataSource.cloneWithRows(responseJson.messages)
       });
