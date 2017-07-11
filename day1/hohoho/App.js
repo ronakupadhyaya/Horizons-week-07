@@ -18,17 +18,59 @@ class LoginScreen extends React.Component {
     title: 'Login'
   };
 
-  press() {
+  constructor(props) {
+    super(props)
+    this.state = {
+      error: ""
+    }
+  }
 
+  press() {
+    fetch('https://hohoho-backend.herokuapp.com/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password,
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+        console.log('result', responseJson);
+      if (responseJson.success) {
+          this.props.navigation.navigate('Users');
+      } else {
+          this.setState({error: 'failed to login'})
+      }
+    })
+    .catch((err) => {
+        console.log('error', err);
+    });
   }
   register() {
     this.props.navigation.navigate('Register');
   }
 
+
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Login to HoHoHo!</Text>
+
+        <Text>{this.state.error}</Text>
+        <TextInput
+          style={{height: 40}}
+          placeholder="Enter your username"
+          onChangeText={(text) => this.setState({username: text})}
+        />
+        <TextInput
+          style={{height: 40}}
+          placeholder="Enter your password"
+          onChangeText={(text) => this.setState({password: text})}
+        />
+
         <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, styles.buttonGreen]}>
           <Text style={styles.buttonLabel}>Tap to Login</Text>
         </TouchableOpacity>
@@ -45,14 +87,127 @@ class RegisterScreen extends React.Component {
     title: 'Register'
   };
 
+  press() {
+      fetch('https://hohoho-backend.herokuapp.com/register', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password,
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+        console.log('result', responseJson);
+        this.props.navigation.goBack();
+    })
+    .catch((err) => {
+        console.log('error', err);
+    });
+  }
+
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Register</Text>
+        <TextInput
+          style={{height: 40}}
+          placeholder="Enter your username"
+          onChangeText={(text) => this.setState({username: text})}
+        />
+        <TextInput
+          style={{height: 40}}
+          placeholder="Enter your password"
+          onChangeText={(text) => this.setState({password: text})}
+        />
+        <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={() => this.press()}>
+            <Text>Tap to Register!</Text>
+        </TouchableOpacity>
       </View>
     )
   }
 }
+
+class UsersScreen extends React.Component {
+  static navigationOptions = {
+    title: 'Users'
+  };
+
+  constructor(props) {
+    super(props);
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.state = {
+      dataSource: ds.cloneWithRows([])
+      // converts are data to a format ListView can understand
+    };
+      fetch('https://hohoho-backend.herokuapp.com/users', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+        console.log('result', responseJson);
+        this.setState({
+          dataSource: ds.cloneWithRows(responseJson.users)
+        })
+    })
+    .catch((err) => {
+        console.log('error', err);
+    });
+  }
+
+  sendMessage (user) {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      to: user._id,
+    })
+  })
+  .then((response) => response.json())
+  .then((responseJson) => {
+    if (responseJson.success) {
+      console.log('result', responseJson);
+      Alert.alert(
+        'Success!',
+        `Your Ho Ho Ho! to ${user.username} has been sent!`,
+        [{text: 'Dismiss Button'}]
+      )
+    } else {
+      Alert.alert(
+        'Try Again',
+        `Your Ho Ho Ho! to ${user.username} could not be sent!`,
+        [{text: 'Dismiss Button'}]
+      )
+    }
+  })
+  .catch((err) => {
+      console.log('error', err);
+  });
+}
+
+
+  }
+  render() {
+    return(
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={(rowData) => (
+          <TouchableOpacity onPress={this.sendMessage.bind(this, rowData)}>
+            <Text>{rowData.username}</Text>
+          </TouchableOpacity>
+        )}
+      />
+    )
+  }
+}
+
 
 
 //Navigator
@@ -63,6 +218,9 @@ export default StackNavigator({
   Register: {
     screen: RegisterScreen,
   },
+  Users: {
+    screen: UsersScreen,
+  }
 }, {initialRouteName: 'Login'});
 
 
