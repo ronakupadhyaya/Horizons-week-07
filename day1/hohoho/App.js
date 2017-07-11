@@ -61,13 +61,13 @@ class LoginScreen extends React.Component {
       <View style={styles.container}>
         <Text style={styles.textBig}>Login to HoHoHo!</Text>
         <TextInput
-        style={{height: 40}}
+        style={{height: 40, margin:10}}
         placeholder="Username"
         onChangeText={(username) => this.setState({username})}
         />
         <TextInput
           secureTextEntry={true}
-          style={{height: 40}}
+          style={{height: 40, margin:10}}
           placeholder="Password"
           onChangeText={(password) => this.setState({password})}
         />
@@ -215,8 +215,7 @@ class UsersScreen extends React.Component {
   render() {
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     return (
-      <View style={styles.container}>
-        <Text style={{fontSize:20}}>Users List</Text>
+      <View style={styles.containerFull}>
         <ListView
           refreshControl={
             <RefreshControl
@@ -225,9 +224,9 @@ class UsersScreen extends React.Component {
             />
           }
           renderRow={(item)=>(
-            <View style={{flex:1, alignItems:'center'}}>
-              <TouchableOpacity onPress={this.hohohoTo.bind(this,item)} style={styles.button}>
-                  <Text style={{fontSize:15}}>{item.username}</Text>
+            <View style={{padding:3, borderWidth:1, borderColor:"lightgrey"}}>
+              <TouchableOpacity onPress={this.hohohoTo.bind(this,item)}>
+                  <Text style={{fontSize:20}}>{item.username}</Text>
               </TouchableOpacity>
           </View>
         )}
@@ -269,11 +268,10 @@ class MessagesScreen extends React.Component {
     render() {
       const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
       return (
-        <View style={styles.container}>
-          <Text style={{fontSize:20}}>Messages List</Text>
+        <View style={styles.containerFull}>
           <ListView
             renderRow={(item)=>(
-            <View style={{flex:1, flexDirection:'column', alignItems:'center', borderBottomWidth: 1, borderBottomWidth: 1, borderColor: "grey"}}>
+            <View style={{flex:1, padding: 3, flexDirection:'column', justifyContent:'flex-start', alignItems:'flex-start', borderBottomWidth: 1, borderBottomWidth: 1, borderColor: "lightgrey"}}>
               <Text style={{fontSize:10}}>From: {item.from.username}</Text>
               <Text style={{fontSize:10}}>To: {item.to.username}</Text>
               <Text style={{fontSize:10}}>Message: {item.body}</Text>
@@ -311,8 +309,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-    margin: 20
+    backgroundColor: '#F5FCFF'
   },
   containerFull: {
     flex: 1,
