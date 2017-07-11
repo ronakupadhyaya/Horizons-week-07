@@ -8,6 +8,7 @@ import {
   ListView,
   Alert,
   Button,
+  AsyncStorage,
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
@@ -26,15 +27,18 @@ class TapToLogin extends React.Component {
     title: 'TapToLogin'
   };
 
-  login() {
+
+
+  login(u, p) {
+    console.log('made it into the login function')
     fetch('https://hohoho-backend.herokuapp.com/login', {
         method: 'POST',
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          username: this.state.username,
-          password: this.state.password,
+          username: u || this.state.username,
+          password: p || this.state.password,
         })
       })
       .then((response) => response.json())
@@ -43,6 +47,11 @@ class TapToLogin extends React.Component {
          * make sure to check for responseJson.success! */
          if (responseJson.success) {
            this.props.navigation.navigate('Users');
+           AsyncStorage.setItem('user', JSON.stringify({
+             username: u || this.state.username,
+             password: p || this.state.password,
+           }))
+          //
          } else {
            this.setState({message: responseJson.error + '..'})
          }
@@ -51,6 +60,20 @@ class TapToLogin extends React.Component {
         /* do something if there was an error with fetching */
         console.log('error', err);
       });
+  }
+  componentDidMount() {
+    AsyncStorage.getItem('user')
+  .then(result => {
+    var parsedResult = JSON.parse(result);
+    var username = parsedResult.username;
+    var password = parsedResult.password;
+    if (username && password) {
+      console.log('it made it here in the code')
+       this.login(username, password)
+    }
+    // Don't really need an else clause, we don't do anything in this case.
+  })
+  .catch(err => console.log('why you is catching here??'))
   }
 
   render() {
