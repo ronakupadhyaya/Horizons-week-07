@@ -7,10 +7,9 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-
 
 //Screens
 class LoginScreen extends React.Component {
@@ -19,7 +18,7 @@ class LoginScreen extends React.Component {
   };
 
   press() {
-
+    this.props.navigation.navigate('TapToLogin');
   }
   register() {
     this.props.navigation.navigate('Register');
@@ -40,20 +39,169 @@ class LoginScreen extends React.Component {
   }
 }
 
-class RegisterScreen extends React.Component {
-  static navigationOptions = {
-    title: 'Register'
+
+class Login extends React.Component {
+  constructor (props) {
+    super(props);
+    this.state = {
+      username: '',
+      password: '',
+      message: ''
+    }
+  }
+
+  static navigationOptions = (props) => {
+    title: 'TapToLogin'
   };
+
+  login() {
+    fetch('https://hohoho-backend.herokuapp.com/login', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: this.state.username,
+          password: this.state.password,
+        })
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        /* do something with responseJson and go back to the Login view but
+         * make sure to check for responseJson.success! */
+         console.log('responseJson', responseJson);
+         if (responseJson.success) {
+           // modify navigate
+           this.props.navigation.navigate('Users');
+         } else {
+           this.setState({message: responseJson.error + '..'})
+         }
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        console.log('error', err);
+      });
+  }
 
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Register</Text>
+          <View>
+          <Text>{this.state.message}</Text>
+          </View>
+          <TextInput
+            style={{height: 40, textAlign:'center'}}
+            placeholder="Enter your username"
+            onChangeText={(text) => this.setState({username: text})}
+          />
+
+          <TextInput
+            style={{height: 40, textAlign:'center'}}
+            placeholder="Password.."
+            secureTextEntry={true}
+            onChangeText={(text) => this.setState({password: text})}
+          />
+
+          <TouchableOpacity style={[styles.button, styles.buttonGreen]} onPress={() => this.login()}>
+            <Text style={styles.buttonLabel}>Log In</Text>
+          </TouchableOpacity>
       </View>
     )
   }
 }
 
+
+class RegisterScreen extends React.Component {
+  constructor (props) {
+    super(props);
+    this.state = {
+      username: '',
+      password: ''
+    }
+  }
+
+  static navigationOptions = (props) => {
+    title: 'Register'
+  };
+
+  registeration() {
+    fetch('https://hohoho-backend.herokuapp.com/register', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: this.state.username,
+          password: this.state.password,
+        })
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        /* do something with responseJson and go back to the Login view but
+         * make sure to check for responseJson.success! */
+         console.log('responseJson', responseJson.success);
+         if (responseJson.success) {
+           console.log('hi');
+           this.props.navigation.navigate('Login');
+         }
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        console.log('error', err);
+      });
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+
+          <TextInput
+            style={{height: 40, textAlign:'center'}}
+            placeholder="Enter your username"
+            onChangeText={(text) => this.setState({username: text})}
+          />
+
+          <TextInput
+            style={{height: 40, textAlign:'center'}}
+            placeholder="Password.."
+            secureTextEntry={true}
+            onChangeText={(text) => this.setState({password: text})}
+          />
+
+          <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={() => this.registeration()}>
+            <Text style={styles.buttonLabel}>Register</Text>
+          </TouchableOpacity>
+      </View>
+    )
+  }
+}
+
+class Users extends React.Component {
+  constructor() {
+    super();
+    const dataSource = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.state = {
+      dataSource: dataSource.cloneWithRows([
+        'Moose', 'Corey', 'Allie', 'Jay', 'Graham', 'Darwish', 'Abhi Fitness'
+      ])
+    }
+  }
+
+  static navigationOptions = {
+    title: 'Users' //you put the title you want to be displayed here
+  };
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <ListView
+          renderRow={item => <Text>{item}</Text>}
+          dataSource = {this.state.dataSource}
+        />
+      </View>
+    )
+  }
+}
 
 //Navigator
 export default StackNavigator({
@@ -63,6 +211,12 @@ export default StackNavigator({
   Register: {
     screen: RegisterScreen,
   },
+  TapToLogin: {
+    screen: Login,
+  },
+  Users: {
+    screen: Users,
+  }
 }, {initialRouteName: 'Login'});
 
 
