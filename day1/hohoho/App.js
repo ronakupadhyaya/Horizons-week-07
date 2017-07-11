@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
-
 //Screens
 class LoginScreen extends React.Component {
   static navigationOptions = {
@@ -41,19 +40,65 @@ class LoginScreen extends React.Component {
 }
 
 class RegisterScreen extends React.Component {
+  constructor() {
+    super(); 
+    this.state = {
+      username: '', 
+      password: ''
+    }
+  }
   static navigationOptions = {
     title: 'Register'
   };
+
+  register() {
+    if (!this.state.username && !this.state.password) {
+      alert('Please enter a username and password.')
+    } else {
+      fetch('https://hohoho-backend.herokuapp.com/register', {
+        method: 'POST', 
+        headers: {
+          'Content-Type': 'application/json'
+        }, 
+        body: JSON.stringify({
+          username: this.state.username, 
+          password: this.state.password
+        })
+      })
+      .then((response) => response.json())
+      .then((resp) => {
+        console.log('resp = ', resp)
+        if (resp.success === true) {
+          this.props.navigation.goBack()
+        }
+      })
+      .catch((err) => {
+        console.log('Error = ', err)
+      })
+    }
+  }
 
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Register</Text>
+        <TextInput 
+          style={{height: 40}}
+          placeholder="Enter your username" 
+          onChangeText={(text) => this.setState({username: text})}
+        />  
+        <TextInput 
+          style={{height: 40}}
+          placeholder="Enter your password" 
+          onChangeText={(text) => this.setState({password: text})}
+        />
+        <TouchableOpacity style={styles.buttonBlue} onPress={() => this.register()}>
+          <Text>Register your account</Text>
+        </TouchableOpacity>
       </View>
     )
   }
 }
-
 
 //Navigator
 export default StackNavigator({
@@ -70,7 +115,7 @@ export default StackNavigator({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
