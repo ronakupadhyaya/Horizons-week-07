@@ -41,14 +41,58 @@ class LoginScreen extends React.Component {
 }
 
 class RegisterScreen extends React.Component {
+  constructor(){
+    super();
+    this.state={
+      username: "",
+      password: "",
+    }
+  }
   static navigationOptions = {
     title: 'Register'
   };
 
+  registerUser(){
+    fetch('https://hohoho-backend.herokuapp.com/register', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password,
+      })
+    })
+    .then((res) => res.json())
+    .then((resJson) => {
+      if(resJson.success){
+        this.props.navigation.goBack();
+      }
+    })
+    .catch(err => {
+      console.log(err);
+    })
+  }
+
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Register</Text>
+        <TextInput
+          style={styles.input}
+          required={true}
+          placeholder={'Username'}
+          onChange={(text) => {this.setState({username: text})}}
+        />
+        <TextInput
+          style={styles.input}
+          required={true}
+          placeholder={'Password'}
+          secureTextEntry={true}
+          onChange={(text) => {this.setState({password: text})}}
+        />
+        <TouchableOpacity style={[styles.buttonRed, styles.button]} onPress={() => this.registerUser()}>
+          <Text style={styles.buttonLabel}> Register </Text>
+        </TouchableOpacity>
       </View>
     )
   }
@@ -117,5 +161,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     color: 'white'
+  },
+  input: {
+    height: 40,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 10,
+    paddingRight: 10,
+    marginTop: 10,
+    marginLeft: 20,
+    marginRight: 20,
+    borderRadius: 5,
+    borderColor: 'gray',
+    borderWidth: 1,
   }
 });
