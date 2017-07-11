@@ -7,7 +7,8 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
+  RefreshControl
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 //Screens
@@ -38,7 +39,7 @@ class LoginScreen extends React.Component {
   .then((responseJson) => {
     /* do something with responseJson and go back to the Login view but
      * make sure to check for responseJson.success! */
-     console.log(responseJson.success)
+    //  console.log(responseJson.success)
      if (responseJson.success) {
        this.props.navigation.navigate('Users');
      } else {
@@ -99,7 +100,7 @@ class RegisterScreen extends React.Component {
   .then((responseJson) => {
     /* do something with responseJson and go back to the Login view but
      * make sure to check for responseJson.success! */
-     console.log(responseJson.success)
+    //  console.log(responseJson.success)
      if (responseJson.success) {
        this.props.navigation.navigate('Login');
      }
@@ -180,7 +181,7 @@ class UsersScreen extends React.Component {
   })
   .then((response) => response.json())
   .then((responseJson) => {
-     console.log(responseJson.success)
+    //  console.log(responseJson.success)
      if (responseJson.success) {
        Alert.alert("Alert", "Your HoHoHo! to " + user.username + " has been sent!", [{text: 'Dismiss Button'}])
      } else {
@@ -216,7 +217,8 @@ class MessagesScreen extends React.Component {
     super();
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
-      dataSource: ds.cloneWithRows([{to: {username: "loading messages..."}, body: "loading messages...", from: {username: "loading messages..."}}])
+      dataSource: ds.cloneWithRows([{to: {username: "loading messages..."}, body: "loading messages...", from: {username: "loading messages..."}}]),
+      refreshing: false
     };
   }
 
@@ -228,7 +230,28 @@ class MessagesScreen extends React.Component {
   .then((responseJson) => {
      if (responseJson.success) {
        const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-       this.setState({dataSource: ds.cloneWithRows(responseJson.messages)})
+       this.setState({dataSource: ds.cloneWithRows(responseJson.messages)});
+     }
+  })
+  .catch((err) => {
+    console.log('Error', err)
+  });
+  }
+
+  _onRefresh() {
+    this.setState({refreshing: true});
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'GET'
+  })
+  .then((response) => response.json())
+  .then((responseJson) => {
+     if (responseJson.success) {
+       console.log("getting the deets");
+       const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+       console.log(ds);
+       this.setState({dataSource: ds.cloneWithRows(responseJson.messages)});
+       console.log("data source has been set");
+       this.setState({refreshing: false})
      }
   })
   .catch((err) => {
@@ -240,8 +263,14 @@ class MessagesScreen extends React.Component {
     return (
       <View>
       <ListView
+          refreshControl={
+            <RefreshControl
+             refreshing={this.state.refreshing}
+             onRefresh={this._onRefresh.bind(this)}
+            />
+          }
           dataSource={this.state.dataSource}
-          renderRow={(rowData) => <TouchableOpacity><Text>To: {rowData.to.username} Message: {rowData.body} FromID: {rowData.from.username} time: {rowData.timestamp}</Text></TouchableOpacity>}
+          renderRow={(rowData) => <TouchableOpacity><Text>To: {rowData.to.username} Message: {rowData.body} From: {rowData.from.username} time: {rowData.timestamp}</Text></TouchableOpacity>}
           />
       </View>
     )
