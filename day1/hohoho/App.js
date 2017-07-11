@@ -12,6 +12,7 @@ import {
   AsyncStorage
 } from 'react-native';
 // import {Container, List, Content, ListItem} from 'native-base';
+import { Location, Permissions, MapView } from 'expo';
 import { StackNavigator } from 'react-navigation';
 
 
@@ -53,18 +54,62 @@ class Messages extends React.Component {
 
     render() {
         return (
-            <View style={styles.container}>
+            <View style={{flex: 1}}>
                 <ListView
                     dataSource={this.state.dataSource}
-                    renderRow={(rowData) => {return (
-                        <View style={styles.message}>
-                            <Text>To: {rowData.to.username}</Text>
-                            <Text>From: {rowData.from.username}</Text>
-                            <Text>Message: {rowData.body}</Text>
-                            <Text>When: {rowData.timestamp}</Text>
-                        </View>
-                    )}
-                    }
+                    renderRow={(rowData) => {
+                        // if(rowData.location) {
+                        //     console.log('there was data in message', rowData.location.longitude);
+                        //     return (<View style={styles.message}>
+                        //         <Text style={{flex: 1}}>To: {rowData.to.username}</Text>
+                        //         <MapView
+                        //             style={{flex: 1, minHeight: 50, minWidth: 80}}
+                        //             showsUserLocation={true}
+                        //             scrollEnabled={false}
+                        //             region={{
+                        //                     longitude: rowData.location.longitude,
+                        //                     latitude: rowData.location.latitude,
+                        //                     longitudeDelta: 0.05,
+                        //                     latitudeDelta: 0.05
+                        //             }}/>
+                        //     </View>)
+                        // } else {
+                        //     return (
+                        //         <View style={styles.message}>
+                        //             <Text>To: {rowData.to.username}</Text>
+                        //             <Text>From: {rowData.from.username}</Text>
+                        //             <Text>Message: {rowData.body}</Text>
+                        //             <Text>When: {rowData.timestamp}</Text>
+                        //         </View>
+                        //     )
+                        // }
+                        return (
+                            <View style={styles.message}>
+                                <Text>To: {rowData.to.username}</Text>
+                                <Text>From: {rowData.from.username}</Text>
+                                <Text>Message: {rowData.body}</Text>
+                                <Text>When: {rowData.timestamp}</Text>
+                                {/* <Text>Location: {rowData.location}</Text> */}
+                                {rowData.location ?
+                                    <MapView
+                                        style={{flex: 1, minHeight: 70, minWidth: 80}}
+                                        showsUserLocation={true}
+                                        scrollEnabled={false}
+                                        region={{
+                                            longitude: rowData.location.longitude,
+                                            latitude: rowData.location.latitude,
+                                            longitudeDelta: 0.05,
+                                            latitudeDelta: 0.05
+                                        }}
+                                    >
+                                        <MapView.Marker
+                                            coordinate={{latitude: rowData.location.latitude, longitude: rowData.location.longitude}}
+                                        />
+                                    </MapView>
+                                : console.log('there was no location data')}
+                            </View>
+                        )
+                    }}
                     refreshControl={
                         <RefreshControl
                             refreshing={this.state.refreshing}
@@ -124,24 +169,43 @@ class UsersScreen extends React.Component {
          }
       })
       .catch((err) => {
-          console.log('caught error in catch', err);
+          console.log('caught error in catch of getusers', err);
       });
 
   }
+  sendLocation = async(user) => {
+      let { status } = await Permissions.askAsync(Permissions.LOCATION);
+      if (status !== 'granted') {
+          console.log('permission not granted for locations');
+          alert('cant sendlocaiton bc dont have persmissions');
+      }
+      let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+      this.touchUser(user,location.coords);
+  }
 
-  touchUser(user) {
+  touchUser(user, coords) {
+      let requestBody = JSON.stringify({to: user._id});
+      if(coords) {
+          requestBody = JSON.stringify({
+            to: user._id,
+            location: {latitude: coords.latitude, longitude: coords.longitude}
+          })
+        //   location = {longitude: coords.longitude, latitude: coords.latitude};
+      }
+
       fetch('https://hohoho-backend.herokuapp.com/messages', {
         method: 'POST',
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          to: user._id
-        })
+        body: requestBody
       })
       .then( (response) => response.json())
       .then( (responseJson) => {
           if(responseJson.success){
+              if(coords){
+                  console.log('successfuly sent location', requestBody);
+              }
               Alert.alert('Success', `Your Ho Ho Ho to ${user.username} has been sent!`, [{text: 'Dismiss Button'}])
           } else{
               Alert.alert('Uh oh', `Your Ho Ho Ho to ${user.username} coudl nto be sent!`, [{text: 'Dismiss Button'}])
@@ -165,7 +229,11 @@ class UsersScreen extends React.Component {
               <ListView
                   dataSource={this.state.dataSource}
                   renderRow={(rowData) => {return (
-                      <TouchableOpacity onPress={this.touchUser.bind(this,rowData)}>
+                      <TouchableOpacity
+                          onPress={this.touchUser.bind(this,rowData)}
+                          onLongPress={this.sendLocation.bind(this, rowData)}
+                          delayLongPress={2000}
+                      >
                           <Text style={styles.row}>{rowData.username}</Text>
                       </TouchableOpacity>
                   )}
@@ -202,7 +270,7 @@ class LoginScreen extends React.Component {
           var username = parsedResult.username;
           var password = parsedResult.password;
           if (username && password) {
-              return this.login(username, password)
+              this.login(username, password)
                 // .then(resp => resp.json())
                 // .then( resp => console.log(resp))
         }
@@ -334,7 +402,7 @@ class RegisterScreen extends React.Component {
          }
       })
       .catch((err) => {
-          console.log('caught error in catch');
+          console.log('caught error in catch of submt');
           alert(err)
         /* do something if there was an error with fetching */
       });
@@ -412,7 +480,9 @@ const styles = StyleSheet.create({
       padding: 10,
       borderColor: 'black',
       borderWidth: 1,
-      alignSelf: 'stretch'
+      alignSelf: 'stretch',
+      display: 'flex',
+      flexDirection: 'column'
   },
   welcome: {
     fontSize: 20,
