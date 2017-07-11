@@ -7,48 +7,179 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
+  Modal,
+  TouchableHighlight
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
 
 //Screens
 class LoginScreen extends React.Component {
+  state = {
+    modalVisible: false,
+    username: '',
+    passowrd: ''
+  }
   static navigationOptions = {
     title: 'Login'
   };
 
   press() {
+    fetch('https://hohoho-backend.herokuapp.com/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password,
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
 
+      if (responseJson.success){
+        alert('Logged In!')
+      } else{
+        console.log("hi", responseJson)
+        alert('Some Error Logging In ' + responseJson.error)
+      }
+    })
+    .catch((err) => {
+      alert('Some Error Logging In')
+    });
   }
   register() {
     this.props.navigation.navigate('Register');
+  }
+  setModalVisible(visible) {
+    this.setState({modalVisible: visible});
   }
 
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Login to HoHoHo!</Text>
-        <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, styles.buttonGreen]}>
+
+        <TouchableHighlight onPress={() => { this.setModalVisible(true) }} style={[styles.button, styles.buttonGreen]}>
           <Text style={styles.buttonLabel}>Tap to Login</Text>
-        </TouchableOpacity>
+        </TouchableHighlight>
+
         <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={ () => {this.register()} }>
           <Text style={styles.buttonLabel}>Tap to Register</Text>
         </TouchableOpacity>
-      </View>
-    )
-  }
+
+        <Modal
+          animationType={"slide"}
+          transparent={false}
+          visible={this.state.modalVisible}
+          onRequestClose={() => {alert("Modal has been closed.")}}
+          >
+            <View style={styles.container}>
+              <View>
+                <TextInput
+                  style={{height: 20, width: 300, margin: 5, textAlign:'center'}}
+                  placeholder="Enter desired username"
+                  onChangeText={(text) => this.setState({username: text})}
+                />
+                <TextInput
+                  style={{height: 20, width: 300, margin: 5,textAlign:'center'}}
+                  secureTextEntry={true}
+                  placeholder="Enter desired password"
+                  onChangeText={(text) => this.setState({password: text})}
+                />
+                <TouchableOpacity style={[styles.button, styles.buttonRed]}
+                  onPress={() => {this.press()} }>
+                  <Text style={styles.buttonLabel}> Login </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={ () => {
+                  this.setModalVisible(!this.state.modalVisible)
+                  this.register()
+                } }>
+                  <Text style={styles.buttonLabel}>Tap to Register</Text>
+                </TouchableOpacity>
+
+
+            </View>
+          </View>
+        </Modal>
+
+
+
+    </View>
+  )
+}
 }
 
 class RegisterScreen extends React.Component {
+  constructor(){
+    super();
+    this.state = {
+      username: '',
+      password: '',
+    }
+  }
   static navigationOptions = {
     title: 'Register'
   };
+
+  validate(){
+    if (this.state.password.length < 5){
+      alert('Password invalid!')
+    }else if (this.state.username.length < 5){
+      alert('Username invalid!')
+    } else{
+      fetch('https://hohoho-backend.herokuapp.com/register', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: this.state.username,
+          password: this.state.password,
+        })
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+
+        if (responseJson.success){
+          this.props.navigation.goBack()
+          alert('User Saved!')
+        } else{
+          alert('Error in Saving User!')
+        }
+      })
+      .catch((err) => {
+        alert('Error in Saving User!')
+      });
+    }
+  }
+
+  login(){
+
+  }
 
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Register</Text>
+        <TextInput
+          style={{height: 20, margin: 5, textAlign:'center'}}
+          placeholder="Enter desired username"
+          onChangeText={(text) => this.setState({username: text})}
+        />
+        <TextInput
+          style={{height: 20, margin: 5, textAlign:'center'}}
+          secureTextEntry={true}
+          placeholder="Enter desired password"
+          onChangeText={(text) => this.setState({password: text})}
+        />
+        <TouchableOpacity style={[styles.button, styles.buttonRed]}
+          onPress={() => {this.validate()} }>
+          <Text style={styles.buttonLabel}>Register</Text>
+        </TouchableOpacity>
       </View>
     )
   }
