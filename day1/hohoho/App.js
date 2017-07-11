@@ -417,8 +417,6 @@ const styles = StyleSheet.create({
     borderColor: 'black'
   },
   messageBox: {
-    fontSize: 16,
-    color: 'black',
     borderWidth: 1,
     borderColor: 'black'
   }
