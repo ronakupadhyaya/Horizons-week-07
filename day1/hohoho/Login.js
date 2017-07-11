@@ -10,33 +10,45 @@ import {
   Button,
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-import RegisterScreen from './Register';
-import TapToLogin from './TapToLogin';
 import Users from './Users';
-import LoginScreen from './Login';
-import Messages from './Messages';
 
 
-export default StackNavigator({
-  Login: {
-    screen: LoginScreen,
-  },
-  Register: {
-    screen: RegisterScreen,
-  },
-  TapToLogin: {
-    screen: TapToLogin,
-  },
-  Users: {
-    screen: Users,
-  },
-  Messages: {
-    screen: Messages,
+class LoginScreen extends React.Component {
+  static navigationOptions = ({ navigation }) => ({
+    title: 'Users',
+    headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
+  });
+
+  componentDidMount() {
+  this.props.navigation.setParams({
+    onRightPress: this.message.bind(this)
+    })
   }
-}, {initialRouteName: 'Login'});
+  message() {
+     this.props.navigation.navigate('Messages');
+  }
+  press() {
+    this.props.navigation.navigate('TapToLogin');
+  }
+  register() {
+    this.props.navigation.navigate('Register');
+  }
 
+  render() {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.textBig}>Login to HoHoHo!</Text>
+        <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, styles.buttonGreen]}>
+          <Text style={styles.buttonLabel}>Tap to Login</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={ () => {this.register()} }>
+          <Text style={styles.buttonLabel}>Tap to Register</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+}
 
-//Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -89,3 +101,5 @@ const styles = StyleSheet.create({
     color: 'white'
   }
 });
+
+export default LoginScreen;
