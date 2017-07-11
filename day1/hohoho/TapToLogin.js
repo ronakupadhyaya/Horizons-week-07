@@ -41,9 +41,7 @@ class TapToLogin extends React.Component {
       .then((responseJson) => {
         /* do something with responseJson and go back to the Login view but
          * make sure to check for responseJson.success! */
-         console.log('responseJson', responseJson);
          if (responseJson.success) {
-           // modify navigate
            this.props.navigation.navigate('Users');
          } else {
            this.setState({message: responseJson.error + '..'})
