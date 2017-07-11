@@ -14,12 +14,48 @@ import { StackNavigator } from 'react-navigation';
 
 //Screens
 class LoginScreen extends React.Component {
+  constructor(props){
+    super(props)
+    this.state = {
+      username: '',
+      password: '',
+      message: ''
+    }
+  }
+
   static navigationOptions = {
     title: 'Login'
   };
 
   press() {
+    if(this.state.username && this.state.password){
+      fetch('https://hohoho-backend.herokuapp.com/login', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: this.state.username,
+          password: this.state.password,
+        })
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
 
+        if(responseJson.success){
+          this.props.navigation.navigate('Register')
+        }else{
+          this.setState({
+            message: "INVALID LOGIN"
+          })
+        }
+
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        console.log(err)
+      });
+    }
   }
   register() {
     this.props.navigation.navigate('Register');
@@ -28,7 +64,18 @@ class LoginScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
+        <Text>{this.state.message}</Text>
         <Text style={styles.textBig}>Login to HoHoHo!</Text>
+        <TextInput
+          style={{height: 40}}
+          placeholder="Enter your username"
+          onChangeText={(text) => this.setState({username: text})}
+        />
+        <TextInput
+          style={{height: 40}}
+          placeholder="Enter your password"
+          onChangeText={(text) => this.setState({password: text})}
+        />
         <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, styles.buttonGreen]}>
           <Text style={styles.buttonLabel}>Tap to Login</Text>
         </TouchableOpacity>
@@ -41,18 +88,74 @@ class LoginScreen extends React.Component {
 }
 
 class RegisterScreen extends React.Component {
+  constructor(props){
+    super(props)
+    this.state = {
+      username: '',
+      password: ''
+    }
+  }
+
   static navigationOptions = {
     title: 'Register'
   };
 
+  press(){
+    //on register press make a post request
+    if(this.state.username && this.state.password){
+      fetch('https://hohoho-backend.herokuapp.com/register', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: this.state.username,
+          password: this.state.password,
+        })
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+
+        if(responseJson.success){
+          this.props.navigation.goBack()
+        }
+
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        console.log(err)
+      });
+    }
+  }
+
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Register</Text>
+        <TextInput
+          style={{height: 40}}
+          placeholder="Enter your username"
+          onChangeText={(text) => this.setState({username: text})}
+        />
+        <TextInput
+          style={{height: 40}}
+          placeholder="Enter your password"
+          onChangeText={(text) => this.setState({password: text})}
+        />
+        <TouchableOpacity style={[styles.button, styles.buttonGreen]} secureTextEntry={true} onPress={()=>{this.press()}}>
+            <Text style={styles.textBig}>Register</Text>
+        </TouchableOpacity>
       </View>
     )
   }
 }
+
+
+
+
+
+
+
+
 
 
 //Navigator
