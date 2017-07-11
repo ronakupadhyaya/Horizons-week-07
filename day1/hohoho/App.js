@@ -234,10 +234,9 @@ class UserListScreen extends React.Component {
           enableEmptySections={true}
           dataSource={this.state.dataSource}
           renderRow={(rowData) => {
-              // console.log(rowData);
-              return (<TouchableOpacity onPress={() => this.touchUser(rowData)}>
-                <Text style={styles.user}>User: {rowData.username}</Text>
-              </TouchableOpacity>)
+            return (<TouchableOpacity onPress={() => this.touchUser(rowData)}>
+              <Text style={styles.user}>User: {rowData.username}</Text>
+            </TouchableOpacity>)
           }}/>
       </View>
     )
