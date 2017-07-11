@@ -45,10 +45,43 @@ class RegisterScreen extends React.Component {
     title: 'Register'
   };
 
+  submitRegister(){
+      fetch('https://hohoho-backend.herokuapp.com/register', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: 'theValueOfTheUsernameState',
+        password: 'theValueOfThePasswordState',
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      /* do something with responseJson and go back to the Login view but
+       * make sure to check for responseJson.success! */
+    })
+    .catch((err) => {
+      /* do something if there was an error with fetching */
+    });
+  }
+
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Register</Text>
+        <TextInput
+          style={{height: 40, width: 200}}
+          placeholder="Enter your username"
+          onChangeText={(text) => this.setState({username: text})}
+        />
+        <TextInput
+          style={{height: 40, width: 200}}
+          placeholder="Enter your password"
+          onChangeText={(text) => this.setState({password: text})}
+          secureTextEntry={true}
+        />
+        <TouchableOpacity onPress={()=>this.submitRegister()}>Submit</TouchableOpacity>
       </View>
     )
   }
