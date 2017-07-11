@@ -8,9 +8,9 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "primaryColor": "#F5FCFF",
-    "icon": "./assets/icons/app.png",
+    "icon": "./assets/icons/BRO.png",
     "loading": {
-      "icon": "./assets/icons/loading.png",
+      "icon": "./assets/icons/BRO.png",
       "hideExponentText": false
     },
     "packagerOpts": {
