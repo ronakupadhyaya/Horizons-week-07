@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "hohoho",
-    "description": "Like Yo but not",
-    "slug": "hohoho",
+    "name": "maps",
+    "description": "An empty new project",
+    "slug": "maps",
     "privacy": "public",
     "sdkVersion": "18.0.0",
     "version": "1.0.0",
     "orientation": "portrait",
-    "primaryColor": "#F5FCFF",
+    "primaryColor": "#cccccc",
     "icon": "./assets/icons/app.png",
     "loading": {
       "icon": "./assets/icons/loading.png",

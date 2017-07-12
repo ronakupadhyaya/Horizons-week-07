@@ -7,9 +7,15 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
+  AsyncStorage
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
+import {
+  MapView,
+  Location,
+  Permissions
+} from 'expo';
 
 class MessageScreen extends React.Component {
   constructor(props) {
@@ -38,7 +44,25 @@ class MessageScreen extends React.Component {
     return (
       <ListView
         dataSource={this.state.dataSource}
-        renderRow={(rowData) => <Text>{rowData.from.username} sent {rowData.to.username} a message at {rowData.timestamp}</Text>}
+        renderRow={(rowData) =>
+          <View>
+          <Text>{rowData.from.username} sent {rowData.to.username} a message at {rowData.timestamp}</Text>
+          {rowData.location && rowData.location.longitude ? <MapView
+            longitude={rowData.location.longitude}
+            latitude={rowData.location.latitude}
+            style={{height: 100}}
+            showsUserLocation={true}
+            scrollEnabled={false}
+            annotations={true}
+            region={{
+              longitude: this.props.longitude,
+              latitude: this.props.latitude,
+              longitudeDelta: 1,
+              latitudeDelta: 1
+            }}
+          /> : <View></View>}
+        </View>
+        }
       />
     )
   }
@@ -63,6 +87,46 @@ class UserScreen extends React.Component {
         message: err
       })
     })
+  }
+  sendLocation = async(user) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+      if (status !== 'granted') {
+        alert("Permission not granted")
+      } else {
+        let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+        fetch('https://hohoho-backend.herokuapp.com/messages', {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            to: user._id,
+            location: {
+              longitude: location.coords.longitude,
+              latitude: location.coords.latitude
+            }
+          })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+          if (responseJson.success) {
+            Alert.alert(
+              'Success',
+              'Location to ' + user.username + ' sent successfully!',
+              [{text: 'Dismiss'}]
+            )
+          } else {
+            Alert.alert(
+              'Failure',
+              'Location not sent to ' + user.username,
+              [{text: 'Dismiss'}]
+            )
+          }
+        })
+        .catch((err) => {
+          console.log("errrrrr")
+        });
+      }
   }
   messages(){
     this.props.navigation.navigate('Messages')
@@ -100,13 +164,6 @@ class UserScreen extends React.Component {
       console.log("errrrrr")
     });
   }
-  // static navigationOptions = {
-  //   title: 'Users',
-  //   <Button
-  //     title='Messages'
-  //     onPress={}
-  //   />
-  // };
   static navigationOptions = ({ navigation }) => ({
     title: 'Users',
     headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
@@ -120,7 +177,13 @@ class UserScreen extends React.Component {
     return (
       <ListView
         dataSource={this.state.dataSource}
-        renderRow={(rowData) => <TouchableOpacity onPress={this.touchUser.bind(this, rowData)}><Text>{rowData.username}</Text></TouchableOpacity>}
+        renderRow={(rowData) =>
+          <TouchableOpacity
+           onPress={this.touchUser.bind(this, rowData)}
+           onLongPress={this.sendLocation.bind(this, rowData)}
+           delayLongPress={1000}>
+           <Text>{rowData.username}</Text>
+         </TouchableOpacity>}
       />
     )
   }
@@ -139,31 +202,49 @@ class LoginScreen extends React.Component {
   static navigationOptions = {
     title: 'Login'
   };
-
+  componentDidMount(){
+    AsyncStorage.getItem('user')
+    .then(result => {
+      var parsedResult = JSON.parse(result);
+      var username = parsedResult.username;
+      var password = parsedResult.password;
+      if (username && password) {
+        this.login(username, password)
+      }
+    })
+    .catch(err => { console.log("ERR", err) })
+  }
+  login(u, p) {
+    fetch('https://hohoho-backend.herokuapp.com/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: u || this.state.username,
+        password: p || this.state.password,
+      })
+    })
+    .then(AsyncStorage.setItem('user', JSON.stringify({
+      username: u || this.state.username,
+      password: p || this.state.password
+    })))
+    .then((response) => response.json())
+    .then((responseJson) => {
+      this.props.navigation.navigate('Users')
+    })
+    .catch((err) => {
+      this.setState({
+        message: err
+      })
+    });
+  }
   press() {
     if (!this.state.username || !this.state.password) {
       alert("CANT BE BLANK!!")
     } else {
-      fetch('https://hohoho-backend.herokuapp.com/login', {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username: this.state.username,
-          password: this.state.password,
-        })
-      })
-      .then((response) => response.json())
-      .then((responseJson) => {
-        this.props.navigation.navigate('Users')
-      })
-      .catch((err) => {
-        this.setState({
-          message: err
-        })
-      });
-    }
+    this.login();
+  }
   }
 
   register() {
