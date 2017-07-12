@@ -1,3 +1,6 @@
+/**
+ * Created by ebadgio on 7/11/17.
+ */
 import React from 'react';
 import {
   AsyncStorage,
@@ -65,7 +68,7 @@ class LoginScreen extends React.Component {
         const username = parsedResult.username;
         const password = parsedResult.password;
         if (username && password) {
-          this.props.navigation.navigate('Swiper')
+          this.props.navigation.navigate('Users', {username: username, password: password})
         }
       })
       .catch((err) => {
@@ -92,7 +95,7 @@ class LoginScreen extends React.Component {
           .then((response) => response.json())
           .then((responseJson) => {
             if (responseJson.success) {
-              this.props.navigation.navigate('Swiper')
+              this.props.navigation.navigate('Users', {username: this.state.username, password: this.state.password})
             }
             else {
               this.setState({errorMessage: responseJson.error})
@@ -212,10 +215,10 @@ class UserScreen extends React.Component {
             rowHasChanged: (r1,r2) => (r1._id !== r2._id)
           });
           this.setState({users: ds.cloneWithRows(responseJson.users)})
-          }
-          else {
-            this.setState({errorMessage:responseJson.error})
-          }
+        }
+        else {
+          this.setState({errorMessage:responseJson.error})
+        }
       })
       .catch((err) => {
         Alert.alert(err)
@@ -275,6 +278,14 @@ class UserScreen extends React.Component {
       });
   }
 
+  static navigationOptions = (props) => ({
+    title: 'Users',
+    headerRight: <Button title='Messages'
+                         onPress={ () =>
+                           (props.navigation.navigate('Message', {username:props.navigation.state.params.username,
+                             password:props.navigation.state.params.password}))} />
+  });
+
   sendLocation = async(user) => {
     let { status } = await Permissions.askAsync(Permissions.LOCATION);
     if (status !== 'granted') {
@@ -298,7 +309,7 @@ class UserScreen extends React.Component {
                 <Text>{item.username}</Text>
               </TouchableOpacity>
             </View>
-        )}
+          )}
           dataSource={this.state.users}
           enableEmptySections={true}
         />
@@ -320,8 +331,14 @@ class MessageScreen extends React.Component {
     }
   }
 
+  static navigationOptions = {
+    title: 'Messages',
+  };
+
   fetchData() {
-    return fetch('https://hohoho-backend.herokuapp.com/messages')
+    return fetch('https://hohoho-backend.herokuapp.com/messages?username=' +
+      this.props.navigation.state.params.username + '&password=' +
+      this.props.navigation.state.params.password)
       .then((response) => response.json())
       .then((responseJson) => {
         if (responseJson.success) {
@@ -339,7 +356,7 @@ class MessageScreen extends React.Component {
       });
   }
 
-  componentDidMount() {
+  componentWillMount() {
     this.fetchData()
   }
 
@@ -376,18 +393,18 @@ class MessageScreen extends React.Component {
                 When:{' '}{item.timestamp}
               </Text>
               {(item.location && item.location.latitude && item.location.longitude) ? <MapView
-                    style={{height: 100, width:250, margin: 10, borderWidth: 1,
-                      alignItems: 'center',
-                      justifyContent: 'center'}}
-                    showsUserLocation={true}
-                    scrollEnabled={false}
-                    region={{
-                      longitude: item.location.longitude,
-                      latitude: item.location.latitude,
-                      longitudeDelta: .25,
-                      latitudeDelta: .125
-                    }}
-                  /> : null}
+                style={{height: 100, width:250, margin: 10, borderWidth: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center'}}
+                showsUserLocation={true}
+                scrollEnabled={false}
+                region={{
+                  longitude: item.location.longitude,
+                  latitude: item.location.latitude,
+                  longitudeDelta: .25,
+                  latitudeDelta: .125
+                }}
+              /> : null}
               <Hr lineColor='#b3b3b3' />
             </View>
           )}
@@ -400,39 +417,16 @@ class MessageScreen extends React.Component {
 }
 
 class SwiperScreen extends React.Component {
-  constructor(){
-    super();
-    this.state = {
-      username:'',
-      password:''
-    }
-  }
   static navigationOptions = {
     title: 'HoHoHo!'
   };
 
-  componentDidMount(){
-    AsyncStorage.getItem('user')
-      .then(result => {
-        const parsedResult = JSON.parse(result);
-        const username = parsedResult.username;
-        const password = parsedResult.password;
-        if (username && password) {
-          this.setState({
-            username:username,
-            password:password
-          })
-        }
-      })
-      .catch((err) => {
-      })
-  }
-
   render() {
     return (
       <Swiper>
-        <UserScreen/>
-        <MessageScreen />
+        // First component
+        // Second component
+        // Third component
       </Swiper>
     );
   }
@@ -456,9 +450,6 @@ export default StackNavigator({
   },
   Message: {
     screen: MessageScreen,
-  },
-  Swiper: {
-    screen: SwiperScreen
   }
 }, {initialRouteName: 'Login'});
 
