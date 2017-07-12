@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  AsyncStorage,
   StyleSheet,
   View,
   Text,
@@ -10,6 +11,7 @@ import {
   Button
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
+import { Location, Permissions } from 'expo';
 
 
 //Screens
@@ -21,6 +23,7 @@ class LoginScreen extends React.Component {
   constructor(props){
     super(props);
     this.state = {
+      user: {},
       username: '',
       password: '',
       message: ''
@@ -44,6 +47,10 @@ class LoginScreen extends React.Component {
       * make sure to check for responseJson.success! */
       if(responseJson.success){
         this.props.navigation.navigate('Users');
+        AsyncStorage.setItem('user', JSON.stringify({
+          username: this.state.username,
+          password: this.state.password
+        }));
       }else{
         this.setState({message: 'Wrong Password!!!'});
       }
@@ -53,8 +60,34 @@ class LoginScreen extends React.Component {
       console.log(err)
     });
   }
+
   register() {
     this.props.navigation.navigate('Register');
+  }
+
+
+  componentDidMount(){
+    AsyncStorage.getItem('user')
+      .then(result => {
+        var parsedResult = JSON.parse(result);
+        var username = parsedResult.username;
+        var password = parsedResult.password;
+        if (username && password) {
+          return fetch('https://hohoho-backend.herokuapp.com/login', {
+                method: 'POST',
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  username: username,
+                  password: password
+                })
+              })
+            .then(resp => resp.json())
+            .then(this.props.navigation.navigate('Users'))
+        }
+      })
+      .catch(err => { console.log(err)})
   }
 
   render() {
@@ -93,7 +126,7 @@ class RegisterScreen extends React.Component {
     super(props);
     this.state = {
       username: '',
-      password: ''
+      password: '',
     }
   }
 
