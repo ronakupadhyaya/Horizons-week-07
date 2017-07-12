@@ -205,7 +205,7 @@ class UsersScreen extends React.Component {
       return (
           <View style={{flex: 1}}>
               <ListView
-                //   style={{paddingBottom: 10}}
+                  //   style={{paddingBottom: 10}}
                   //   removeClippedSubviews={true}
                   dataSource={this.state.dataSource}
                   renderRow={(rowData) => {return (
@@ -421,13 +421,16 @@ class SwiperScreen extends React.Component {
     return (
       <Swiper style={{}}
           //   loop={false}
-          //   showsPagination={true}
-          showsButtons={true}
-          dot={(<View style={{backgroundColor:'rgba(0,0,0,.2)', width: 8, height: 8,borderRadius: 4, marginLeft: 3, marginRight: 3, marginTop: 3, marginBottom: 3,}} />)}
-          buttonWrapperStyle={{backgroundColor: 'transparent', flexDirection: 'row', position: 'absolute', top: 0, left: 0, flex: 1, paddingHorizontal: 10, paddingVertical: 10, justifyContent: 'space-between', alignItems: 'center'}}
+          showsPagination={true}
+          //   showsButtons={true}
+          dot={<View style={{backgroundColor: 'rgba(255,255,255,.3)', width: 13, height: 13, borderRadius: 7, marginLeft: 7, marginRight: 7}} />}
+          activeDot={<View style={{backgroundColor: '#fff', width: 13, height: 13, borderRadius: 7, marginLeft: 7, marginRight: 7}} />}
+          paginationStyle={{
+              bottom: 70
+          }}
       >
-          <UsersScreen />
-          <Messages />
+          <UsersScreen title={(<Text>Users</Text>)}/>
+          <Messages title={(<Text>Messages</Text>)}/>
       </Swiper>
     );
   }
