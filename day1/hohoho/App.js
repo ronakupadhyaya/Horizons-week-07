@@ -7,10 +7,13 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
+  AsyncStorage,
+  RefreshControl
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-
+import { Location, Permissions, MapView } from 'expo';
+import Swiper from 'react-native-swiper';
 
 //Screens-----------------------------------------------------------------------Login Page Component
 class LoginPage extends React.Component {
@@ -40,7 +43,11 @@ class LoginPage extends React.Component {
       .then((response) => response.json())
       .then((responseJson) => {
         if(responseJson.success){
-          this.props.navigation.navigate('Users');
+          AsyncStorage.setItem('user', JSON.stringify({
+            username: this.state.username,
+            password: this.state.password
+          }));
+          this.props.navigation.navigate('Swiper');
         } else {
           console.log(responseJson);
           this.setState({message:responseJson.error});
@@ -50,6 +57,19 @@ class LoginPage extends React.Component {
         console.log(err)
       });
     }
+  }
+  componentDidMount(){
+    AsyncStorage.getItem('user')
+      .then(result => {
+        var parsedResult = JSON.parse(result);
+        var username = parsedResult.username;
+        var password = parsedResult.password;
+        if (username && password) {
+          return this.login(username, password); //the return here is very very very important!!!
+        }
+        // Don't really need an else clause, we don't do anything in this case.
+      })
+      .catch(err => { console.log(err) })
   }
   render(){
     return (
@@ -175,17 +195,20 @@ class RegisterScreen extends React.Component {
 class UserScreen extends React.Component {
   constructor(props) {
     super(props);
-    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
-      dataSource: ds.cloneWithRows([])
+      dataSource: [],
+      refreshing: false
     };
-    fetch('https://hohoho-backend.herokuapp.com/users')
+  }
+  fetchData(){
+    console.log('fetching data!')
+    return fetch('https://hohoho-backend.herokuapp.com/users')
+    //need the return here because while fetching, this returns a promise!
     .then((response) => response.json())
     .then((responseJson) => {
       if(responseJson.success){
         this.setState({
-          dataSource: ds.cloneWithRows(responseJson.users)
-          //we need to put this in constructor otherwise ds will not be defined!! unless we define it again.
+          dataSource: responseJson.users
         });
       } else {
         console.log(responseJson);
@@ -199,19 +222,27 @@ class UserScreen extends React.Component {
     title: 'Users',
     headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
   });
-  componentDidMount() {
-    this.props.navigation.setParams({
-      onRightPress: this.messages.bind(this)
-    })
-  };
-  touchUser(user){
+  componentDidMount(){
+    this.fetchData();
+  }
+  // componentDidMount() {
+  //   this.props.navigation.setParams({
+  //     onRightPress: this.messages.bind(this)
+  //   })
+  // };
+  // the above section will not exist anymore when using Swipe
+  touchUser(user,latitude,longitude){
     fetch('https://hohoho-backend.herokuapp.com/messages',{
       method: 'POST',
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        to: user._id
+        to: user._id,
+        location: {
+          longitude: longitude,
+          latitude: latitude
+        }
       })
     })
     .then(response => response.json())
@@ -219,13 +250,14 @@ class UserScreen extends React.Component {
       if(responseJson.success){
         Alert.alert(
           'Success',
-          'Your Ho Ho Ho! to '+user.username+' has been sent!',
+          'Your Ho Ho Ho! to '+user.username+' has been sent together with your location latitude '
+          +latitude+' longitude '+longitude,
           [{text: 'Dismiss Button'}] // Button
         )
       } else {
         Alert.alert(
           'Failure',
-          'Your Ho Ho Ho! to '+user.username+' could not be sent!',
+          'Your Ho Ho Ho! to '+user.username+' and your location could not be sent!',
           [{text: 'Dismiss Button'}] // Button
         )
         console.log(responseJson.error)
@@ -235,12 +267,42 @@ class UserScreen extends React.Component {
   messages(){
     this.props.navigation.navigate('Messages')
   }
+  sendLocation = async(user) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      //handle failure
+      return; //possibly?
+    }
+    let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+    console.log(location);
+    this.touchUser(user,location.coords.latitude,location.coords.longitude);
+    //I added a bind this
+  }
+  _onRefresh() {
+    this.setState({refreshing: true});
+    this.fetchData().then(() => { //to do so, this.fetchData should be a async function!
+      this.setState({refreshing: false});
+    });
+  }
   render(){
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     return(
       <View style={styles.container}>
         <ListView
-          dataSource={this.state.dataSource}
-          renderRow={(rowData) => <TouchableOpacity onPress={this.touchUser.bind(this,rowData)}><Text>{rowData.username}</Text></TouchableOpacity>}
+          refreshControl={
+          <RefreshControl //this enables a pull to refresh
+            refreshing={this.state.refreshing}
+            onRefresh={this._onRefresh.bind(this)}
+          />}
+          dataSource={ds.cloneWithRows(this.state.dataSource)}
+          renderRow={(rowData) =>
+            <TouchableOpacity
+              onPress={this.touchUser.bind(this,rowData,null,null)}
+              onLongPress={this.sendLocation.bind(this,rowData)}
+              delayLongPress={1000} //hardcoded num of milliseconds
+              >
+              <Text>{rowData.username}</Text>
+            </TouchableOpacity>}
         />
       </View>
     )
@@ -252,21 +314,19 @@ class Messages extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      messages: []
+      messages: [],
+      refreshing: false
     };
   }
-  componentDidMount(){
-    // const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+  fetchData(){
     fetch('https://hohoho-backend.herokuapp.com/messages')
     .then((response) => response.json())
     .then((responseJson) => {
-      console.log("This is the response from the responseJson.messages:",responseJson.messages)
-      // console.log('this is the clonewithrows:', ds.cloneWithRows(responseJson.messages))
       if(responseJson.success){
         this.setState({
-          messages: responseJson.messages
+          messages: responseJson.messages,
+          refreshing: false //or better, after every fetch, automatically disable refresh
         });
-        console.log('state is now set to:',this.state.messages)
       } else {
         console.log(responseJson.error);
       }
@@ -275,8 +335,16 @@ class Messages extends React.Component {
       console.log(err)
     });
   }
+  componentDidMount(){
+    this.fetchData();
+    // this.fetchData.bind(this);
+  };
   static navigationOptions = {
     title: 'Messages'
+  };
+  _onRefresh() {
+    this.setState({refreshing: true});
+    this.fetchData();
   };
   render(){
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
@@ -284,17 +352,63 @@ class Messages extends React.Component {
     return(
       <View style={styles.container}>
         <ListView
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this._onRefresh.bind(this)}
+            />
+          }
           dataSource={ds.cloneWithRows(this.state.messages)}
-          renderRow={(rowData) =>
-            <View>
-              <Text>From:{rowData.from.username}</Text>
-              <Text>To: {rowData.to.username}</Text>
-              <Text>Message: {rowData.body}</Text>
-              <Text>When: {rowData.timestamp}</Text>
-            </View>}
+          renderRow={(rowData) => {
+              const mapView = (rowData.location && rowData.location.longitude) ?
+              <MapView
+                style={{
+                  width:"100%",
+                  height:100
+                }} // remember to check the style
+                showsUserLocation={true} //this will automatically ask permission and get user location!!
+                scrollEnabled={true}
+                region={{ //where the map is centered
+                  longitude: rowData.location.longitude,
+                  latitude: rowData.location.latitude,
+                  longitudeDelta: 0.05,
+                  latitudeDelta: 0.05
+                }}>
+                <MapView.Marker
+                  coordinate={{
+                    latitude: rowData.location.latitude,
+                    longitude: rowData.location.longitude
+                  }}
+                />
+              </MapView> : null;
+
+             return (<View style={styles.messages}>
+                <Text>From:{rowData.from.username}</Text>
+                <Text>To: {rowData.to.username}</Text>
+                <Text>Message: {rowData.body}</Text>
+                <Text>When: {rowData.timestamp}</Text>
+                {mapView}
+              </View>)
+          }
+          }
         />
       </View>
     )
+  }
+}
+//------------------------------------------------------------------------------SwiperScreen
+class SwiperScreen extends React.Component {
+  static navigationOptions = {
+    title: 'HoHoHo!'
+  };
+
+  render() {
+    return (
+      <Swiper>
+        <UserScreen />
+        <Messages />
+      </Swiper>
+    );
   }
 }
 
@@ -314,6 +428,9 @@ export default StackNavigator({ //similar to mapstate to props
   },
   Messages: {
     screen: Messages,
+  },
+  Swiper: {
+    screen: SwiperScreen,
   }
 }, {initialRouteName: 'Login'});
 
@@ -376,6 +493,15 @@ const styles = StyleSheet.create({
     margin: 10,
     borderColor: 'gray',
     borderWidth: 1
+  },
+  messages: {
+    // borderWidth:10,
+    // height: 60,
+    // backgroundColor: 'red',
+    // borderStyle: 'solid',
+    borderColor: 'gray',
+    borderBottomColor: 'gray',
+    borderBottomWidth: 1,
+    flex:1
   }
-
 });
