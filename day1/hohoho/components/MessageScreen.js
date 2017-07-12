@@ -10,6 +10,7 @@ import {
   Button,
   AsyncStorage
 } from 'react-native';
+import {MapView} from 'expo';
 import {styles} from '../style';
 
 class MessageScreen extends React.Component {
@@ -44,13 +45,36 @@ class MessageScreen extends React.Component {
   }
 
   render() {
+    let locationCheck = function(message) {
+      if(message.location && message.location.longitude) {
+        return <MapView
+          style={styles.map}
+          showsUserLocation={true}
+          scrollEnabled={true}
+          region={{
+            longitude: message.location.longitude,
+            latitude: message.location.latitude,
+            longitudeDelta: 1,
+            latitudeDelta: 1
+          }}>
+          <MapView.Marker
+          coordinate={{latitude: message.location.latitude,
+          longitude: message.location.longitude}}
+          title={message.from.username + "'s location"}/>
+        </MapView>
+      }
+    }
     return (
       <View style={styles.container}>
-        <ListView dataSource={this.state.dataSource} renderRow={message => <View style={styles.messages}>
+        <ListView dataSource={this.state.dataSource} renderRow={message =>
+          <View style={styles.messages}>
           <Text>From: {message.from.username}</Text>
           <Text>To: {message.to.username}</Text>
+          <Text>Message: {message.body}</Text>
           <Text>When: {message.timestamp}</Text>
-        </View>}/>
+          {locationCheck(message)}
+        </View>
+        }/>
       </View>
     )
   }

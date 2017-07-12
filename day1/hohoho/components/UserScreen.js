@@ -10,7 +10,9 @@ import {
   Button,
   AsyncStorage
 } from 'react-native';
+import {Location, Permissions} from 'expo';
 import {styles} from '../style';
+
 
 class UserScreen extends React.Component {
   static navigationOptions = ({navigation}) => ({title: 'Users', headerRight: <Button title='Messages' onPress={() => {
@@ -49,31 +51,49 @@ class UserScreen extends React.Component {
     })
   }
 
-  touchUser(user) {
-    fetch('https://hohoho-backend.herokuapp.com/messages', {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({to: user._id})
-    }).then((response) => response.json()).then((responseJson) => {
-      const alert = {
-        title: '',
-        contents: ''
-      }
-      if (responseJson.success) {
-        alert.title = "Sweet!"
-        alert.contents = `Your Ho Ho Ho! to ${user.username} has been sent!`;
+  userPress = async(user, type) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      console.log("permission not granted");
+    } else {
+      let body;
+      let title;
+      let messageType;
+      if(type === 'long') {
+        let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+        const latitude = location.coords.latitude;
+        const longitude = location.coords.longitude;
+        body = {to: user._id, location: {latitude, longitude}};
+        messageType = "Location";
       } else {
-        alert.title = "Oh no!"
-        alert.contents = `Your Ho Ho Ho! to ${user.username} could not be sent!`;
+        body = {to: user._id};
+        messageType = "Ho Ho Ho!"
       }
-      Alert.alert(alert.title, alert.contents, [
-        {
-          text: 'Dismiss Button'
+      fetch('https://hohoho-backend.herokuapp.com/messages', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+      }).then(response => response.json()).then(responseJson => {
+        const alert = {
+          title: '',
+          contents: ''
         }
-      ])
-    })
+        if(responseJson.success) {
+          alert.title = "Sweet!";
+          alert.contents = `Your ${messageType} to ${user.username} has been sent!`;
+        } else {
+          alert.title = "Oh No!";
+          alert.contents = `Your ${messageType} to ${user.username} could not be sent!`;
+        }
+        Alert.alert(alert.title, alert.contents, [
+              {
+                text: 'Dismiss Button'
+              }
+            ])
+      })
+    }
   }
 
   messages() {
@@ -83,7 +103,7 @@ class UserScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <ListView dataSource={this.state.dataSource} renderRow={rowData => <TouchableOpacity onPress={this.touchUser.bind(this, rowData)} onLongPress={this.sendLocation.bind(this, rowData)} delayLongPress={1000}>
+        <ListView dataSource={this.state.dataSource} renderRow={rowData => <TouchableOpacity onPress={this.userPress.bind(this, rowData)} onLongPress={this.userPress.bind(this, rowData, "long")} delayLongPress={1000}>
           <Text>{rowData.username}</Text>
         </TouchableOpacity>}/>
       </View>

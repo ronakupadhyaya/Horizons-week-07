@@ -53,6 +53,12 @@ export const styles = StyleSheet.create({
   },
   messages: {
     flex: 1,
-    borderWidth: 1
+    borderWidth: 1,
+    alignItems: 'stretch'
+  },
+  map: {
+    flex: 1,
+    height: 100,
+    position: 'relative'
   }
 });
