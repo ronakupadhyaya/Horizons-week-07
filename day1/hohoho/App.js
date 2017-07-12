@@ -7,15 +7,16 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
+  AsyncStorage
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
 
 //Screens
 class LoginScreen extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props)
     this.state = {
       username: '',
       password: '',
@@ -25,14 +26,12 @@ class LoginScreen extends React.Component {
 
   static navigationOptions = {
     title: 'Login'
-  };
+  }
 
   press() {
     fetch('https://hohoho-backend.herokuapp.com/login', {
      method: 'POST',
-     headers: {
-       "Content-Type": "application/json"
-     },
+     headers: {"Content-Type": "application/json"},
      body: JSON.stringify({
        username: this.state.username,
        password: this.state.password,
@@ -40,16 +39,15 @@ class LoginScreen extends React.Component {
     })
       .then((resp) => resp.json())
       .then((respJson) => {
-        console.log(respJson);
         if (respJson.success) {
-          console.log('login success!')
+          AsyncStorage.setItem('user', JSON.stringify({
+            username: this.state.username,
+            password: this.state.password
+          }))
           this.props.navigation.navigate('Users')
         }
         else {
-          this.setState({
-            message: respJson.error
-          })
-          console.log(this.state.message)
+          this.setState({message: respJson.error})
         }
       })
       .catch((err) => {
@@ -57,8 +55,41 @@ class LoginScreen extends React.Component {
       })
   }
 
+  //login and checkResponseAndGoToMainScreen
+  login(username, password) {
+    fetch('https://hohoho-backend.herokuapp.com/login', {
+      method: 'POST',
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        username: username,
+        password: password,
+       })
+    })
+      .then((resp) => resp.json())
+      .then((responseJson) => {
+        if (responseJson.success) {
+          this.props.navigation.navigate('Users')
+        }
+      })
+      .catch((err) => {console.log('error', err)})
+  }
+
+  componentDidMount() {
+    AsyncStorage.getItem('user')
+      .then(result => {
+          var parsedResult = JSON.parse(result);
+          var username = parsedResult.username;
+          var password = parsedResult.password;
+          if (username && password) {
+            return this.login(username, password)
+          }
+          // Don't really need an else clause, we don't do anything in this case.
+      })
+      .catch(err => {console.log('error', err)})
+  }
+
   register() {
-    this.props.navigation.navigate('Register');
+    this.props.navigation.navigate('Register')
   }
 
   render() {
@@ -67,20 +98,20 @@ class LoginScreen extends React.Component {
         <Text style={styles.textBig}>Login to HoHoHo!</Text>
         <Text>{this.state.message}</Text>
         <TextInput
-          style={{height: 40, margin: 10}}
-          placeholder="Enter your username"
+          style={styles.input}
+          placeholder="Enter your username..."
           onChangeText={(text) => {this.setState({username: text})}}
         />
         <TextInput
-          style={{height: 40, margin: 10}}
-          placeholder="Enter your password"
+          style={styles.input}
+          placeholder="Enter your password..."
           secureTextEntry={true}
           onChangeText={(text) => this.setState({password: text})}
         />
-        <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, styles.buttonGreen]}>
+        <TouchableOpacity onPress={() => {this.press()}} style={[styles.button, styles.buttonGreen]}>
           <Text style={styles.buttonLabel}>Tap to Login</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={ () => {this.register()} }>
+        <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={() => {this.register()}}>
           <Text style={styles.buttonLabel}>Tap to Register</Text>
         </TouchableOpacity>
       </View>
@@ -88,32 +119,34 @@ class LoginScreen extends React.Component {
   }
 }
 
+
 class RegisterScreen extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props)
     this.state = {
       username: '',
       password: '',
       message: ''
     }
   }
+
   static navigationOptions = {
     title: 'Register'
   };
 
  register() {
   fetch('https://hohoho-backend.herokuapp.com/register', {
-   method: 'POST',
-   headers: {
-     "Content-Type": "application/json"
-   },
-   body: JSON.stringify({
-     username: this.state.username,
-     password: this.state.password,
-   })
- })
-      .then((resp) => resp.json())
-      .then((respJson) => {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username: this.state.username,
+      password: this.state.password,
+    })
+  })
+    .then((resp) => resp.json())
+    .then((respJson) => {
         console.log(respJson);
         if (respJson.success) {
           console.log('register success!')
@@ -124,11 +157,10 @@ class RegisterScreen extends React.Component {
           })
         }
       })
-      .catch((err) => {
-        console.log('error', err);
-
-      })
-    }
+    .catch((err) => {
+      console.log('error', err);
+    })
+}
 
   render() {
     return (
@@ -136,13 +168,13 @@ class RegisterScreen extends React.Component {
         <Text style={styles.textBig}>Register</Text>
         <Text>{this.state.message}</Text>
         <TextInput
-          style={{height: 40, margin: 10}}
-          placeholder="Enter your username"
+          style={styles.input}
+          placeholder="Enter your username..."
           onChangeText={(text) => {this.setState({username: text})}}
         />
         <TextInput
-          style={{height: 40, margin: 10}}
-          placeholder="Enter your password"
+          style={styles.input}
+          placeholder="Enter your password..."
           secureTextEntry={true}
           onChangeText={(text) => this.setState({password: text})}
         />
@@ -152,12 +184,13 @@ class RegisterScreen extends React.Component {
       </View>
     )
   }
-};
+}
+
 
 class UsersScreen extends React.Component {
   constructor(props) {
-    super(props);
-    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    super(props)
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
     this.state = {
       dataSource: ds.cloneWithRows([]),
     }
@@ -172,17 +205,20 @@ class UsersScreen extends React.Component {
           dataSource: ds.cloneWithRows(responseJson.users)
         })
       })
-    };
+      .catch((error) => {
+        console.log('error', error)
+      })
+  }
 
 
   goToMessages() {
-    this.props.navigation.navigate('Messages');
+    this.props.navigation.navigate('Messages')
   }
 
 
   static navigationOptions = ({ navigation }) => ({
     title: 'Users',
-    headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
+    headerRight: <Button title='Messages' onPress={() => {navigation.state.params.onRightPress()}} />
   });
 
   componentDidMount() {
@@ -218,8 +254,6 @@ class UsersScreen extends React.Component {
       .catch((error) => {
         console.log('error', error)
       })
-
-
   }
 
   render() {
@@ -236,10 +270,11 @@ class UsersScreen extends React.Component {
   }
 }
 
+
 class MessagesScreen extends React.Component {
   constructor(props) {
-    super(props);
-    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    super(props)
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
     this.state = {
       dataSource: ds.cloneWithRows([]),
     }
@@ -254,12 +289,14 @@ class MessagesScreen extends React.Component {
           dataSource: ds.cloneWithRows(responseJson.messages)
         })
       })
-  };
+      .catch((error) => {
+        console.log('error', error)
+      })
+  }
 
   static navigationOptions = {
     title: 'Messages'
-  };
-
+  }
 
   render() {
     return (
@@ -302,7 +339,7 @@ export default StackNavigator({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
@@ -349,5 +386,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     color: 'white'
-  }
+  },
+  input: {
+    height: 40,
+    margin: 10,
+    borderStyle: 'solid'}
 });
