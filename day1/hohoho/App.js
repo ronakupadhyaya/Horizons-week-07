@@ -8,9 +8,12 @@ import {
   ListView,
   Alert,
   Button,
+  AsyncStorage,
   RefreshControl
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
+import {Location, Permissions, MapView} from 'expo';
+import Swiper from 'react-native-swiper';
 const _ = require('underscore');
 
 
@@ -28,6 +31,48 @@ class LoginScreen extends React.Component {
     title: 'Login'
   };
 
+  componentDidMount() {
+    var self = this;
+    AsyncStorage.getItem('user')
+      .then(result => {
+        if(!result){
+          console.log('no item user');
+          return;
+        }
+        var parsedResult = JSON.parse(result);
+        var username = parsedResult.username;
+        var password = parsedResult.password;
+        if (username && password) {
+          console.log(username)
+          return fetch('https://hohoho-backend.herokuapp.com/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              username: username,
+              password: password,
+            }),
+          })
+          .then((response) => response.json())
+          .then((json) => {
+            console.log('did we get here?', json);
+            if (json.success) {
+              console.log('success', json);
+              self.setState({
+                username: username,
+                password: password,
+              })
+              self.props.navigation.navigate('Swiper', {username: this.state.username})
+            }
+          })
+        }
+      })
+      .catch((err) => {
+        // Alert.alert('something wrong with app');
+        this.setState({message: err}) })
+  }
+
   press() {
     fetch('https://hohoho-backend.herokuapp.com/login', {
       method: 'POST',
@@ -42,6 +87,10 @@ class LoginScreen extends React.Component {
     .then((response) => response.json())
     .then((json) => {
       if (json.success) {
+        AsyncStorage.setItem('user', JSON.stringify({
+          username: this.state.username,
+          password: this.state.password
+        }));
         console.log('success', json);
         this.props.navigation.navigate('Users', {username: this.state.username})
       }
@@ -178,41 +227,41 @@ class UsersScreen extends React.Component {
 
   }
 
-  componentDidMount(){
-    this.props.navigation.setParams({
-      onRightPress: () => {
-        // get the id of person using app
-        fetch('https://hohoho-backend.herokuapp.com/users', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-        .then((response) => response.json())
-        .then((json) => {
-          if (json.success) {
-            console.log('retrieving user success!');
-            // this.setState({
-            //   dataSource: ds.cloneWithRows(json.users)
-            // });
-            console.log('Received parameters', this.props.navigation.state.params.username);
-            var myId = _.findWhere(json.users, {username: this.props.navigation.state.params.username })['_id'];
-            this.props.navigation.navigate('Messages', {id: myId});
-          }else{
-            console.log('not a success: ', json)
-          }
-        })
-        .catch((err) => console.log("error is: ", err));
-      }
-    })
+  // componentDidMount(){
+  //   this.props.navigation.setParams({
+  //     onRightPress: () => {
+  //       // get the id of person using app
+  //       fetch('https://hohoho-backend.herokuapp.com/users', {
+  //         method: 'GET',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //       })
+  //       .then((response) => response.json())
+  //       .then((json) => {
+  //         if (json.success) {
+  //           console.log('retrieving user success!');
+  //           // this.setState({
+  //           //   dataSource: ds.cloneWithRows(json.users)
+  //           // });
+  //           console.log('Received parameters', this.props.navigation.state.params.username);
+  //           var myId = _.findWhere(json.users, {username: this.props.navigation.state.params.username })['_id'];
+  //           this.props.navigation.navigate('Messages', {id: myId});
+  //         }else{
+  //           console.log('not a success: ', json)
+  //         }
+  //       })
+  //       .catch((err) => console.log("error is: ", err));
+  //     }
+  //   })
+  // }
 
-  }
-  static navigationOptions = (props) => ({
-    title: 'Users',
-    headerRight: <TouchableOpacity onPress={() => props.navigation.state.params.onRightPress()}>
-      <Text>Messages</Text>
-    </TouchableOpacity>
-  });
+  // static navigationOptions = (props) => ({
+  //   title: 'Users',
+  //   headerRight: <TouchableOpacity onPress={() => props.navigation.navigate('Messages')}>
+  //     <Text>Messages</Text>
+  //   </TouchableOpacity>
+  // });
 
   _onRefresh() {
    this.setState({refreshing: true});
@@ -270,6 +319,31 @@ class UsersScreen extends React.Component {
     })
   }
 
+  sendLocation = async(username, _id) => {
+    let {status} = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      console.log("Error", status);
+    }
+    let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+    console.log(location);
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: _id,
+        location: {
+          longitude: location.coords.longitude,
+          latitude: location.coords.latitude
+        }
+      })
+    })
+    .then((success) => console.log('long', success))
+    .catch((err) => console.log(err))
+  }
+
+
   render() {
     return (
       <ListView
@@ -280,7 +354,14 @@ class UsersScreen extends React.Component {
           />
         }
         dataSource={this.state.dataSource}
-        renderRow={({username, _id}) => <TouchableOpacity onPress={this.sendYo.bind(this, _id, username)}><Text>{username}</Text></TouchableOpacity>}
+        renderRow={({username, _id}) =>
+        <TouchableOpacity
+          onPress={this.sendYo.bind(this, _id, username)}
+          onLongPress={this.sendLocation.bind(this, username, _id)}
+          // delayLongPress={}
+          >
+          <Text>{username}</Text>
+        </TouchableOpacity>}
       />
     )
   }
@@ -320,30 +401,109 @@ class MessagesScreen extends React.Component {
 
   }
 
-  static navigationOptions = {
-    title: 'Messages'
-  };
+  // static navigationOptions = {
+  //   title: 'Messages'
+  // };
+
   helperStyle(objId) {
+    //
+    // if (this.props.navigation.state.params.id === objId) {
+    //   return {backgroundColor: 'skyblue', borderColor: 'black', borderBottomWidth: 1}
+    // }
+    //   return {backgroundColor: 'yellow', borderColor: 'black', borderBottomWidth: 1}
 
-    if (this.props.navigation.state.params.id === objId) {
-      return {backgroundColor: 'skyblue'}
-    }
-      return {backgroundColor: 'yellow'}
+    return {backgroundColor: 'skyblue', borderColor: 'black', borderBottomWidth: 1}
+
   }
-  render() {
-    console.log('this params', this.props.navigation.state.params.id);
-    return (
-      <ListView
-        dataSource={this.state.dataSource}
-        renderRow={(messageObj) =>
 
+  helperMap(messageObj) {
+
+    if(messageObj.location && messageObj.location.longitude){
+      return (
         <View style={this.helperStyle.call(this, messageObj.from._id)}>
           <Text>From: {messageObj.from.username}</Text>
           <Text>To: {messageObj.to.username}</Text>
           <Text>Body: {messageObj.body}</Text>
           <Text>Time: {messageObj.timestamp}</Text>
-      </View>}
+          <MapView
+            style={{flex: 1, height: 140}}
+            showsUserLocation={true}
+            scrollEnabled={true}
+            region={{
+                longitude: messageObj.location.longitude,
+                latitude: messageObj.location.latitude,
+                longitudeDelta: 0.005,
+                latitudeDelta: 0.005
+            }}
+            />
+        </View>
+      );
+    }
+
+    return (
+      <View style={this.helperStyle.call(this, messageObj.from._id)}>
+        <Text>From: {messageObj.from.username}</Text>
+        <Text>To: {messageObj.to.username}</Text>
+        <Text>Body: {messageObj.body}</Text>
+        <Text>Time: {messageObj.timestamp}</Text>
+      </View>
+    );
+
+  }
+
+  render() {
+    // console.log('this params', this.props.navigation.state.params.id);
+    return (
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={(messageObj) => this.helperMap(messageObj)}
       />
+    )
+  }
+}
+
+class SwiperScreen extends React.Component {
+  static navigationOptions= {
+    title: 'HOHOHO'
+  };
+
+  // componentDidMount(){
+  //   console.log('inside of swipers component did mount');
+  //
+  //   this.props.navigation.setParams({
+  //     onRightPress: () => {
+  //       // get the id of person using app
+  //       fetch('https://hohoho-backend.herokuapp.com/users', {
+  //         method: 'GET',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //       })
+  //       .then((response) => response.json())
+  //       .then((json) => {
+  //         if (json.success) {
+  //           console.log('retrieving user success!');
+  //           // this.setState({
+  //           //   dataSource: ds.cloneWithRows(json.users)
+  //           // });
+  //           console.log('Received parameters', this.props.navigation.state.params.username);
+  //           var myId = _.findWhere(json.users, {username: this.props.navigation.state.params.username })['_id'];
+  //           this.props.navigation.navigate('Messages', {id: myId});
+  //         }else{
+  //           console.log('not a success: ', json)
+  //         }
+  //       })
+  //       .catch((err) => console.log("error is: ", err));
+  //     }
+  //   })
+  // }
+
+  render() {
+    return (
+      <Swiper showsButtons={true}>
+        <UsersScreen />
+        <MessagesScreen />
+      </Swiper>
     )
   }
 }
@@ -357,11 +517,14 @@ export default StackNavigator({
   Register: {
     screen: RegisterScreen,
   },
-  Users: {
-    screen: UsersScreen
-  },
-  Messages: {
-    screen: MessagesScreen
+  // Users: {
+  //   screen: UsersScreen
+  // },
+  // Messages: {
+  //   screen: MessagesScreen
+  // },
+  Swiper: {
+    screen: SwiperScreen
   }
 }, {initialRouteName: 'Login'});
 
