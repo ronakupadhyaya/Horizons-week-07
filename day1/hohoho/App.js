@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  AsyncStorage,
   StyleSheet,
   View,
   Text,
@@ -11,7 +12,10 @@ import {
   RefreshControl
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-
+import { Location, Permissions } from 'expo';
+import {
+  MapView
+} from 'expo';
 
 //Screens
 class LoginScreen extends React.Component {
@@ -35,8 +39,11 @@ class LoginScreen extends React.Component {
       /* do something with responseJson and go back to the Login view but
        * make sure to check for responseJson.success! */
        if (responseJson.success) {
+         AsyncStorage.setItem('user', JSON.stringify({
+            username: this.state.username,
+            password: this.state.password
+          }));
         this.props.navigation.navigate('Users')
-        alert("login successful")
       } else {
         alert(responseJson.error)
       }
@@ -49,6 +56,43 @@ class LoginScreen extends React.Component {
   register() {
     this.props.navigation.navigate('Register');
   }
+
+login(username,password) {
+      return fetch('https://hohoho-backend.herokuapp.com/login', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: username,
+          password: password,
+        })
+    })
+  }
+
+componentDidMount() {
+  AsyncStorage.getItem('user')
+  .then(result => {
+    var parsedResult = JSON.parse(result);
+    var username = parsedResult.username;
+    var password = parsedResult.password;
+    if (username && password) {
+      return this.login(username, password)
+        .then(resp => resp.json())
+        .then(responseJson => {
+          /* do something with responseJson and go back to the Login view but
+           * make sure to check for responseJson.success! */
+           if (responseJson.success) {
+             this.props.navigation.navigate('Users')
+          }
+        });
+    }
+    // Don't really need an else clause, we don't do anything in this case.
+  })
+  .catch(err => { /* handle the error */ })
+}
+
+
 
   render() {
     return (
@@ -164,6 +208,43 @@ class UserScreen extends React.Component {
     this.props.navigation.navigate('Messages')
   }
 
+  longTouchUser(user,location) {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: user._id,
+        location: {
+          longitude: location.coords.longitude,
+          latitude: location.coords.latitude,
+        }
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+       if (responseJson.success) {
+         alert("location sent to " + user.username)
+      } else {
+        alert("location failed to send to " + user.username)
+      }
+    })
+    .catch((err) => {
+      /* do something if there was an error with fetching */
+      console.log("error", err)
+    });
+  }
+
+  sendLocation = async(user) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      alert("location failure")
+    }
+    let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+    this.longTouchUser(user,location)
+  }
+
   touchUser(user) {
     fetch('https://hohoho-backend.herokuapp.com/messages', {
       method: 'POST',
@@ -201,7 +282,10 @@ class UserScreen extends React.Component {
       <View style={styles.container}>
         <ListView
           dataSource={this.state.dataSource}
-          renderRow={(rowData) => <TouchableOpacity onPress={this.touchUser.bind(this, rowData)}><Text>{rowData.username}</Text></TouchableOpacity>}
+          renderRow={(rowData) => <TouchableOpacity
+          onPress={this.touchUser.bind(this, rowData)}
+          onLongPress={this.sendLocation.bind(this, rowData)}
+          delayLongPress={2000}><Text>{rowData.username}</Text></TouchableOpacity>}
         />
       </View>
     )
@@ -274,7 +358,22 @@ class MessageScreen extends React.Component {
             />
           }
           dataSource={this.state.dataSource}
-          renderRow={(rowData) => <View><Text>From: {rowData.from.username}</Text><Text>To: {rowData.to.username}</Text><Text>Message: {rowData.body}</Text><Text>When: {rowData.timestamp}</Text></View>}
+          renderRow={(rowData) => <View><Text>From: {rowData.from.username}</Text>
+          <Text>To: {rowData.to.username}</Text>
+          <Text>Message: {rowData.body}</Text>
+          <Text>When: {rowData.timestamp}</Text>{(rowData.location && rowData.location.longitude)? <MapView
+            style={{width: 400, height: 200}}
+            showsUserLocation={true}
+            scrollEnabled={false}
+            region={{
+              longitude: rowData.location.longitude,
+              latitude: rowData.location.latitude,
+              longitudeDelta: 1,
+              latitudeDelta: 1
+            }}
+          ><MapView.Marker
+      coordinate={{latitude: rowData.location.latitude, longitude: rowData.location.longitude}}
+    /></MapView> : <View></View>}</View>}
         />
       </View>
     )
