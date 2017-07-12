@@ -7,9 +7,15 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
+  AsyncStorage
 } from 'react-native';
+import {
+  MapView,
+  Location, Permissions
+} from 'expo';
 import { StackNavigator } from 'react-navigation';
+import Swiper from 'react-native-swiper';
 
 
 //Screens
@@ -107,7 +113,27 @@ class LogininScreen extends React.Component {
     title: 'Login'
   };
 
-  register(){
+  componentDidMount() {
+    var self = this;
+    AsyncStorage.getItem('user')
+      .then(result => {
+        console.log(result);
+        var parsedResult = JSON.parse(result);
+        var username = parsedResult.username;
+        var password = parsedResult.password;
+        if (username && password) {
+          self.setState({
+            username: username,
+            password: password
+          })
+          return self.login();
+        }
+        // Don't really need an else clause, we don't do anything in this case.
+      })
+      .catch(err => {console.log('err',err);})
+  }
+
+  login(){
     var self = this;
     fetch('https://hohoho-backend.herokuapp.com/login', {
       method: 'POST',
@@ -122,7 +148,10 @@ class LogininScreen extends React.Component {
     .then((response) => {
       console.log(response.status);
         if(response.status === 200) {
-            self.props.navigation.navigate('Home');
+          AsyncStorage.setItem('user', JSON.stringify({
+              username: this.state.username,
+              password: this.state.password
+            })).then(() => self.props.navigation.navigate('Home'));
         } else {
           this.setState({failedLogin: true})
         }
@@ -147,7 +176,7 @@ class LogininScreen extends React.Component {
           placeholder="Enter your password"
           onChangeText={(text) => this.setState({password: text})}
         />
-        <TouchableOpacity style={[styles.button, styles.buttonRed]} onPress={()=>this.register()}>
+        <TouchableOpacity style={[styles.button, styles.buttonRed]} onPress={()=>this.login()}>
           <Text style={styles.buttonLabel}>Login</Text>
         </TouchableOpacity>
       </View>
@@ -199,11 +228,48 @@ class HomeScreen extends React.Component {
         })
         .catch(err => console.log('err', err))
   }
+
+  sendLocation = async(user) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      console.log('Permission denied');
+    }
+    let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+    fetch('https://hohoho-backend.herokuapp.com/messages',
+          {method: 'POST',
+           headers: {
+            "Content-Type": "application/json"
+           },
+           body: JSON.stringify({
+             to: user._id,
+             location: {
+                longitude: location.coords.longitude,
+                latitude: location.coords.latitude
+              }
+            })
+          })
+        .then(response => {
+          console.log(response.status);
+          if(response.status === 200) {
+            Alert.alert(
+              'Sent!',
+              'Hohoho to ' + user.username + ' with location',
+              [{text: 'OK'}] // Button
+            )
+          }
+        })
+        .catch(err => console.log('err', err))
+  }
+
   render() {
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     return(
       <ListView renderRow={((item) => (<View>
-          <Text style={[styles.button, styles.buttonRed]} onPress={()=> this.sendM(item._id, item.username)}>{item.username}</Text>
+          <Text style={[styles.button, styles.buttonRed]}
+            onPress={()=> this.sendM(item._id, item.username)}
+            onLongPress={this.sendLocation.bind(this, item)}
+            delayLongPress={1000}
+           >{item.username}</Text>
       </View>) )}
        dataSource={ds.cloneWithRows(this.state.users)}
         ></ListView>
@@ -226,11 +292,10 @@ class MessageScreen extends React.Component {
     var self = this;
     fetch('https://hohoho-backend.herokuapp.com/messages')
       .then(response => {
-        console.log(response);
         return response.json();
       })
       .then((data) => {
-        console.log(data)
+        console.log(data);
         self.setState({messages: data.messages})
       });
   }
@@ -241,6 +306,17 @@ class MessageScreen extends React.Component {
           <Text style={[styles.welcome]} >To: {item.to.username}</Text>
           <Text style={[styles.welcome]} >Hohoho</Text>
           <Text style={[styles.welcome]} >From: {item.from.username}</Text>
+          {item.location && <MapView
+              style={{height: 300}}
+              showsUserLocation={true}
+              scrollEnabled={false}
+              region={{
+                longitude: item.location.longitude,
+                latitude: item.location.latitude,
+                longitudeDelta: .025,
+                latitudeDelta: .025
+              }}
+            />}
       </View>) )}
        dataSource={ds.cloneWithRows(this.state.messages)}
         ></ListView>
@@ -248,6 +324,20 @@ class MessageScreen extends React.Component {
   }
 }
 
+class SwiperScreen extends React.Component {
+  static navigationOptions = {
+    title: 'HoHoHo!'
+  };
+
+  render() {
+    return (
+      <Swiper>
+        <HomeScreen />
+        <MessageScreen />
+      </Swiper>
+    );
+  }
+}
 //Navigator
 export default StackNavigator({
   Login: {
@@ -260,12 +350,13 @@ export default StackNavigator({
     screen: LogininScreen
   },
   Home: {
-    screen: HomeScreen
+    screen: SwiperScreen
   },
   Message: {
     screen: MessageScreen
   }
 }, {initialRouteName: 'Login'});
+
 
 
 //Styles
