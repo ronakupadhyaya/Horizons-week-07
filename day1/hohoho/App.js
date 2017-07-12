@@ -24,7 +24,12 @@ class LoginScreen extends React.Component {
   static navigationOptions = {
     title: 'Login'
   };
-
+  register() {
+    this.props.navigation.navigate('Register');
+  }
+  home() {
+    this.props.navigation.navigate('Home');
+  }
   press() {
     fetch('https://hohoho-backend.herokuapp.com/login', {
       method: 'POST',
@@ -40,18 +45,15 @@ class LoginScreen extends React.Component {
     .then((responseJson) => {
 
       if (responseJson.success){
-        alert('Logged In!')
+        this.setModalVisible(!this.state.modalVisible)
+        this.home();
       } else{
-        console.log("hi", responseJson)
         alert('Some Error Logging In ' + responseJson.error)
       }
     })
     .catch((err) => {
       alert('Some Error Logging In')
     });
-  }
-  register() {
-    this.props.navigation.navigate('Register');
   }
   setModalVisible(visible) {
     this.setState({modalVisible: visible});
@@ -157,14 +159,10 @@ class RegisterScreen extends React.Component {
     }
   }
 
-  login(){
-
-  }
-
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Register</Text>
+        <Text style={styles.textBig}>HOME</Text>
         <TextInput
           style={{height: 20, margin: 5, textAlign:'center'}}
           placeholder="Enter desired username"
@@ -185,6 +183,34 @@ class RegisterScreen extends React.Component {
   }
 }
 
+class HomeScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.state = {
+      dataSource: ds.cloneWithRows([
+        'loading'
+      ])
+    };
+  }
+  static navigationOptions = {
+    title: 'Users'
+  };
+
+  fetch()
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <ListView
+          dataSource={this.state.dataSource}
+          renderRow={(rowData) => <Text>{rowData}</Text>}
+        />
+      </View>
+    )
+  }
+}
+
 
 //Navigator
 export default StackNavigator({
@@ -194,6 +220,9 @@ export default StackNavigator({
   Register: {
     screen: RegisterScreen,
   },
+  Home: {
+    screen: HomeScreen,
+  }
 }, {initialRouteName: 'Login'});
 
 
