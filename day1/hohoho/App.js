@@ -7,9 +7,153 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
+  AsyncStorage
 } from 'react-native';
+import Swiper from 'react-native-swiper'
 import { StackNavigator } from 'react-navigation';
+import { Location, Permissions, MapView } from 'expo';
+
+
+
+class UsersScreen extends React.Component {
+  static navigationOptions = ({ navigation }) => ({
+  title: 'Users', //you put the title you want to be displayed here
+  headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
+});
+
+  constructor(props) {
+   super(props);
+   const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+   this.state = {
+     dataSource: ds.cloneWithRows([])
+   };
+   fetch('https://hohoho-backend.herokuapp.com/users')
+   .then((response) => response.json())
+   .then((responseJson) => {
+     if(responseJson.success === true) {
+       console.log(responseJson.users);
+       console.log("DS" , ds);
+       this.setState({
+       dataSource: ds.cloneWithRows(responseJson.users)
+     });
+   } else {
+     console.log('error')
+   }
+
+  })
+  .catch((err) => {
+    console.log('error', err)
+  });
+  }
+
+  // componentDidMount() {
+  // this.props.navigation.setParams({
+  //   onRightPress: this.messages.bind(this)
+  // })
+  //
+  // };
+
+  messages() {
+    this.props.navigation.navigate('Messages')
+  }
+  touchUser(user) {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: user._id
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson);
+      if(responseJson.success === true) {
+        Alert.alert(
+          'Successful message',
+          `Ho Ho Ho Merry Christmas to ${user.username} sent`,
+          [{text: 'Dismiss Button'}] // Button
+        )
+
+      } else {
+        Alert.alert(
+          'Fail ',
+          `Oops! Ho Ho Ho Merry Christmas to ${user.username} can't be sent`,
+          [{text: 'Dismiss Button'}] // Button
+        )
+      }
+      /* do something with responseJson and go back to the Login view but
+      * make sure to check for responseJson.success! */
+    })
+    .catch((err) => {
+      console.log('error', err)
+    });
+  }
+  longTouchUser(user, long, lati) {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: user._id,
+        location: {
+          longitude: long,
+          latitude: lati
+        }
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log(responseJson);
+      if(responseJson.success === true) {
+        Alert.alert(
+          'Successful message',
+          `Ho Ho Ho Merry Christmas to ${user.username} sent`,
+          [{text: 'Dismiss Button'}] // Button
+        )
+
+      } else {
+        Alert.alert(
+          'Fail ',
+          `Oops! Ho Ho Ho Merry Christmas to ${user.username} can't be sent`,
+          [{text: 'Dismiss Button'}] // Button
+        )
+      }
+      /* do something with responseJson and go back to the Login view but
+      * make sure to check for responseJson.success! */
+    })
+  }
+
+  sendLocation = async(user) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+      if (status !== 'granted') {
+        console.log("FAILE!", status);
+      }
+    let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+    console.log(location);
+    this.longTouchUser(user, location.coords.longitude, location.coords.latitude)
+  };
+
+  render() {
+    return (
+    <ListView
+      dataSource={this.state.dataSource}
+      renderRow={(aMessage) => (
+      <TouchableOpacity
+        onPress={this.touchUser.bind(this, aMessage)}
+        onLongPress={this.sendLocation.bind(this, aMessage)}
+      >
+        <Text>{aMessage.username}</Text>
+      </TouchableOpacity>
+      )}
+    />
+    )
+  }
+}
+
 
 class MessagesScreen extends React.Component {
   static navigationOptions = {
@@ -51,99 +195,34 @@ class MessagesScreen extends React.Component {
             <Text>Sender: {aMessage.from.username}</Text>
             <Text>Receiver: {aMessage.to.username}</Text>
             <Text>TimeStamp: {aMessage.timestamp}</Text>
+            {(aMessage.location && aMessage.location.longitude)
+               <MapView
+                style={{flex: 1, heigth: 100}}
+                showsUserLocation={true}
+                scrollEnabled={false}
+                region={{
+                  longitude: aMessage.props.longitude,
+                  latitude: aMessage.props.latitude,
+                  longitudeDelta: 1,
+                  latitudeDelta: 1
+                }}
+              />
+
+            }
           </TouchableOpacity>}
+
       />
 
     </View>
 
 
+
+
+
     )
   }
 }
 
-class UsersScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => ({
-  title: 'Users', //you put the title you want to be displayed here
-  headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
-});
-
-  constructor(props) {
-   super(props);
-   const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-   this.state = {
-     dataSource: ds.cloneWithRows([])
-   };
-   fetch('https://hohoho-backend.herokuapp.com/users')
-   .then((response) => response.json())
-   .then((responseJson) => {
-     if(responseJson.success === true) {
-       console.log(responseJson.users);
-       console.log("DS" , ds);
-       this.setState({
-       dataSource: ds.cloneWithRows(responseJson.users)
-     });
-   } else {
-     console.log('error')
-   }
-
-  })
-  .catch((err) => {
-    console.log('error', err)
-  });
-  }
-  componentDidMount() {
-  this.props.navigation.setParams({
-    onRightPress: this.messages.bind(this)
-  })
-
-  };
-  messages() {
-    this.props.navigation.navigate('Messages')
-  }
-  touchUser(user) {
-    fetch('https://hohoho-backend.herokuapp.com/messages', {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        to: user._id
-      })
-    })
-    .then((response) => response.json())
-    .then((responseJson) => {
-      console.log(responseJson);
-      if(responseJson.success === true) {
-        Alert.alert(
-          'Successful message',
-          `Ho Ho Ho Merry Christmas to ${user.username} sent`,
-          [{text: 'Dismiss Button'}] // Button
-        )
-
-      } else {
-        Alert.alert(
-          'Fail ',
-          `Oops! Ho Ho Ho Merry Christmas to ${user.username} can't be sent`,
-          [{text: 'Dismiss Button'}] // Button
-        )
-      }
-      /* do something with responseJson and go back to the Login view but
-      * make sure to check for responseJson.success! */
-    })
-    .catch((err) => {
-      console.log('error', err)
-    });
-  }
-
-  render() {
-    return (
-      <ListView
-        dataSource={this.state.dataSource}
-        renderRow={(rowData) => <TouchableOpacity onPress={this.touchUser.bind(this, rowData)}><Text>{rowData.username}</Text></TouchableOpacity>}
-      />
-    )
-  }
-}
 //Screens
 class LoginScreen extends React.Component {
   static navigationOptions = {
@@ -183,6 +262,55 @@ class LoginPage extends React.Component {
       message:''
     }
   }
+
+  componentDidMount() {
+    AsyncStorage.getItem('user')
+    .then(result => {
+      var parsedResult = JSON.parse(result);
+      console.log(parsedResult);
+      var username = parsedResult.username;
+      var password = parsedResult.password;
+      if (username && password) {
+        return this.login(username, password)
+        .then(resp => resp.json())
+        .then( (responseJson) => {
+          this.checkResponse(responseJson)});
+      }
+    })
+    .catch(err => {
+      console.log("error occured! ", err)
+    })
+    // this.props.navigation.setParams({
+    //   onRightPress: this.messages.bind(this)
+    // })
+
+  };
+
+  login(username, password) {
+    return fetch('https://hohoho-backend.herokuapp.com/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password
+      })
+    })
+
+  }
+
+  checkResponse(response) {
+    if(response.success){
+      AsyncStorage.setItem('user', JSON.stringify({
+        username: this.state.username,
+        password: this.state.password
+      }));
+      this.props.navigation.navigate('Swiper')
+
+    }
+  }
+
   static navigationOptions = {
     title: 'Login'
   };
@@ -203,7 +331,7 @@ class LoginPage extends React.Component {
       console.log(responseJson);
       if(responseJson.success === true) {
         console.log('login successful');
-        this.props.navigation.navigate('Users')
+        this.props.navigation.navigate('Swiper')
 
       } else {
         console.log('login faled', responseJson.error);
@@ -312,6 +440,21 @@ class RegisterScreen extends React.Component {
   }
 }
 
+class SwiperScreen extends React.Component {
+  static navigationOptions = {
+    title: 'HoHoHo!'
+  };
+
+  render() {
+    return (
+      <Swiper>
+        <UsersScreen></UsersScreen>
+        <MessagesScreen></MessagesScreen>
+      </Swiper>
+    );
+  }
+}
+
 
 //Navigator
 export default StackNavigator({
@@ -331,6 +474,10 @@ export default StackNavigator({
 
   Messages: {
     screen: MessagesScreen,
+  },
+
+  Swiper: {
+    screen: SwiperScreen
   }
 }, {initialRouteName: 'Login'});
 
