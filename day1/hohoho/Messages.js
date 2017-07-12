@@ -10,6 +10,7 @@ import {
   Button,
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
+import {MapView} from 'expo'
 
 class Messages extends React.Component{
   constructor(props) {
@@ -46,7 +47,14 @@ class Messages extends React.Component{
                 <View>
                 <Text style={styles.username}>To: {item.to.username}</Text>
                 <Text style={styles.username}>From: {item.from.username}</Text>
-                <Text style={styles.username}>When: {item.timestamp}</Text>
+                <Text style={styles.username1}>When: {item.timestamp}</Text>
+                {item.location ? <MapView style={styles.map} showsUserLocation={true}
+  scrollEnabled={false} region={{
+    longitude: item.location.longitude,
+    latitude: item.location.latitude,
+    longitudeDelta: 1,
+    latitudeDelta: 1
+  }} /> : <Text>False</Text>}
                 </View>
               )
               }
@@ -111,9 +119,20 @@ const styles = StyleSheet.create({
   },
   username: {
     margin: 7,
-    textAlign: 'center',
+    // textAlign: 'center',
     fontSize: 19,
-    borderBottomWidth: 9
+    // borderBottomWidth: 2,
+    width: 300,
+  },
+  username1: {
+    margin: 7,
+    // textAlign: 'center',
+    fontSize: 19,
+    borderBottomWidth: 2,
+    width: 300,
+  },
+  map: {
+    height: 100,
   }
 });
 

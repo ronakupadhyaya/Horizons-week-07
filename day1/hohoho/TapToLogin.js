@@ -53,7 +53,7 @@ class TapToLogin extends React.Component {
            }))
           //
          } else {
-           this.setState({message: responseJson.error + '..'})
+           return this.setState({message: responseJson.error + '..'})
          }
       })
       .catch((err) => {

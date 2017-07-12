@@ -107,7 +107,6 @@ class Users extends React.Component {
         /* do something with responseJson and go back to the Login view but
          * make sure to check for responseJson.success! */
          if (responseJson.success) {
-           console.log('hi');
            Alert.alert(
              'Your Ho Ho Ho ' + user.username
            )
@@ -133,6 +132,7 @@ class Users extends React.Component {
             <TouchableOpacity
                 onPress={this.touchUser.bind(this, item)}
                 onLongPress={this.sendLocation.bind(this, item)}
+                // delayLongPress={}
             >
             <Text style={styles.username}>{item.username}</Text>
             </TouchableOpacity>
@@ -201,7 +201,8 @@ const styles = StyleSheet.create({
     margin: 7,
     textAlign: 'center',
     fontSize: 19,
-    borderBottomWidth: 9
+    borderBottomWidth: 2,
+    width: 300
   }
 });
 

@@ -15,6 +15,7 @@ import TapToLogin from './TapToLogin';
 import Users from './Users';
 import LoginScreen from './Login';
 import Messages from './Messages';
+import SwiperScreen from './SwiperScreen'
 
 
 export default StackNavigator({
@@ -32,6 +33,9 @@ export default StackNavigator({
   },
   Messages: {
     screen: Messages,
+  },
+  Swiper: {
+    screen: SwiperScreen,
   }
 }, {initialRouteName: 'Login'});
 
