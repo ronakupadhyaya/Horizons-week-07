@@ -1,0 +1,17 @@
+Nihar's Express review 
+
+1. Four most common request methods: GET, POST, PUT, DELETE 
+
+Requests have a header (which must include a method)
+
+URL's have: 
+1. Path
+2. Parameters
+3. Queries 
+    ?key=value&key2=value2&key3=value3
+
+Order matters! Put middleware (app.use('/PATH')) comes before any other methods using that path. 
+next() is needed in a middleware to keep moving down the chain of routes. 
+
+
+
