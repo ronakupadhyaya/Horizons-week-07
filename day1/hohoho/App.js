@@ -1,3 +1,4 @@
+import { Location, Permissions } from 'expo';
 import React from 'react';
 import {
   StyleSheet,
@@ -6,8 +7,8 @@ import {
   TouchableOpacity,
   TextInput,
   ListView,
-  Alert,
-  Button
+  Button,
+  AsyncStorage
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
@@ -25,6 +26,48 @@ class LoginScreen extends React.Component {
       }
   }
 
+  componentDidMount() {
+    AsyncStorage.getItem('user')
+    .then(result => {
+      var parsedResult = JSON.parse(result);
+      var username = parsedResult.username;
+      var password = parsedResult.password;
+      if (username && password) {
+        return (
+          fetch('https://hohoho-backend.herokuapp.com/login', {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              username: username,
+              password: password,
+            })
+          })
+        .then((response) => response.json())
+        .then((responseJson) => {
+          console.log('result', responseJson);
+          if (responseJson.success) {
+            AsyncStorage.setItem('user', JSON.stringify({
+              username: this.state.username,
+              password: this.state.password
+            }));
+            this.props.navigation.navigate('Users');
+          } else {
+              this.setState({error: 'Failed to login'})
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        }))
+      }
+    // Don't really need an else clause, we don't do anything in this case.
+  })
+  .catch(err => {
+    console.log(err);
+  })
+  }
+
   press() {
       fetch('https://hohoho-backend.herokuapp.com/login', {
           method: 'POST',
@@ -40,14 +83,18 @@ class LoginScreen extends React.Component {
         .then((responseJson) => {
           console.log('result', responseJson);
           if (responseJson.success) {
-              this.props.navigation.navigate('Users');
+            AsyncStorage.setItem('user', JSON.stringify({
+              username: this.state.username,
+              password: this.state.password
+            }));
+            this.props.navigation.navigate('Users');
           } else {
               this.setState({error: 'Failed to login'})
           }
         })
-        .catch(('error', err) => {
-          console.log(err);
-        });
+        .catch(err => {
+          console.log(err)
+        })
   }
   register() {
     this.props.navigation.navigate('Register');
@@ -100,9 +147,9 @@ class RegisterScreen extends React.Component {
           console.log('result', responseJson);
           this.props.navigation.goBack();
         })
-        .catch(('error', err) => {
-          console.log(err);
-        });
+        .catch(err => {
+          console.log(err)
+        })
   }
 
   render() {
@@ -153,19 +200,29 @@ class UserScreen extends React.Component {
                 dataSource: ds.cloneWithRows(responseJson.users)
             })
           })
-          .catch(('error', err) => {
-            console.log(err);
-          });
+          .catch(err => {
+          console.log(err)
+        })
     }
-    touchUser () {
+    touch () {
+
+    }
+    sendLocation () {
 
     }
     render () {
         return (
             <ListView
-                dataSource={this.state.dataSource}
-                renderRow={(rowData) => <Text>{rowData.username}</Text>}
-            />
+            dataSource={this.state.dataSource}
+            renderRow={(rowData) => (
+              <TouchableOpacity
+              onPress={this.touch.bind(this, rowData)}
+              onLongPress={this.sendLocation.bind(this, rowData)}
+              delayLongPress={/* num of millseconds here */}>
+              <Text>{rowData.username}</Text>
+              </TouchableOpacity>
+              )}
+              />
         )
     }
 }
