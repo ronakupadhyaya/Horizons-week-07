@@ -9,12 +9,13 @@ import {
   Alert,
   Button,
   AsyncStorage,
-  RefreshControl
+  RefreshControl,
+  Image
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import { Location, Permissions, MapView } from 'expo';
 import Swiper from 'react-native-swiper';
-
+// import LoginPage from './components/LoginPage'
 //Screens-----------------------------------------------------------------------Login Page Component
 class LoginPage extends React.Component {
   constructor(props){
@@ -336,6 +337,7 @@ class Messages extends React.Component {
     });
   }
   componentDidMount(){
+    // setInterval(()=>this.fetchData(), 5000);
     this.fetchData();
     // this.fetchData.bind(this);
   };
@@ -387,6 +389,7 @@ class Messages extends React.Component {
                 <Text>To: {rowData.to.username}</Text>
                 <Text>Message: {rowData.body}</Text>
                 <Text>When: {rowData.timestamp}</Text>
+                <Image source={require(rowData.photo)} />
                 {mapView}
               </View>)
           }
