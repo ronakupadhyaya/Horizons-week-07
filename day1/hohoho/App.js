@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  AsyncStorage,
   StyleSheet,
   View,
   Text,
@@ -10,18 +11,14 @@ import {
   Button
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-
+import { Location, Permissions, MapView } from 'expo';
+import Swiper from 'react-native-swiper'
 
 //Screens
 class HomeScreen extends React.Component {
   static navigationOptions = {
     title: 'Home'
   };
-
-  press() {
-
-  }
-
   login() {
     this.props.navigation.navigate('Login');
   }
@@ -55,11 +52,9 @@ class RegisterScreen extends React.Component {
       password: ""
     }
   }
-
   loginPage() {
     this.props.navigation.navigate('Login');
   }
-
   userRegister() {
     fetch('https://hohoho-backend.herokuapp.com/register', {
       method: 'POST',
@@ -75,8 +70,6 @@ class RegisterScreen extends React.Component {
     .then((responseJson) => {
       console.log(responseJson);
       this.loginPage();
-      /* do something with responseJson and go back to the Login view but
-       * make sure to check for responseJson.success! */
     })
     .catch((err) => {
       console.log("Error occurred during registration", err);
@@ -117,11 +110,9 @@ class LoginScreen extends React.Component {
       message: ""
     }
   }
-
   users() {
     this.props.navigation.navigate('Users');
   }
-
   userLogin() {
     fetch('https://hohoho-backend.herokuapp.com/login', {
       method: 'POST',
@@ -137,7 +128,11 @@ class LoginScreen extends React.Component {
     .then((responseJson) => {
       console.log(responseJson);
       if(responseJson.success) {
-        this.users()
+        AsyncStorage.setItem('user', JSON.stringify({
+          username: this.state.username,
+          password: this.state.password
+        }))
+        .then(() => this.users())
       } else {
         this.setState({
           message: responseJson.error
@@ -147,6 +142,44 @@ class LoginScreen extends React.Component {
     .catch((err) => {
       console.log("Error occurred during Login", err);
     });
+  }
+
+  autoLogin(username, password) {
+    fetch('https://hohoho-backend.herokuapp.com/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if(responseJson.success) {
+        this.users()
+      }
+    });
+  }
+
+  componentDidMount() {
+    AsyncStorage.getItem('user')
+    .then(result => {
+      var parsedResult = JSON.parse(result);
+      var username = parsedResult.username;
+      var password = parsedResult.password;
+      if (username && password) {
+        return this.autoLogin(username, password)
+      }
+    })
+    .catch(err => { console.log("Error retrieving login info ", err) })
+    // AsyncStorage.multiGet(['username', 'password'])
+    //   .then((results) => {
+    //     this.setState({
+    //       username: JSON.parse(results[0][1]),
+    //       password: JSON.parse(results[1][1])
+    //   })});
   }
 
   render() {
@@ -163,7 +196,8 @@ class LoginScreen extends React.Component {
           secureTextEntry={true}
           onChangeText={(password) => this.setState({password: password})}
         />
-        <TouchableOpacity style={[styles.button, styles.buttonGreen]} onPress={() => this.userLogin()}>
+        <TouchableOpacity style={[styles.button, styles.buttonGreen]}
+          onPress={() => this.userLogin()}>
           <Text style={styles.buttonLabel}>Login</Text>
         </TouchableOpacity>
         <Text>{this.state.message}</Text>
@@ -177,11 +211,6 @@ class UsersScreen extends React.Component {
     title: 'Users',
     headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
   });
-  // static navigationOptions = {
-  //   title: 'Users',
-  //   // headerRight: <TouchableOpacity><Text>Messages</Text></TouchableOpacity>
-  //   headerRight: <Button title='Messages' onPress={} />
-  // };
   //navigationOptions code
   constructor(props) {
     super(props);
@@ -192,7 +221,7 @@ class UsersScreen extends React.Component {
     fetch('https://hohoho-backend.herokuapp.com/users', {
       method: 'GET',
     })
-    .then((response) => response.json())
+    .then((response) => (response.json()))
     // .then((responseJson) => (console.log(responseJson)))
     .then((responseJson) => {
       this.setState({
@@ -211,7 +240,7 @@ class UsersScreen extends React.Component {
   }
 
   touchUser(user) {
-    console.log(user);
+    console.log('sent HoHoHo to', user);
     fetch('https://hohoho-backend.herokuapp.com/messages', {
       method: 'POST',
       headers: {
@@ -223,7 +252,7 @@ class UsersScreen extends React.Component {
     })
     .then((response) => response.json())
     .then((responseJson) => {
-      console.log(responseJson);
+      console.log('status of msg', responseJson);
       if(responseJson.success) {
         Alert.alert(
           'Success',
@@ -247,13 +276,58 @@ class UsersScreen extends React.Component {
     this.props.navigation.navigate('Messages');
   }
 
+  sendLocation = async(user) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      alert('Permission to get current location is denied!')
+    }
+    let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: user._id,
+        location: {
+          longitude: location.coords.longitude,
+          latitude: location.coords.latitude
+        }
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log('status of msg', responseJson);
+      if(responseJson.success) {
+        Alert.alert(
+          'Success',
+          'Your HoHoHo and location to '+user.username+' has been sent.',
+          [{text: 'Cool'}]
+        )
+      } else {
+        Alert.alert(
+          'Error',
+          'Your HoHoHo and location to '+user.username+' could not be sent.',
+          [{text: 'Cry'}]
+        )
+      }
+    })
+    .catch((err) => {
+      console.log("Error sending message", err);
+    })
+  }
+
   render() {
     return (
       <View style={styles.container}>
         <ListView
           dataSource={this.state.dataSource}
           renderRow={(rowData) => (
-            <TouchableOpacity onPress={() => this.touchUser(rowData)}>
+            <TouchableOpacity
+              onPress={() => this.touchUser(rowData)}
+              // onPress={this.touchUser.bind(this, rowData)}
+              onLongPress={() => this.sendLocation(rowData)}
+              delayLongPress={500}>
               <Text style={styles.user}>{rowData.username}</Text>
             </TouchableOpacity>
           )}
@@ -300,10 +374,38 @@ class MessagesScreen extends React.Component {
               <Text>To: {rowData.to.username}</Text>
               <Text>Message: {rowData.body}</Text>
               <Text>When: {rowData.timestamp}</Text>
-            </View>)}
+              {(rowData.location && rowData.location.longitude && rowData.location.latitude) ?
+                <MapView
+                  style={styles.mapInMsg}
+                  showsUserLocation={true}
+                  scrollEnabled={false}
+                  region={{
+                    longitude: rowData.location.longitude,
+                    latitude: rowData.location.latitude,
+                    longitudeDelta: 0.05,
+                    latitudeDelta: 0.025
+                  }}
+                /> : <Text>No location shared</Text>}
+            </View>)
+          }
         />
       </View>
     )
+  }
+}
+
+class SwiperScreen extends React.Component {
+  static navigationOptions = {
+    title: 'HoHoHo!'
+  };
+
+  render() {
+    return (
+      <Swiper>
+        UsersScreen
+        MessagesScreen
+      </Swiper>
+    );
   }
 }
 
@@ -411,6 +513,11 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     marginTop: 10,
     marginLeft: 5,
-    marginRight: 5
+    marginRight: 5,
+    flex: 1
+  },
+  mapInMsg: {
+    height: 80,
+    width: 220
   }
 });
