@@ -10,7 +10,7 @@ import {
   Button
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-import LoginScreen from './components/LoginScreen'
+import Welcome from './components/Welcome'
 import RegisterScreen from './components/RegisterScreen'
 import Users from './components/Users'
 import LoginPage from './components/LoginPage'
@@ -18,8 +18,8 @@ import Messages from './components/Messages'
 
 //Navigator
 export default StackNavigator({
-  Login: {
-    screen: LoginScreen,
+  Welcome: {
+    screen: Welcome,
   },
   Register: {
     screen: RegisterScreen,
@@ -33,7 +33,7 @@ export default StackNavigator({
   Messages: {
     screen: Messages
   }
-}, {initialRouteName: 'Login'});
+}, {initialRouteName: 'Welcome'});
 
 
 //Styles

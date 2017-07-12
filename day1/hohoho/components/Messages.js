@@ -11,6 +11,9 @@ import {
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import styles from '../assets/styles'
+import {
+  MapView
+} from 'expo';
 
 export default class Messages extends React.Component {
   static navigationOptions = {
@@ -29,9 +32,10 @@ export default class Messages extends React.Component {
       .then(response => {
         return response.json();
       })
-      .then((data) =>
+      .then((data) => {
         self.setState({messages: data.messages})
-      );
+        console.log('message data', data.messages);
+      });
   }
 
   render() {
@@ -46,21 +50,32 @@ export default class Messages extends React.Component {
               style={{
                 fontSize: 20,
                 color: 'blue'
-              }}>{message.from.username}
+              }}>From: {message.from.username}
             </Text>
             <Text
               style={{
                 fontSize: 20,
                 color: 'blue',
-              }}>{message.to.username}
+              }}>To: {message.to.username}
             </Text>
             <Text
               style={{
                 fontSize: 20,
                 color: 'blue',
                 marginBottom: 20
-              }}>{message.timestamp}
+              }}>Time sent: {message.timestamp}
             </Text>
+            {message.location && <MapView
+              style={{height: 200, margin: 40}}
+              showsUserLocation={false}
+              scrollEnabled={false}
+              region={{
+                longitude: message.location.longitude,
+                latitude: message.location.latitude,
+                longitudeDelta: 1,
+                latitudeDelta: 1
+              }}
+            />}
         </View>) )}
         ></ListView>
     )

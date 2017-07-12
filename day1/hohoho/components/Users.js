@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import styles from '../assets/styles'
+import { Location, Permissions } from 'expo';
+
 
 export default class Users extends React.Component {
   static navigationOptions = {
@@ -25,24 +27,34 @@ export default class Users extends React.Component {
     };
   }
 
-  send(item) {
-    console.log('item in users', item);
-    fetch('https://hohoho-backend.herokuapp.com/messages', {
+  send(user, location) {
+    const sendObj = {
       method: 'POST',
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        to: item._id,
+        to: user._id
       })
-    })
+    }
+    console.log('location', location);
+    if (location) {
+      sendObj.body = JSON.stringify({
+        to: user._id,
+        location: {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude
+        }
+      });
+      console.log(sendObj.body, 'send body with lovation');
+    }
+    console.log(sendObj);
+    fetch('https://hohoho-backend.herokuapp.com/messages', sendObj)
     .then((response) => {
-      console.log('response in users', response);
-      console.log('type res', typeof response);
       if (response.status === 200) {
-        this.messages(item.username, true);
+        this.messages(user.username, location, true);
       } else {
-        this.messages(item.username, false);
+        this.messages(user.username, location, false);
       }
     })
     .catch(err => {
@@ -50,7 +62,22 @@ export default class Users extends React.Component {
     })
   }
 
-  messages(name, couldSend) {
+  sendLocation = async(user) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    console.log('status', status);
+    if (status !== 'granted') {
+      console.log('permission denied');
+    } else {
+      let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+      if (!location) {
+        console.log('location could not be found');
+      } else {
+        this.send(user, location);
+      }
+    }
+  }
+
+  messages(name, location, couldSend) {
     if (couldSend) {
       alert('You sent a Hohoho to ' + name +'!');
     } else {
@@ -81,7 +108,11 @@ export default class Users extends React.Component {
           dataSource={ds.cloneWithRows(this.state.users)}
           renderRow={((item) => (
           <View>
-            <TouchableOpacity onPress={this.send.bind(this, item)}>
+            <TouchableOpacity
+              onPress={this.send.bind(this, item)}
+              onLongPress={this.sendLocation.bind(this, item)}
+              delayLongPress={2000}
+            >
               <Text
                 style={{
                   fontSize: 20,

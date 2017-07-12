@@ -12,7 +12,7 @@ import {
 import { StackNavigator } from 'react-navigation';
 import styles from '../assets/styles'
 
-export default class LoginScreen extends React.Component {
+export default class Welcome extends React.Component {
   static navigationOptions = {
     title: 'Login'
   };

@@ -7,10 +7,12 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
+  AsyncStorage
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import styles from '../assets/styles'
+import SwiperScreen from './components/SwiperScreen'
 
 export default class LoginPage extends React.Component {
   constructor(props) {
@@ -26,6 +28,41 @@ export default class LoginPage extends React.Component {
     title: 'Login'
   };
 
+  // componentDidMount() {
+  //   const self = this;
+  //   AsyncStorage.getItem('user')
+  //   .then(result => {
+  //     if (result) {
+  //       var parsedResult = JSON.parse(result);
+  //       var username = parsedResult.username;
+  //       var password = parsedResult.password;
+  //       if (username && password) {
+  //         return fetch('https://hohoho-backend.herokuapp.com/login', {
+  //               method: 'POST',
+  //               headers: {
+  //                 "Content-Type": "application/json"
+  //               },
+  //               body: JSON.stringify({
+  //                 username: username,
+  //                 password: password
+  //               })
+  //             })
+  //         .then(resp => {
+  //           if (resp.status === 200) {
+  //             self.props.navigation.navigate('Users');
+  //           } else {
+  //             self.setState({wrongPassword: true})
+  //           }
+  //         });
+  //       }
+  //     }
+  //   })
+  //   .catch(err => {
+  //     console.log('err in didMount login page', err )
+  //   });
+  // }
+
+
   login() {
     const self = this;
     fetch('https://hohoho-backend.herokuapp.com/login', {
@@ -40,18 +77,15 @@ export default class LoginPage extends React.Component {
     })
     .then((response) => {
       if (response.status === 200) {
+        AsyncStorage.setItem('user', JSON.stringify({
+          username: this.state.username,
+          password: this.state.password
+        }));
         self.props.navigation.navigate('Users');
       } else {
         self.setState({wrongPassword: true})
       }
     })
-    // .then((responseJson) => {
-    //   if (responseJson.status) {
-    //     self.props.navigation.navigate('Login');
-    //   } else {
-    //     self.setState({wrongPassword: true})
-    //   }
-    // })
     .catch((err) => {
       console.log('error', err);
     });
