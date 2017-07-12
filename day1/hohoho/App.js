@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  AsyncStorage,
   StyleSheet,
   View,
   Text,
@@ -10,6 +11,8 @@ import {
   Button
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
+import { Location, Permissions, MapView } from 'expo';
+import Swiper from 'react-native-swiper';
 
 
 //Screens
@@ -25,6 +28,23 @@ class LoginScreen extends React.Component {
     password:'',
     message:''
   };
+  }
+
+  componentDidMount() {
+    AsyncStorage.getItem('user')
+    .then(result => {
+      var parsedResult = JSON.parse(result);
+      var username = parsedResult.username;
+      var password = parsedResult.password;
+      if (username && password) {
+        this.setState({
+          username: username,
+          password: password
+        })
+        return this.press()
+      }
+    })
+    .catch((err)=> {console.log('Error', err)})
   }
 
   press() {
@@ -44,7 +64,12 @@ class LoginScreen extends React.Component {
      * make sure to check for responseJson.success! */
      console.log(responseJson.success)
      if (responseJson.success) {
-       this.props.navigation.navigate('Users');
+       this.props.navigation.navigate('SwiperScreen');
+       AsyncStorage.setItem('user', JSON.stringify ({
+         username: this.state.username,
+         password: this.state.password
+       })
+     )
      } else {
        this.setState({message: "Login Error"})
      }
@@ -154,9 +179,6 @@ class UsersScreen extends React.Component {
   }
 
   componentDidMount() {
-    this.props.navigation.setParams({
-      onRightPress: this.messages.bind(this)
-    })
 
     fetch('https://hohoho-backend.herokuapp.com/users', {
       method: 'GET'
@@ -204,13 +226,52 @@ class UsersScreen extends React.Component {
     this.props.navigation.navigate('Messages')
   }
 
+
+  sendLocation = async(user) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      Alert.alert("Location permission not granted", [{text: 'Dismiss Button'}])
+    }
+    let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+    console.log(location)
+    this.longTouchUser(user, location)
+  }
+
+  longTouchUser(user ,location) {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      to: user._id,
+      location: {
+        longitude: location.coords.longitude,
+        latitude:  location.coords.latitude
+      }
+    })
+  })
+  .then((response) => response.json())
+  .then((responseJson) => {
+     console.log(responseJson.success)
+     if (responseJson.success) {
+       Alert.alert("Alert", "Your location to " + user.username + " has been sent!", [{text: 'Dismiss Button'}])
+     } else {
+       Alert.alert("Alert", "Your location to " + user.username + " could not be sent.", [{text: 'Dismiss Button'}])
+     }
+  })
+  .catch((err) => {
+    console.log('Error', err)
+  });
+  }
+
   render() {
     return (
       <View style={{justifyContent: 'center'}}>
       <ListView
           dataSource={this.state.dataSource}
           renderRow={(rowData) => <View style={{alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: 10}}>
-          <TouchableOpacity onPress={this.touchUser.bind(this, rowData)}>
+          <TouchableOpacity onPress={this.touchUser.bind(this, rowData)} onLongPress={this.sendLocation.bind(this, rowData)} delayLongPress={2000}>
           <Text style={{fontSize:20}}>{rowData.username}</Text>
           </TouchableOpacity>
           </View>}
@@ -252,6 +313,22 @@ class Messages extends React.Component {
   });
   }
 
+  buildMap(location) {
+    return (
+      <MapView
+      style={{flex:0.3, height:120, width:500}}
+      showsUserLocation={true}
+      scrollEnabled={false}
+      region={{
+        longitude: location.longitude,
+        latitude: location.latitude,
+        longitudeDelta: 1,
+        latitudeDelta: 1
+      }}
+    />
+    )
+  }
+
   render() {
     return (
       <View style={{justifyContent: 'center'}}>
@@ -259,9 +336,10 @@ class Messages extends React.Component {
           dataSource={this.state.dataSource}
           renderRow={(aMessage) =>
             <View>
-          <Text style={{fontSize:20}}>{aMessage.from.username}</Text>
-          <Text style={{fontSize:20}}>{aMessage.to.username}</Text>
+          <Text style={{fontSize:20}}>{'From: ' +aMessage.from.username}</Text>
+          <Text style={{fontSize:20}}>{'To: ' +aMessage.to.username}</Text>
           <Text style={{fontSize:10}}>{aMessage.timestamp}</Text>
+          {aMessage.location && aMessage.location.longitude ? this.buildMap(aMessage.location) : <View></View>}
           </View>
         }
           />
@@ -269,6 +347,23 @@ class Messages extends React.Component {
     )
   }
 }
+
+
+class SwiperScreen extends React.Component {
+  static navigationOptions = {
+    title: 'HoHoHo!'
+  };
+
+  render() {
+    return (
+      <Swiper>
+        <UsersScreen/>
+        <Messages/>
+      </Swiper>
+    );
+  }
+}
+
 
 //Navigator
 export default StackNavigator({
@@ -283,6 +378,9 @@ export default StackNavigator({
   },
   Messages: {
     screen: Messages
+  },
+  SwiperScreen: {
+    screen: SwiperScreen
   },
 }, {initialRouteName: 'Login'});
 
