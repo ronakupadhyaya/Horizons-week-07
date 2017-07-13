@@ -37,7 +37,7 @@ class LoginScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Login to HoHoHo!</Text>
+        <Text style={styles.textBig}>HoHoHo!</Text>
         <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, styles.buttonGreen]}>
           <Text style={styles.buttonLabel}>Tap to Login</Text>
         </TouchableOpacity>

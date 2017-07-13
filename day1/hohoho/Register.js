@@ -55,13 +55,13 @@ class RegisterScreen extends React.Component {
       <View style={styles.container}>
 
           <TextInput
-            style={{height: 40, textAlign:'center'}}
+            style={styles.input}
             placeholder="Enter your username"
             onChangeText={(text) => this.setState({username: text})}
           />
 
           <TextInput
-            style={{height: 40, textAlign:'center'}}
+            style={styles.input}
             placeholder="Password.."
             secureTextEntry={true}
             onChangeText={(text) => this.setState({password: text})}
@@ -125,6 +125,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     color: 'white'
+  },
+  input: {
+    height: 40,
+    textAlign:'center',
+    borderColor: '#cccccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    margin: 9
   }
 });
 

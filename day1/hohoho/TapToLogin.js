@@ -8,6 +8,7 @@ import {
   ListView,
   Alert,
   Button,
+  AsyncStorage
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
@@ -25,6 +26,19 @@ class TapToLogin extends React.Component {
   static navigationOptions = (props) => {
     title: 'TapToLogin'
   };
+   componentDidMount() {
+     AsyncStorage.getItem('user')
+  .then(result => {
+    var parsedResult = JSON.parse(result);
+    var username = parsedResult.username;
+    var password = parsedResult.password;
+    if (username && password) {
+      return this.props.navigation.navigate('Users');
+    }
+    // Don't really need an else clause, we don't do anything in this case.
+  })
+  .catch(err => { console.log(err)})
+   }
 
   login() {
     fetch('https://hohoho-backend.herokuapp.com/login', {
@@ -43,6 +57,10 @@ class TapToLogin extends React.Component {
          * make sure to check for responseJson.success! */
          if (responseJson.success) {
            this.props.navigation.navigate('Users');
+           AsyncStorage.setItem('user', JSON.stringify({
+            username: this.state.username,
+            password: this.state.password
+          }));
          } else {
            this.setState({message: responseJson.error + '..'})
          }
@@ -60,13 +78,13 @@ class TapToLogin extends React.Component {
           <Text>{this.state.message}</Text>
           </View>
           <TextInput
-            style={{height: 40, textAlign:'center'}}
+            style={styles.input}
             placeholder="Enter your username"
             onChangeText={(text) => this.setState({username: text})}
           />
 
           <TextInput
-            style={{height: 40, textAlign:'center'}}
+            style={styles.input}
             placeholder="Password.."
             secureTextEntry={true}
             onChangeText={(text) => this.setState({password: text})}
@@ -129,6 +147,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     color: 'white'
+  },
+  input: {
+    height: 40,
+    textAlign:'center',
+    borderColor: '#cccccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    margin: 9
   }
 });
 

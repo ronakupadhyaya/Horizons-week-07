@@ -134,14 +134,14 @@ class Users extends React.Component {
                 onPress={this.touchUser.bind(this, item)}
                 onLongPress={this.sendLocation.bind(this, item)}
             >
+            <View style={{borderColor: '#cccccc',
+            borderWidth: 0.5, width: 390}}>
             <Text style={styles.username}>{item.username}</Text>
+            </View>
             </TouchableOpacity>
           }
           dataSource = {this.state.dataSource}
         />
-        <Text style={styles.username}>Location:</Text>
-        <Text style={styles.username}>{this.state.lat}</Text>
-        <Text style={styles.username}>{this.state.long}</Text>
       </View>
     )
   }
@@ -149,7 +149,6 @@ class Users extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
@@ -198,10 +197,11 @@ const styles = StyleSheet.create({
     color: 'white'
   },
   username: {
-    margin: 7,
     textAlign: 'center',
     fontSize: 19,
-    borderBottomWidth: 9
+    borderBottomWidth: 9,
+    fontFamily: 'Georgia',
+    marginTop: 9,
   }
 });
 
