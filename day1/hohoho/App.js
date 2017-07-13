@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  StyleSheet,
   View,
   Text,
   TouchableOpacity,
@@ -9,23 +8,69 @@ import {
   Alert,
   Button,
   Image,
+  AsyncStorage,
 } from 'react-native';
+import {
+  Location,
+  Permissions,
+  MapView,
+} from 'expo'
 import { StackNavigator } from 'react-navigation';
-
+import styles from './styles.js'
+import Swiper from 'react-native-swiper'
 
 //Screens
 class SplashScreen extends React.Component {
   static navigationOptions = {
     title: 'Login'
   };
-
   press() {
     this.props.navigation.navigate('Login');
   }
   register() {
     this.props.navigation.navigate('Register');
   }
-
+  login(username, password) {
+        fetch('https://hohoho-backend.herokuapp.com/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password,
+          })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+          console.log(responseJson)
+          if (responseJson.success) {
+            AsyncStorage.setItem('user', JSON.stringify({
+              username: username,
+              password: password,
+            }));
+            this.props.navigation.navigate('Swiper')
+          }
+          else {
+            console.log('hello')
+            this.setState({message:responseJson.error})
+          }
+        })
+          .catch((err) => {
+            console.log('error', err)
+        })
+  }
+  componentDidMount() { // All async data loading
+    AsyncStorage.getItem('user')
+      .then(result => {
+          var parsedResult = JSON.parse(result);
+          var username = parsedResult.username;
+          var password = parsedResult.password;
+          if (username && password) {
+            return this.login(username, password)
+          }
+      })
+  }
   render() {
     return (
       <View style={styles.container}>
@@ -122,13 +167,39 @@ class LoginScreen extends React.Component {
         password: ''
       };
   }
+  login(username, password) {
+        fetch('https://hohoho-backend.herokuapp.com/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password,
+          })
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+          console.log(responseJson)
+          if (responseJson.success) {
+            AsyncStorage.setItem('user', JSON.stringify({
+              username: username,
+              password: password,
+            }));
+            this.props.navigation.navigate('Swiper')
+          }
+          else {
+            console.log('hello')
+            this.setState({message:responseJson.error})
+          }
+        })
+          .catch((err) => {
+            console.log('error', err)
+        })
+  }
   render() {
     return (
       <View style={styles.container}>
-        {/* <Image
-          source={require('./assets/icons/BRO.png')}
-          style={styles.image}
-        ></Image> */}
         <TextInput
           style={styles.inputField}
           placeholder=' username'
@@ -147,30 +218,7 @@ class LoginScreen extends React.Component {
         </TextInput>
         <TouchableOpacity
           style={[styles.button, styles.buttonGreen]}
-          onPress={() => {
-              fetch('https://hohoho-backend.herokuapp.com/login', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  username: this.state.username,
-                  password: this.state.password,
-                })
-              })
-              .then((response) => response.json())
-              .then((responseJson) => {
-                if (responseJson.success) {
-                this.props.navigation.navigate('Home')
-                }
-                else {
-                  this.setState({message:responseJson.error})
-                }
-              })
-                .catch((err) => {
-                  console.log('error', err)
-              })
-          }}
+          onPress={() => this.login(this.state.username, this.state.password)}
           >
           <Text style={styles.buttonLabel} >Login</Text>
         </TouchableOpacity>
@@ -185,7 +233,7 @@ class HomePage extends React.Component {
     title: 'BRO',
     headerRight:
     <TouchableOpacity onPress={() => (props.navigation.navigate('Messages'))}>
-      <Text>Messages</Text>
+      <Text>Messages </Text>
     </TouchableOpacity>
   });
   constructor() {
@@ -226,7 +274,11 @@ class HomePage extends React.Component {
       .then((response) => response.json())
       .then((responseJson) => {
         if (responseJson.success) {
-          alert("you have bro'ed " + user.username)
+          Alert.alert(
+            "BRO!",
+            "you have bro'ed " + user.username,
+            [{text: "Got it Bro"}]
+            )
           }
         else {
           this.setState({message:responseJson.error})
@@ -236,19 +288,64 @@ class HomePage extends React.Component {
           console.log('error', err)
       })
   }
+  sendBrocation = async(user) => {
+    let {status} = await Permissions.askAsync(Permissions.LOCATION);
+    console.log(status)
+        if (status !== 'granted') {
+          alert('but BRO...')
+        }
+    let brocation = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to: user._id,
+        location: {
+          longitude: brocation.coords.longitude,
+          latitude: brocation.coords.latitude
+        }
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if (responseJson.success) {
+        Alert.alert(
+          "BRO!",
+          "you have sent your brocation to " + user.username,
+          [{text: "Got it Bro"}]
+          )
+        }
+      else {
+        this.setState({message:responseJson.error})
+      }
+    })
+      .catch((err) => {
+        console.log('error', err)
+    })
+  }
   render() {
     var dataSource = new ListView.DataSource({
       rowHasChanged: (r1, r2) => (r1 !== r2)
     });
     return (
       <View style={styles.container}>
+        <Image
+          source={require('./assets/icons/BRO.png')}
+          style={styles.image}
+        ></Image>
+        <Text style={styles.textInstruct}>Tap to Send a Bro</Text>
+        <Text style={styles.textInstruct}>Hold to Send your Brocation</Text>
         <ListView
           renderRow={(user) => (
           <TouchableOpacity
             style={[styles.button, styles.buttonBlue]}
             onPress={() => this.sendABro(user)}
+            onLongPress={this.sendBrocation.bind(this, user)}
+            delayLongPress={500}
             >
-            <Text style={styles.textSmall}>{user.username}</Text>
+            <Text style={styles.textBig}>{user.username}</Text>
           </TouchableOpacity>
           )}
           dataSource={dataSource.cloneWithRows(this.state.users)}
@@ -294,11 +391,29 @@ class Messages extends React.Component {
       <View style={styles.container}>
         <ListView
           renderRow={(message) => (
-          <TouchableOpacity
+          <View
             style={[styles.button, styles.buttonBlue]}
             >
-            <Text style={styles.textSmall}>From: {message.from.username} To: {message.to.username} Message: {message.body} When: {message.timestamp}</Text>
-          </TouchableOpacity>
+              <Image
+                source={require('./assets/icons/BRO.png')}
+                style={styles.imageSmall}
+              ></Image>
+            <Text style={styles.textBig}>Sent from {message.from.username} to {message.to.username} </Text>
+            <Text style={styles.textSmall}>On {message.timestamp}</Text>
+            {(message.location && message.location.latitude && message.location.longitude) ?
+            <MapView
+              style={{height: 200}}
+              showsUserLocation={true}
+              scrollEnabled={false}
+              initialRegion={{
+                latitude: message.location.latitude,
+                longitude: message.location.longitude,
+                latitudeDelta: 0.1,
+                longitudeDelta: 0.125
+              }}
+            /> : null
+          }
+        </View>
           )}
           dataSource={dataSource.cloneWithRows(this.state.messages)}
        />
@@ -307,6 +422,20 @@ class Messages extends React.Component {
   }
 }
 
+class SwiperScreen extends React.Component {
+  static navigationOptions = {
+    title: 'Bro!'
+  };
+
+  render() {
+    return (
+      <Swiper>
+        <HomePage/>
+        <Messages/>
+      </Swiper>
+    );
+  }
+}
 
 //Navigator
 export default StackNavigator({
@@ -315,81 +444,5 @@ export default StackNavigator({
   Login: {screen: LoginScreen},
   Home: {screen: HomePage},
   Messages: {screen: Messages},
+  Swiper: {screen: SwiperScreen},
 }, {initialRouteName: 'Splash'});
-
-
-//Styles
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e8e4df',
-  },
-  containerFull: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'stretch',
-    backgroundColor: '#e8e4df',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-  textBig: {
-    fontSize: 36,
-    textAlign: 'center',
-    margin: 10,
-    color: '#463628',
-  },
-  textSmall: {
-    fontSize: 12,
-    textAlign: 'center',
-    margin: 10,
-  },
-  button: {
-    alignSelf: 'stretch',
-    paddingTop: 10,
-    paddingBottom: 10,
-    marginTop: 10,
-    marginLeft: 5,
-    marginRight: 5,
-    borderRadius: 20,
-    borderColor: '#bbae7a',
-    borderWidth: 5,
-  },
-  buttonRed: {
-    backgroundColor: '#e8e4df',
-  },
-  buttonBlue: {
-    backgroundColor: '#e8e4df',
-  },
-  buttonGreen: {
-    backgroundColor: '#e8e4df'
-  },
-  buttonLabel: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#463628'
-  },
-  inputField: {
-    height: 40,
-    borderColor: '#bbae7a',
-    borderWidth: 3,
-    margin: 5,
-    borderRadius: 20,
-  },
-  image: {
-    display: 'block',
-    height: 100,
-    width: 250,
-    resizeMode: 'stretch',
-    marginBottom: 50
-  }
-});
