@@ -8,6 +8,7 @@ import {
   ListView,
   Alert,
   Button,
+  RefreshControl
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
@@ -31,7 +32,26 @@ class Messages extends React.Component {
         const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
         this.setState({
           dataSource: ds.cloneWithRows(responseJson.messages),
+          refreshing: false
         });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  _onRefresh() {
+    this.setState({refreshing: true});
+    fetch('https://hohoho-backend.herokuapp.com/messages')
+      .then((response) => response.json())
+      .then((responseJson) => {
+        const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+        this.setState({
+          dataSource: ds.cloneWithRows(responseJson.messages),
+        });
+      })
+      .then(() => {
+        this.setState({refreshing: false});
       })
       .catch((error) => {
         console.log(error);
@@ -43,6 +63,12 @@ class Messages extends React.Component {
       <View style={styles.container}>
         <ListView
           dataSource={this.state.dataSource}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this._onRefresh.bind(this)}
+            />
+          }
           renderRow={(aMessage) =>
             <View>
               <Text>From: {aMessage.from.username}</Text>
@@ -68,8 +94,27 @@ class Users extends React.Component {
     super(props);
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
-      dataSource: ds.cloneWithRows([])
+      dataSource: ds.cloneWithRows([]),
+      refreshing: false
     };
+  }
+
+  _onRefresh() {
+    this.setState({refreshing: true});
+    fetch('https://hohoho-backend.herokuapp.com/users')
+      .then((response) => response.json())
+      .then((responseJson) => {
+        const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+        this.setState({
+          dataSource: ds.cloneWithRows(responseJson.users),
+        });
+      })
+      .then(() => {
+        this.setState({refreshing: false});
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   componentDidMount() {
@@ -127,6 +172,12 @@ class Users extends React.Component {
       <View style={styles.container}>
         <ListView
           dataSource={this.state.dataSource}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this._onRefresh.bind(this)}
+            />
+          }
           renderRow={(rowData) => <TouchableOpacity onPress={ () => this.touchUser(rowData) } style={[styles.button, styles.buttonGreen]}><Text style={styles.buttonLabel}>{rowData.username}</Text></TouchableOpacity>}
         />
       </View>
