@@ -324,29 +324,23 @@ To display a message's location with its _From_ and _To_, check for `(rowData.lo
 [`MapView`](https://facebook.github.io/react-native/docs/mapview.html) (this is
 another Expo builtin, just **_make sure you import `MapView` from expo first at the top of the file_**).
 
->Note: The expo MapView actually uses [this Airbnb library](https://github.com/airbnb/react-native-maps) if you're interested in the documentation of this view
+>Note: The expo MapView uses [the AirBnB MapView library](https://github.com/airbnb/react-native-maps), see here for documentation
 
-Pass in the location data (which will be in `rowData.location`, and the name of the message sender, as props when you
-display it. You'll want to use the `showsUserLocation` prop to show the _current
-user's_ location as a blue dot, the `region` prop to pass in the area where the
-map should be centered, and the `annotations` prop to drop a pin to show the
-_sender's_ location. Here's a partial example:
+Use [`MapView.Marker`s](https://github.com/airbnb/react-native-maps#rendering-a-list-of-markers-on-a-map) to display the
+current location of the user and the location that the message was sent from. Here's a partial example:
 
 ```javascript
 <MapView
-  style={{/*your style here*/}}
-  showsUserLocation={true}
-  scrollEnabled={false}
-  region={{
-    longitude: this.props.longitude,
-    latitude: this.props.latitude,
-    longitudeDelta: 1,
-    latitudeDelta: 1
-  }}
-/>
+  region={/* Map region here */}
+  >
+  <MapView.Marker
+    coordinate={/* marker coordinates here */}
+    title={/* marker title */}
+    />
+</MapView>
 ```
 
-> **IMPORTANT:** Depending on the rest of your code, your MapView may or may not show up if you don't add the needed style
+> **IMPORTANT:** `MapView` components have 0 height by default, make sure you add the correct styles to make them visible.
 
 > **Note:** This should not be a standalone component! Your `<MapView />` should be rendered in a typical Messages row below its normal contents.
 
