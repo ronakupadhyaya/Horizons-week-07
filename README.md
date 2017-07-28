@@ -7,4 +7,4 @@
 1. [Day 3](https://github.com/horizons-school-of-technology/hexpress)
     - Take Home: Hexpress
 1. [Day 4](#)
-    - Take Home: React Movies
+    - Take Home: Redux Challenge
