@@ -66,8 +66,8 @@ in the success callback.
 
 ### [Watch Me: AsyncStorage](https://vimeo.com/224880785)
 
-Use `onRegionChange` to detect when `MapView` is moved. Inside the
-`onRegionChange` callback use `AsyncStorage` to store new location.
+Use `onRegionChangeComplete` to detect when `MapView` is moved. Inside the
+`onRegionChangeComplete` callback use `AsyncStorage` to store new location.
 
 When the component is first loaded use `componentDidMount()` to read
 the last location from `AsyncStorage` and restore the map to its last location.
