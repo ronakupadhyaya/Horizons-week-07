@@ -161,15 +161,8 @@ class UsersScreen extends React.Component {
 
   touchUser(user, coords) {
       let requestBody = JSON.stringify({to: user._id});
-      if(coords) {
-          requestBody = JSON.stringify({
-            to: user._id,
-            location: {latitude: coords.latitude, longitude: coords.longitude}
-          })
-        //   location = {longitude: coords.longitude, latitude: coords.latitude};
-      }
 
-      fetch('https://hohoho-backend.herokuapp.com/messages', {
+      fetch('https://maps.googleapis.com/maps/api/geocode/json?', {
         method: 'POST',
         headers: {
           "Content-Type": "application/json"
@@ -191,7 +184,7 @@ class UsersScreen extends React.Component {
       })
       .catch((err) => {
           console.log('error in touchuser', err);
-          alert(err);
+        //   alert(err);
         /* do something if there was an error with fetching */
       });
   }
