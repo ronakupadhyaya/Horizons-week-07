@@ -71,7 +71,7 @@ class LoginOnlyScreen extends React.Component {
         console.log("Error loggin in");
       }
       if(responseJson.success){
-        this.props.navigation.navigate('Users');
+        this.props.navigation.navigate('Users', {username: this.state.username});
       } else{
 
       }
@@ -173,10 +173,12 @@ class RegisterScreen extends React.Component {
 }
 
 class UserList extends React.Component {
-  static navigationOptions = ({navigation}) => ({
-    title: 'Users',
-    headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
-  });
+  static navigationOptions = ({navigation}) => {
+    return {
+            title: 'Users',
+            headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
+            }
+};
   constructor(props) {
      super(props);
 
@@ -200,8 +202,12 @@ class UserList extends React.Component {
    }
 
   componentDidMount(){
+    const name = this.props.navigation.state.username;
     this.props.navigation.setParams({
-       onRightPress: () => (this.props.navigation.navigate('Messages'))
+       onRightPress: (name) => {
+         console.log("NAME again", this.props.navigation.state.params)
+         return this.props.navigation.navigate('Messages', {username: this.props.navigation.state.params.username})
+       }
      })
   }
 
@@ -253,9 +259,11 @@ class UserList extends React.Component {
   }
 
   render(){
-
+    const { params } = this.props.navigation.state;
+    console.log("PARAMS", params);
     return(
       <View style={styles.container}>
+        <Text style={{marginBottom: 20, fontSize: 40}}> Welcome {params.username}! Click a user below to send a BRO </Text>
         <ListView
           renderRow={(item) => (
           <TouchableOpacity style={styles.userItem} onPress={this.touchUser.bind(this, item)}><View><Text style={{textAlign: 'center', color: 'white', fontSize: 20}}>{item.username}</Text></View></TouchableOpacity>
@@ -323,12 +331,13 @@ class MessageList extends React.Component {
     })
   }
    render(){
-
+     const { params } = this.props.navigation.state;
+     console.log("PARAMS message", params);
      return(
        <View style={styles.container}>
          <ListView
            renderRow={(msg) => {
-             if(msg.from.username === 'Andy'){
+             if(msg.from.username === params.username){
                return (
                  <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#9b59b6'}}>
                   <Text style={{color: 'white'}}>From: {msg.from.username}</Text>
