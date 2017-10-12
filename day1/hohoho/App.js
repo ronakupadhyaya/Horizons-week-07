@@ -7,7 +7,8 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
+  RefreshControl
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import axios from 'axios';
@@ -172,16 +173,17 @@ class RegisterScreen extends React.Component {
 }
 
 class UserList extends React.Component {
-  static navigationOptions = (props) => ({
+  static navigationOptions = ({navigation}) => ({
     title: 'Users',
-    headerRight: <TouchableOpacity onPress={() => props.navigation.navigate('Messages')}><Text>Messages</Text></TouchableOpacity>
+    headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
   });
   constructor(props) {
      super(props);
 
      const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
      this.state = {
-       dataSource: ds.cloneWithRows([])
+       dataSource: ds.cloneWithRows([]),
+       refreshing: false
      };
 
      fetch(backendUrl + 'users')
@@ -196,6 +198,29 @@ class UserList extends React.Component {
 
      })
    }
+
+  componentDidMount(){
+    this.props.navigation.setParams({
+       onRightPress: () => (this.props.navigation.navigate('Messages'))
+     })
+  }
+
+  _onRefresh(){
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.setState({refreshing: true});
+    fetch(backendUrl + 'users')
+    .then((response) => response.json())
+    .then((response) => {
+      console.log("user response", response);
+      if(response.success){
+        this.setState({dataSource: ds.cloneWithRows(response.users), refreshing: false});
+      } else{
+        console.log("ERROR")
+      }
+
+    })
+
+  }
 
   touchUser(item) {
     console.log("check id", item._id);
@@ -233,8 +258,14 @@ class UserList extends React.Component {
       <View style={styles.container}>
         <ListView
           renderRow={(item) => (
-          <TouchableOpacity onPress={this.touchUser.bind(this, item)}><View><Text>{item.username}</Text></View></TouchableOpacity>
+          <TouchableOpacity style={styles.userItem} onPress={this.touchUser.bind(this, item)}><View><Text style={{textAlign: 'center', color: 'white', fontSize: 20}}>{item.username}</Text></View></TouchableOpacity>
           )}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this._onRefresh.bind(this)}
+            />
+          }
           dataSource = {this.state.dataSource}
         />
       </View>
@@ -243,17 +274,18 @@ class UserList extends React.Component {
 }
 
 class MessageList extends React.Component {
-  static navigationOptions = {
+  static navigationOptions = ({navigation}) => ({
     title: 'Messages',
-    headerLeft: <TouchableOpacity onPress={() => props.navigation.navigate('Users')}><Text>Users</Text></TouchableOpacity>
-  };
+    headerLeft: <Button title='Users' onPress={ () => {navigation.state.params.onLeftPress()} } />
+  });
 
   constructor(props) {
      super(props);
 
      const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
      this.state = {
-       dataSource: ds.cloneWithRows([])
+       dataSource: ds.cloneWithRows([]),
+       refreshing: false
      };
 
      fetch(backendUrl + 'messages')
@@ -268,20 +300,60 @@ class MessageList extends React.Component {
 
      })
    }
+   componentDidMount() {
+     this.props.navigation.setParams({
+        onLeftPress: () => (this.props.navigation.navigate('Users'))
+      })
+  }
 
+  _onRefresh(){
+    this.setState({refreshing: true});
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    fetch(backendUrl + 'messages')
+    .then((response) => response.json())
+    .then((response) => {
+      console.log("message response", response);
+      if(response.success){
+        this.setState({refreshing: false});
+        this.setState({dataSource: ds.cloneWithRows(response.messages)});
+      } else{
+        console.log("ERROR")
+      }
+
+    })
+  }
    render(){
 
      return(
        <View style={styles.container}>
          <ListView
-           renderRow={(msg) => (
-          <View style={{borderColor: 'grey', borderWidth: 1}}>
-           <Text>From: {msg.from.username}</Text>
-           <Text>To: {msg.to.username}</Text>
-           <Text>Message: BRO </Text>
-           <Text>When: {msg.timestamp} </Text>
-           </View>
-           )}
+           renderRow={(msg) => {
+             if(msg.from.username === 'Andy'){
+               return (
+                 <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#9b59b6'}}>
+                  <Text style={{color: 'white'}}>From: {msg.from.username}</Text>
+                  <Text style={{color: 'white'}}>To: {msg.to.username}</Text>
+                  <Text style={{color: 'white'}}>Message: BRO </Text>
+                  <Text style={{color: 'white'}}>When: {msg.timestamp} </Text>
+                  </View>
+               )
+             } else{
+               return(
+                 <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#2ecc71'}}>
+                  <Text style={{color: 'white'}}>From: {msg.from.username}</Text>
+                  <Text style={{color: 'white'}}>To: {msg.to.username}</Text>
+                  <Text style={{color: 'white'}}>Message: BRO </Text>
+                  <Text style={{color: 'white'}}>When: {msg.timestamp} </Text>
+                  </View>
+               )
+             }
+         }}
+           refreshControl={
+             <RefreshControl
+               refreshing={this.state.refreshing}
+               onRefresh={this._onRefresh.bind(this)}
+             />
+           }
            dataSource = {this.state.dataSource}
          />
        </View>
@@ -361,5 +433,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     color: 'white'
+  },
+  userItem: {
+    backgroundColor: 'coral',
+    marginBottom: 10,
+    borderRadius: 3,
+    alignSelf:  'stretch',
+    padding: 10,
+    flex: 1
   }
 });
