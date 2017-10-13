@@ -7,15 +7,17 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
+  AsyncStorage
 } from 'react-native';
+import { Location, Permissions, MapView } from 'expo';
 import { StackNavigator } from 'react-navigation';
 
 
 //Screens
 class LoginScreen extends React.Component {
   static navigationOptions = {
-    title: 'Login'
+    title: 'Login',
   };
 
   press() {
@@ -112,6 +114,17 @@ class LoginPageScreen extends React.Component {
     }
   }
 
+  componentDidMount(){
+    AsyncStorage.getItem('user')
+      .then((result => {
+        if(result){
+          this.props.navigation.navigate('Users');
+        } else {
+          alert('User not logged in!');
+      }
+    }))
+  }
+
   account(){
     fetch('https://hohoho-backend.herokuapp.com/login', {
       method: 'POST',
@@ -128,11 +141,15 @@ class LoginPageScreen extends React.Component {
       /* do something with responseJson and go back to the Login view but
        * make sure to check for responseJson.success! */
        if(responseJson.success === true){
-         alert("Login successful!");
+         // alert("Login successful!");
+         AsyncStorage.setItem('user', JSON.stringify({
+          username: this.state.username,
+          password: this.state.password
+        }));
          this.props.navigation.navigate('Users');
        } else {
         //  <Text style={styles.cointainer}>Invalid username or password!</Text>
-         alert('Try logging in again!')
+         alert('Invalid username or password!')
        }
     })
     .catch((err) => {
@@ -167,7 +184,7 @@ class UsersScreen extends React.Component{
     },
     headerRight: <TouchableOpacity onPress={() =>
       (props.navigation.navigate('Messages'))}>
-      <Text style={{'color': 'dodgerBlue'}}>
+      <Text style={{'color': 'blue'}}>
           Messages
       </Text>
     </TouchableOpacity>
@@ -202,35 +219,50 @@ class UsersScreen extends React.Component{
     })
   }
 
-  send(user) {
-   fetch ('https://hohoho-backend.herokuapp.com/messages', {
-     method: 'POST',
-     headers: {
-       "Content-Type": "application/json"
-     },
-     body: JSON.stringify({
-       to: user._id
+  send(user, location) {
+    console.log(location);
+     fetch ('https://hohoho-backend.herokuapp.com/messages', {
+       method: 'POST',
+       headers: {
+         "Content-Type": "application/json"
+       },
+       body: JSON.stringify({
+         to: user._id,
+         location: location ?  {longitude: location.coords.longitude, latitude: location.coords.latitude} : null
+       })
      })
-   })
-   .then((response) => response.json())
-   .then((responseJson) => {
-     if(responseJson.success){
-       Alert.alert(
-         'Success',
-         'Your Ho Ho Ho! to ' + user.username + ' has been sent!',
-         [{text: 'Dismiss'}]
-       )
-     } else {
-       Alert.alert(
-         'Failure',
-         'Your Ho Ho Ho! to ' + user.username + ' has not been sent!',
-         [{text: 'Dismiss'}]
-       )
-     }
-   })
-   .catch((err) => {
-     alert(err, 'Error');
-   });
+     .then((response) => response.json())
+     .then((responseJson) => {
+       if(responseJson.success){
+         Alert.alert(
+           'Success',
+           'Your Ho Ho Ho! to ' + user.username + ' has been sent!',
+           [{text: 'Dismiss'}]
+         )
+       } else {
+         Alert.alert(
+           'Failure',
+           'Your Ho Ho Ho! to ' + user.username + ' has not been sent!',
+           [{text: 'Dismiss'}]
+         )
+       }
+     })
+     .catch((err) => {
+       alert(err, 'Error');
+     });
+   }
+
+ sendLocation = async(user) => {
+   // console.log('hell');
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    console.log(status, 'bkuygtydjcjytt');
+    if (status !== 'granted') {
+      alert('Location Service Permission is required!')
+    } else {
+      let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+      this.send(user, location);
+      // console.log(location);
+    }
  }
 
   render(){
@@ -239,7 +271,9 @@ class UsersScreen extends React.Component{
         <ListView
           dataSource={this.state.dataSource}
           renderRow={(rowData) => <View style={{borderWidth: 1, borderColor: 'black', borderRadius: 5, alignItems: 'center', padding: 10}}>
-            <TouchableOpacity onPress={this.send.bind(this, rowData)}>
+            <TouchableOpacity onPress={this.send.bind(this, rowData, null)}
+              onLongPress={this.sendLocation.bind(this, rowData)}
+              delayLongPress={958}>
               <Text>{rowData.username}</Text>
             </TouchableOpacity>
           </View>}
@@ -276,13 +310,41 @@ class MessageScreen extends React.Component{
     return(
       <View style={{alignItems: 'center', flexDirection: 'row'}}>
         <ListView dataSource = {this.state.dataSource} renderRow={(rowData) =>
-          <View style={{borderWidth: 1, borderColor: 'black', borderRadius: 5, alignItems: 'center', padding: 10}}>
-            <Text>{rowData.to, rowData.from, rowData.body}</Text>
-          </View>}/>
+          (<View style={{borderWidth: 1, borderColor: 'black', borderRadius: 5, alignItems: 'center', padding: 10}}>
+            <Text>{'To: ' + rowData.to.username + '\nFrom: ' + rowData.from.username + '\nMessage: ' + rowData.body}</Text>
+            {(rowData.location && rowData.location.longitude) ?
+              <MapView
+                style = {{height:150, width: 150}}
+                region={{latitude: rowData.location.latitude,
+                        longitude: rowData.location.longitude,
+                        latitudeDelta: .0009,
+                        longitudeDelta: .003}} >
+                <MapView.Marker
+                  coordinate={{
+                    latitude: rowData.location.latitude,
+                    longitude: rowData.location.longitude
+                  }}
+                  title={"Location"}
+                />
+              </MapView> : <Text></Text>
+            }
+          </View>)
+        }
+        />
       </View>
     )
   }
 }
+// {(rowData.location && rowData.location.longitude) ?
+  // (<MapView
+  //   style = {{height:150, width: 150}}
+  //   region={{latitude: rowData.location.latitude,
+  //           longitude: rowData.location.longitude,
+  //           latitudeDelta: .05,
+  //           longitudeDelta: .01}} >
+  //   </MapView>
+//     : <Text></Text>)
+// }
 
 
 //Navigator
