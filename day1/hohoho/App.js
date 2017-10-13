@@ -6,9 +6,10 @@ import {
   TouchableOpacity,
   TextInput,
   ListView,
-  Alert
+  Alert,
+  Button,
+  AsyncStorage
 } from 'react-native';
-import Button from 'apsl-react-native-button';
 import { StackNavigator } from 'react-navigation';
 const SERVER_URL = "https://hohoho-backend.herokuapp.com";
 
@@ -165,9 +166,10 @@ class RegisterScreen extends React.Component {
 
 //Other Components
 class UserScreen extends React.Component {
-  static navigationOptions = {
-    title: 'Users'
-  };
+  static navigationOptions = ({ navigation }) => ({
+    title: 'Users',
+    headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
+  });
 
   constructor(props){
     super(props)
@@ -175,6 +177,10 @@ class UserScreen extends React.Component {
     this.state = {
       dataSource: ds.cloneWithRows([])
     };
+  }
+
+  messages(){
+    this.props.navigation.navigate('Messages');
   }
 
   componentDidMount(){
@@ -194,7 +200,11 @@ class UserScreen extends React.Component {
     })
     .catch((err)=>{
       alert('Error loading friends.');
-    })
+    });
+
+    this.props.navigation.setParams({
+      onRightPress: ()=>(this.messages())
+    });
   }
 
   touchUser(user){
@@ -246,6 +256,55 @@ class UserScreen extends React.Component {
   }
 }
 
+class MessageScreen extends React.Component {
+  static navigationOptions = {
+    title: 'Message'
+  };
+
+  constructor(props){
+    super(props)
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.state = {
+      dataSource: ds.cloneWithRows([])
+    };
+  }
+
+  componentDidMount(){
+    fetch(`${SERVER_URL}/messages`,{
+      method: 'GET'
+    })
+    .then((resp)=>(
+      resp.json()
+    ))
+    .then((respJson)=>{
+      if(!respJson.success){
+        throw('Error');
+      }
+      this.setState({
+        dataSource: this.state.dataSource.cloneWithRows(respJson.messages)
+      });
+    })
+    .catch((err)=>{
+      alert('Error loading messages.');
+    })
+  }
+
+  render() {
+    return (
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={(rowData) =>
+          <Text
+          key={rowData._id}
+          style={{fontSize: 10}}
+          >
+            {`${rowData.from.username} -> ${rowData.to.username}\nTime: ${rowData.timestamp}\n${rowData.body}`}
+          </Text>
+        }
+      />
+    );
+  }
+}
 
 
 
@@ -262,6 +321,9 @@ export default StackNavigator({
   },
   Users: {
     screen: UserScreen,
+  },
+  Messages: {
+    screen: MessageScreen,
   }
 }, {initialRouteName: 'Home'});
 
