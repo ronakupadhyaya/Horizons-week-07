@@ -11,12 +11,16 @@ import {
   AsyncStorage
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
+import { Location, Permissions, MapView } from 'expo';
 const SERVER_URL = "https://hohoho-backend.herokuapp.com";
+const DEFAULT_LAT_DELTA = 0.0250;
+const DEFAULT_LON_DELTA = 0.0125;
+
 
 //Screens
 class HomeScreen extends React.Component {
   static navigationOptions = {
-    title: 'Login'
+    title: 'Home'
   };
 
   press() {
@@ -55,6 +59,23 @@ class LoginScreen extends React.Component {
     title: 'Login'
   };
 
+  componentDidMount(){
+    AsyncStorage.getItem('user')
+    .then((credentials)=>{
+      credentials = JSON.parse(credentials);
+      var username = credentials.username;
+      var password = credentials.password;
+      if(username && password){
+         this.setState({username,password})
+         this.handleLogin();
+      }
+    })
+    .catch((error)=>{
+      alert('Error loading login credentials');
+    });
+  }
+
+
   handleLogin(){
     fetch(`${SERVER_URL}/login`,{
       method: 'POST',
@@ -62,8 +83,8 @@ class LoginScreen extends React.Component {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        username: this.state.username,
-        password: this.state.password
+        username: this.state.username || false,
+        password: this.state.password || false
       })
     })
     .then((resp)=>
@@ -72,6 +93,11 @@ class LoginScreen extends React.Component {
       if(!respJson.success){
         throw('Error!');
       }
+      return AsyncStorage.setItem('user', JSON.stringify({
+        username: this.state.username,
+        password: this.state.password
+      }));
+    }).then(()=>{
       this.props.navigation.navigate('Users');
     }).catch((err)=>{
       alert('Error: login failed.');
@@ -207,7 +233,18 @@ class UserScreen extends React.Component {
     });
   }
 
-  touchUser(user){
+  sendLocation = async(user) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if(status !== 'granted'){
+      alert('Enable location sharing in settings.');
+    }
+    else{
+      let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+      this.touchUser(user,location.coords);
+    }
+  }
+
+  touchUser(user, coords){
     fetch(`${SERVER_URL}/messages`,{
       method: 'POST',
       headers: {
@@ -215,6 +252,10 @@ class UserScreen extends React.Component {
       },
       body: JSON.stringify({
         to: user._id,
+        location: {
+          longitude: (coords ? coords.longitude : false),
+          latitude: (coords ? coords.latitude : false)
+        }
       })
     })
     .then((resp)=>(
@@ -243,6 +284,8 @@ class UserScreen extends React.Component {
           <TouchableOpacity
             key={rowData._id}
             onPress={()=>this.touchUser(rowData)}
+            onLongPress={()=>this.sendLocation(rowData)}
+            delayLongPress={1000}
           >
             <Text
             style={{fontSize: 20}}
@@ -289,17 +332,48 @@ class MessageScreen extends React.Component {
     })
   }
 
+  renderMapView(rowData){
+    if(rowData.location && rowData.location.longitude){
+      return(
+        <MapView
+          style={{height: 200, alignSelf: 'stretch'}}
+          region={{
+            latitude: rowData.location.latitude,
+            longitude: rowData.location.longitude,
+            latitudeDelta: DEFAULT_LAT_DELTA,
+            longitudeDelta: DEFAULT_LON_DELTA
+          }}
+        >
+          <MapView.Marker
+            coordinate={{
+              latitude: rowData.location.latitude,
+              longitude: rowData.location.longitude
+            }}
+            title={rowData.from.username}
+          />
+        </MapView>
+      );
+    }
+  }
+
   render() {
     return (
       <ListView
+        className='containerFull'
+        style={{display:'flex'}}
         dataSource={this.state.dataSource}
         renderRow={(rowData) =>
-          <Text
-          key={rowData._id}
-          style={{fontSize: 10}}
+          <View
+            className='containerFull'
           >
-            {`${rowData.from.username} -> ${rowData.to.username}\nTime: ${rowData.timestamp}\n${rowData.body}`}
-          </Text>
+            <Text
+            key={rowData._id}
+            style={{fontSize: 10}}
+            >
+              {`${rowData.from.username} -> ${rowData.to.username}\nTime: ${rowData.timestamp}\n${rowData.body}`}
+            </Text>
+            {this.renderMapView(rowData)}
+          </View>
         }
       />
     );
