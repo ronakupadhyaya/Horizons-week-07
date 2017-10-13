@@ -7,7 +7,8 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
+  RefreshControl
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 const baseUrl = 'https://hohoho-backend.herokuapp.com/'
@@ -136,20 +137,20 @@ class LoginScreen extends React.Component {
   }
 }
 
-          /*secureTextEntry={true} TODO*/
-
 class UsersScreen extends React.Component {
-  static navigationOptions = {
-    title: 'Users'
-  };
+  static navigationOptions = (props) => ({
+    title: 'Users',
+    headerRight: <TouchableOpacity onPress={() => props.navigation.navigate('Messages') }><Text>Messages</Text></TouchableOpacity>
+  });
+
   constructor(props) {
     super(props);
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-    /* this.state = { */
-    /*   dataSource: ds.cloneWithRows([ */
-    /*     'Moose', 'Corey', 'Allie', 'Jay', 'Graham', 'Darwish', 'Abhi Fitness' */
-    /*   ]) */
-    /* }; */
+    this.state = {
+      dataSource: ds.cloneWithRows([
+        'Moose', 'Corey', 'Allie', 'Jay', 'Graham', 'Darwish', 'Abhi Fitness'
+      ])
+    };
     fetch(baseUrl + 'users', {
       method: 'GET',
       headers: {
@@ -165,7 +166,35 @@ class UsersScreen extends React.Component {
     .catch(err => {
       alert('Error: ' + err);
       console.log('Error: ' + err);
+    });
+  }
+
+  touchUser(user) {
+    fetch(baseUrl + 'messages', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: user._id
+      })
     })
+    .then(response => response.json())
+    .then(responseJson => {
+      console.log(responseJson);
+      Alert.alert(
+        'Success',
+        `Your HoHoHo to ${user.username} has been sent!`,
+        [{text: 'Dismiss'}] // Button
+      );
+    })
+    .catch(err => {
+      Alert.alert(
+        'Failure',
+        `Your HoHoHo to ${user.username} was not sent`,
+        [{text: 'Dismiss'}] // Button
+      );
+    });
   }
   render() {
     return (
@@ -173,10 +202,98 @@ class UsersScreen extends React.Component {
         <ListView
           renderRow={item => {
             return (
-              <View key={item._id}><Text>{item.username}</Text></View>
-            )
+              <View key={item._id}><TouchableOpacity onPress={this.touchUser.bind(this, item)}><Text>{item.username}</Text></TouchableOpacity></View>
+            );
           }}
           dataSource={this.state.dataSource}
+        />
+      </View>
+    );
+  }
+}
+
+class MessagesScreen extends React.Component {
+  static navigationOptions = {
+    title: 'Messages',
+  };
+
+  constructor(props) {
+    super(props);
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.state = {
+      dataSource: ds.cloneWithRows([
+        {
+          _id: 0,
+          from: {username: 'mason'},
+          to: {username: 'jeff'},
+          timestamp: 'right now',
+        }
+      ]),
+      refreshing: false,
+      ds: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
+    };
+
+    fetch(baseUrl + 'messages', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json"
+      },
+    })
+    .then(response => response.json())
+    .then(responseJson => {
+      this.setState({
+        dataSource: this.state.ds.cloneWithRows(responseJson.messages),
+      });
+    })
+    .catch(err => {
+      alert('Error: ' + err);
+    });
+
+  }
+
+  _onRefresh() {
+    fetch(baseUrl + 'messages', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json"
+      },
+    })
+    .then(response => response.json())
+    .then(responseJson => {
+      this.setState({
+        dataSource: this.state.ds.cloneWithRows(responseJson.messages),
+      });
+    })
+    .catch(err => {
+      alert('Error: ' + err);
+    });
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <ListView
+          renderRow={aMessage => {
+            return (
+              <View key={aMessage._id}>
+                <TouchableOpacity>
+                  <View style={{padding: 5, borderColor: 'grey', borderWidth: 1}}>
+                    <Text>From: {aMessage.from.username}</Text>
+                    <Text>To: {aMessage.to.username}</Text>
+                    <Text>Message: {aMessage.body}</Text>
+                    <Text>Timestamp: {aMessage.timestamp}</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            );
+          }}
+          dataSource={this.state.dataSource}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this._onRefresh.bind(this)}
+            />
+          }
         />
       </View>
     );
@@ -196,6 +313,9 @@ export default StackNavigator({
   },
   Users: {
     screen: UsersScreen,
+  },
+  Messages: {
+    screen: MessagesScreen,
   },
 }, {initialRouteName: 'Home'});
 
