@@ -14,12 +14,42 @@ import { StackNavigator } from 'react-navigation';
 
 //Screens
 class LoginScreen extends React.Component {
+  constructor() {
+    super()
+    this.state = {
+      username: '',
+      password: '',
+    }
+  }
+
   static navigationOptions = {
     title: 'Login'
   };
 
   press() {
-
+    fetch('https://hohoho-backend.herokuapp.com/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password,
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if (responseJson.success) {
+        // alert(`Welcome ${responseJson.user.username}!`);
+        this.props.navigation.navigate('Users');
+      } else {
+        alert(responseJson.error);
+      }
+    })
+    .catch((err) => {
+      alert('There seems to have been a problem. Pls contact the devs... bro.')
+      console.log('ERROR', err);
+    });
   }
   register() {
     this.props.navigation.navigate('Register');
@@ -29,11 +59,16 @@ class LoginScreen extends React.Component {
     return (
       <View style={styles.container}>
         <Text style={styles.textBig}>Login to HoHoHo!</Text>
+        {/* Login Fields */}
+        <TextInput style={styles.input} placeholder="Enter your username" onChangeText={text => this.setState({username: text})} />
+        <TextInput style={styles.input} secureTextEntry={true} placeholder="Enter your password" onChangeText={text => this.setState({password: text})} />
         <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, styles.buttonGreen]}>
-          <Text style={styles.buttonLabel}>Tap to Login</Text>
+          <Text style={styles.buttonLabel}>Login</Text>
         </TouchableOpacity>
+        {/* Registration Button */}
+        <Text style={{marginTop: 20}}>Don't have an account?</Text>
         <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={ () => {this.register()} }>
-          <Text style={styles.buttonLabel}>Tap to Register</Text>
+          <Text style={styles.buttonLabel}>Register</Text>
         </TouchableOpacity>
       </View>
     )
@@ -41,22 +76,92 @@ class LoginScreen extends React.Component {
 }
 
 class RegisterScreen extends React.Component {
+  constructor() {
+    super()
+    this.state = {
+      username: '',
+      password: '',
+    }
+  }
+
   static navigationOptions = {
-    username: '',
-    password: '',
+    title: 'Register'
   };
+
+  press() {
+    fetch('https://hohoho-backend.herokuapp.com/register', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password,
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if (responseJson.success) {
+        this.props.navigation.navigate('Login');
+      } else {
+        alert(responseJson.error);
+      }
+    })
+    .catch((err) => {
+      alert('There seems to have been a problem. Pls contact the devs... bro.')
+      console.log('ERROR', err);
+    });
+  }
 
   render() {
     return (
       <View style={styles.container}>
         <TextInput style={styles.input} placeholder="Enter your username" onChangeText={text => this.setState({username: text})} />
         <TextInput style={styles.input} secureTextEntry={true} placeholder="Enter your password" onChangeText={text => this.setState({password: text})} />
-        <TouchableOpacity ><Text>Register</Text></TouchableOpacity>
+        <Button title="register" onPress={() => this.press()} />
       </View>
     )
   }
 }
 
+class UsersScreen extends React.Component {
+  constructor() {
+    super()
+    this.state = {
+      dataSource: [],
+    }
+  }
+
+  static navigationOptions = {
+    title: 'Users'
+  }
+
+  componentWillMount() {
+    fetch('https://hohoho-backend.herokuapp.com/users')
+    .then(resp => resp.json())
+    .then(respJson => {
+      if (respJson.success) {
+        this.setState({dataSource: respJson.users})
+      }
+    })
+    .catch(err => {
+      alert('There seems to have been a problem. Pls contact the devs... bro.')
+      console.log('ERROR', err);
+    })
+  }
+
+  render() {
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    return (
+      <View>
+        <ListView
+          dataSource={ds.cloneWithRows(this.state.dataSource)}
+          renderRow={(rowData) => <Text style={styles.textBig}>{rowData.username}</Text>}
+        />
+      </View>
+    )
+  }
+}
 
 //Navigator
 export default StackNavigator({
@@ -65,6 +170,9 @@ export default StackNavigator({
   },
   Register: {
     screen: RegisterScreen,
+  },
+  Users: {
+    screen: UsersScreen,
   },
 }, {initialRouteName: 'Login'});
 
@@ -123,7 +231,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
-    width: 100,
-    borderWidth: 1,
+    width: 300,
+    paddingLeft: 5,
   }
 });
