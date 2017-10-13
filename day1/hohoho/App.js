@@ -8,12 +8,29 @@ import {
   Alert,
   ListView,
   Button,
-  RefreshControl
+  RefreshControl,
+  AsyncStorage,
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-
+import { Location, Permissions, MapView } from 'expo';
+import Swiper from 'react-native-swiper';
 
 //Screens
+class SwiperScreen extends React.Component {
+  static navigationOptions = (props) => ({
+    title: 'HoHoHo!',
+  });
+
+  render() {
+    return (
+      <Swiper>
+        <UsersScreen />
+        <MessagesScreen />
+      </Swiper>
+    )
+  }
+}
+
 class MessagesScreen extends React.Component {
   static navigationOptions = (props) => ({
     title: 'Messages',
@@ -105,6 +122,8 @@ class MessagesScreen extends React.Component {
           dataSource={ds.cloneWithRows(this.state.messages)}
           renderRow={ (row) => {
             user = user || row.from.username;
+            const showLocation = row.location && row.location.latitude;
+            console.log(showLocation, row);
             return (
               <View style={ [user === row.from.username ?
                 styles.fromMe :
@@ -118,6 +137,27 @@ class MessagesScreen extends React.Component {
                 <Text style={styles.buttonLabel}>
                   {row.body} - sent at {row.timestamp}
                 </Text>
+                { showLocation ?
+                  <View style={{height: 100}}>
+                    <MapView
+                      style={{flex: 1}}
+                      region={
+                        {
+                          latitude: row.location.latitude,
+                          longitude: row.location.longitude,
+                          latitudeDelta: 0.01,
+                          longitudeDelta: 0.005,
+                        }
+                      }>
+                      <MapView.Marker
+                        coordinate={{
+                          latitude: row.location.latitude,
+                          longitude: row.location.longitude,
+                        }}
+                        title={ row.from.username }/>
+                    </MapView>
+                  </View> :
+                  <View/>}
               </View>
             );
           } }/>
@@ -137,9 +177,63 @@ class UsersScreen extends React.Component {
   });
 
   componentDidMount() {
-    this.props.navigation.setParams({
-      onRightPress: () => this.props.navigation.navigate('Messages'),
-    });
+  }
+
+  sendLocation = async (userId) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if( status !== 'granted' ) {
+      Alert.alert(
+        'Permission denied',
+        'You denied permission to obtain location information',
+        [
+          {text: 'Whoops I did not mean to do that, forgive me'}
+        ]
+      );
+    } else {
+      let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+      fetch('https://hohoho-backend.herokuapp.com/messages', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          to: userId,
+          location: {
+            longitude: location.coords.longitude,
+            latitude: location.coords.latitude,
+          }
+        }),
+      })
+        .then(res => res.json())
+        .then(json => {
+          if(!json.success) {
+            Alert.alert(
+              'Failed to Ho',
+              json.error,
+              [
+                {text: "Why can't I ho?"}
+              ]
+            );
+          } else {
+            Alert.alert(
+              `Successfully Ho'd with location`,
+              'Sent at ' + json.message.timestamp,
+              [
+                {text: 'Yay!'}
+              ]
+            );
+          }
+        })
+        .catch(err => {
+          Alert.alert(
+            `Backend error`,
+            err.message,
+            [
+              {text: 'OK'}
+            ]
+          );
+        });
+    }
   }
 
   constructor(props) {
@@ -236,7 +330,8 @@ class UsersScreen extends React.Component {
                 () => {
                   this.send(row._id);
                 }
-              }>
+              }
+              onLongPress={() => this.sendLocation(row._id)}>
                 <View style={styles.user}>
                   <Text style={
                     {
@@ -296,10 +391,11 @@ class ActualLogin extends React.Component {
               ]
             );
           } else {
-            this.props.navigation.setParams({
-              user: this.state.usernameInput,
-            });
-            this.props.navigation.navigate('Users');
+            AsyncStorage.setItem('user', JSON.stringify({
+              username: this.state.usernameInput,
+              password: this.state.passwordInput,
+            }));
+            this.props.navigation.navigate('Swiper');
           }
         })
         .catch(err => {
@@ -355,12 +451,45 @@ class LoginScreen extends React.Component {
   };
 
   componentDidMount() {
-    fetch('https://hohoho-backend.herokuapp.com/login/success')
-      .then(res => {
-        if(res.status === 200) {
-          this.props.navigation.navigate('Users');
+    AsyncStorage.getItem('user')
+      .then( (result) => {
+        if(result) {
+          const user = JSON.parse(result);
+          fetch('https://hohoho-backend.herokuapp.com/login', {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              username: user.username,
+              password: user.password,
+            }),
+          })
+            .then(res => res.json())
+            .then(json => {
+              if(!json.success) {
+                Alert.alert(
+                  'Login failed',
+                  json.error,
+                  [
+                    {text: 'Please save my soul'}
+                  ]
+                );
+              } else {
+                this.props.navigation.navigate('Swiper');
+              }
+            })
+            .catch(err => {
+              Alert.alert(
+                'Failed to login',
+                err.message,
+                [
+                  {text: 'Databases suck'}
+                ]
+              );
+            });
         }
-      });
+      } )
   }
 
   press() {
@@ -496,7 +625,10 @@ export default StackNavigator({
   },
   Messages: {
     screen: MessagesScreen,
-  }
+  },
+  Swiper: {
+    screen: SwiperScreen,
+  },
 }, {initialRouteName: 'Login'});
 
 
