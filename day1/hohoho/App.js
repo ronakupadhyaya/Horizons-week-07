@@ -41,26 +41,160 @@ class HomeScreen extends React.Component {
 	}
 }
 
-class UserScreen extends React.Component {
+class MessagesScreen extends React.Component {
 	static navigationOptions = {
-		title: 'User'
+		title: 'Messages'
 	};
 
 	constructor(props) {
 		super(props);
+
+		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+
+		fetch('https://hohoho-backend.herokuapp.com/messages', {
+			method: 'GET'
+		})
+		.then((response) => response.json())
+		.then((responseJson) => {
+			if(responseJson.success === true) {
+				console.log("Success true", responseJson.messages);
+				this.setState({
+					dataSource: ds.cloneWithRows(responseJson.messages)
+				})
+			}
+		})
+		.catch((err) => {
+			console.log('Error rendering messages, ', err);
+			Alert.alert(
+				'Rendering message',
+				'Error rendering messages'
+				[{text: 'Done'}]
+			);
+		})
+
+		this.state = {
+			dataSource: ds.cloneWithRows([])
+		};
 	}
 
+	render() {
+
+		return (
+		<ListView
+			dataSource={this.state.dataSource}
+			renderRow={(rowData) => {
+				console.log('rowData: ', rowData);
+				return <Text> From: {rowData.from.username} To: {rowData.to.username} When: {rowData.timestamp}</Text>
+			}}
+		/>);
+	}
+}
+
+class UsersScreen extends React.Component {
+
+	componentDidMount() {
+		this.props.navigation.setParams({
+			onRightPress: this.messages.bind(this)
+		});
+	}
+
+
+	static navigationOptions = (props) =>  ({
+		title: 'Users',
+		headerRight: <Button title='Messages' onPress={ () => {props.navigation.state.params.onRightPress()} } />
+	});
+
+
+	messages() {
+		this.props.navigation.navigate('Messages');
+	}
+	touchUser(user) {
+		fetch('https://hohoho-backend.herokuapp.com/messages', {
+			method: 'POST',
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				to: user._id,
+			})
+		})
+		.then((response) => response.json())
+		.then((responseJson) => {
+			console.log('user: ', user);
+			if(responseJson.success){
+				Alert.alert(
+					'Sent message',
+					'Your Ho Ho Ho to ' + user.username + ' has been sent!',
+					[{text: 'Done'}]
+				);
+			}  else {
+				Alert.alert(
+					'Sending message',
+					'Your Ho Ho Ho to ' + user.id + ' could not be sent.'
+					[{text: 'Send'}]
+				);
+			}
+		})
+		.catch((err) => {
+			Alert.alert(
+				'Sending message',
+				'Error sending message',
+				[{text: 'Send'}]
+			);
+		})
+	}
+
+	//navigationOptions code
+	constructor(props) {
+		super(props);
+
+		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+		fetch('https://hohoho-backend.herokuapp.com/users', {
+			method: 'GET',
+		})
+		.then((response) => response.json())
+		.then((responseJson) => {
+			console.log('json: ', responseJson);
+			if(responseJson.success === true) {
+				console.log("Success true", responseJson.users);
+				this.setState({
+					dataSource: ds.cloneWithRows(responseJson.users)
+				})
+			}
+		})
+		.catch((err) => {
+			/* do something if there was an error with fetching */
+			console.log('errOR', err);
+			return null;
+		});
+		this.state = {
+			dataSource: ds.cloneWithRows([])
+		};
+	}
+
+	render() {
+		return (
+			<ListView
+				dataSource={this.state.dataSource}
+				renderRow={(rowData) => {
+					console.log('rowData: ', rowData.username);
+					return <TouchableOpacity onPress={this.touchUser.bind(this, rowData)}><Text>{rowData.username}</Text></TouchableOpacity>
+				}}
+			/>
+		);
+	}
 
 
 }
 
 class LoginScreen extends React.Component {
 	static navigationOptions = {
-		title: 'Login'
+		title: 'Login',
 	};
 
 	constructor(props) {
 		super(props);
+
 		this.state = { usernameText: '', passwordText: '' };
 	}
 
@@ -80,9 +214,8 @@ class LoginScreen extends React.Component {
 		.then((responseJson) => {
 			/* do something with responseJson and go back to the Login view but
 			* make sure to check for responseJson.success! */
-			console.log('response: ', responseJson);
-			alert('Logged in to ', responseJson.user.username);
-			this.props.navigation.navigate('Home');
+			console.log('response: ', responseJson.user.username);
+			this.props.navigation.navigate('Users');
 		})
 		.catch((err) => {
 			/* do something if there was an error with fetching */
@@ -92,7 +225,7 @@ class LoginScreen extends React.Component {
 	}
 
 	render() {
-		 return (<View style={styles.container}>
+		return (<View style={styles.container}>
 			<TextInput
 				style={{height: 40, borderColor: 'gray', borderWidth: 1}}
 				onChangeText={(usernameText) => this.setState({usernameText})}
@@ -188,6 +321,12 @@ export default StackNavigator({
 	},
 	Login: {
 		screen: LoginScreen
+	},
+	Users: {
+		screen: UsersScreen
+	},
+	Messages: {
+		screen: MessagesScreen
 	}
 }, {initialRouteName: 'Home'});
 
