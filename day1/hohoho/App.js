@@ -68,8 +68,10 @@ class LoginScreen extends React.Component {
     .then((resp)=>
       resp.json()
     ).then((respJson)=>{
-      alert('Success! ' + respJson.user.username + ' successfully logged in.');
-      this.props.navigation.navigate('Home');
+      if(!respJson.success){
+        throw('Error!');
+      }
+      this.props.navigation.navigate('Users');
     }).catch((err)=>{
       alert('Error: login failed.');
     });
@@ -161,6 +163,52 @@ class RegisterScreen extends React.Component {
   }
 }
 
+//Other Components
+class UserScreen extends React.Component {
+  static navigationOptions = {
+    title: 'Users'
+  };
+
+  constructor(props){
+    super(props)
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.state = {
+      dataSource: ds.cloneWithRows([])
+    };
+  }
+
+  componentDidMount(){
+    var self = this;
+    fetch(`${SERVER_URL}/users`,{
+      method: 'GET'
+    })
+    .then((resp)=>(
+      resp.json()
+    ))
+    .then((respJson)=>{
+      if(!respJson.success){
+        throw('Error');
+      }
+      /*self.setState({
+        dataSource: ds.cloneWithRows(resp.Json.users)
+      });*/
+      alert('Success');
+    })
+    .catch((err)=>{
+      alert('Error loading friends.');
+    })
+  }
+
+  render() {
+    return (
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={(rowData) => <Text>{rowData.username}</Text>}
+      />
+    );
+  }
+}
+
 //Navigator
 export default StackNavigator({
   Home: {
@@ -172,6 +220,9 @@ export default StackNavigator({
   Register: {
     screen: RegisterScreen,
   },
+  Users: {
+    screen: UserScreen,
+  }
 }, {initialRouteName: 'Home'});
 
 
