@@ -178,7 +178,6 @@ class UserScreen extends React.Component {
   }
 
   componentDidMount(){
-    var self = this;
     fetch(`${SERVER_URL}/users`,{
       method: 'GET'
     })
@@ -189,10 +188,9 @@ class UserScreen extends React.Component {
       if(!respJson.success){
         throw('Error');
       }
-      /*self.setState({
-        dataSource: ds.cloneWithRows(resp.Json.users)
-      });*/
-      alert('Success');
+      this.setState({
+        dataSource: this.state.dataSource.cloneWithRows(respJson.users)
+      });
     })
     .catch((err)=>{
       alert('Error loading friends.');
@@ -203,7 +201,7 @@ class UserScreen extends React.Component {
     return (
       <ListView
         dataSource={this.state.dataSource}
-        renderRow={(rowData) => <Text>{rowData.username}</Text>}
+        renderRow={(rowData) => <Text style={{fontSize: 20}}>{rowData.username}</Text>}
       />
     );
   }
