@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  AsyncStorage,
   StyleSheet,
   View,
   Text,
@@ -11,6 +12,8 @@ import {
   RefreshControl
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
+import { MapView, Location, Permissions } from 'expo';
+import Swiper from 'react-native-swiper';
 const baseUrl = 'https://hohoho-backend.herokuapp.com/'
 
 //Screens
@@ -24,6 +27,41 @@ class HomeScreen extends React.Component {
   }
   register() {
     this.props.navigation.navigate('Register');
+  }
+
+  componentDidMount() {
+    AsyncStorage.getItem('user')
+    .then(result => {
+      const parsed = JSON.parse(result);
+      if (parsed) {
+        this.asyncStorageLogin(parsed);
+      }
+    })
+  }
+
+  asyncStorageLogin(parsed) {
+    fetch(baseUrl + 'login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: parsed.username,
+        password: parsed.password,
+      })
+    })
+    .then(response => response.json())
+    .then(responseJson => {
+      if (responseJson.success) {
+        this.props.navigation.navigate('Swiper');
+      } else {
+        this.props.navigation.navigate('Home');
+        alert('401: Incorrect credentials');
+      }
+    })
+    .catch(err => {
+      alert('400: Bad user input');
+    })
   }
 
   render() {
@@ -76,6 +114,7 @@ class RegisterScreen extends React.Component {
         <TextInput
           style={styles.inputBox}
           placeholder="Enter your password"
+          secureTextEntry={true}
           onChangeText={(text) => this.setState({password: text})}
         />
         <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={ () => {this.postRegister()} }>
@@ -85,7 +124,6 @@ class RegisterScreen extends React.Component {
     )
   }
 }
-          /*secureTextEntry={true}*/
 
 class LoginScreen extends React.Component {
   static navigationOptions = {
@@ -104,9 +142,13 @@ class LoginScreen extends React.Component {
     })
     .then(response => response.json())
     .then(responseJson => {
-      console.log(responseJson);
       if (responseJson.success) {
-        this.props.navigation.navigate('Users');
+        console.log('async above', this.state);
+        AsyncStorage.setItem('user', JSON.stringify({
+          username: this.state.username,
+          password: this.state.password
+        }));
+        this.props.navigation.navigate('Swiper');
       } else {
         this.props.navigation.navigate('Home');
         alert('401: Incorrect credentials');
@@ -128,6 +170,7 @@ class LoginScreen extends React.Component {
           style={styles.inputBox}
           placeholder="Password"
           onChangeText={(text) => this.setState({password: text})}
+          secureTextEntry={true}
         />
         <TouchableOpacity style={[styles.button, styles.buttonGreen]} onPress={ () => {this.postLogin()} }>
           <Text style={styles.buttonLabel}>Login</Text>
@@ -151,6 +194,11 @@ class UsersScreen extends React.Component {
         'Moose', 'Corey', 'Allie', 'Jay', 'Graham', 'Darwish', 'Abhi Fitness'
       ])
     };
+    this.getUsers()
+  }
+
+  getUsers() {
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     fetch(baseUrl + 'users', {
       method: 'GET',
       headers: {
@@ -169,40 +217,60 @@ class UsersScreen extends React.Component {
     });
   }
 
-  touchUser(user) {
+  longTouchUser(user, location) {
     fetch(baseUrl + 'messages', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        to: user._id
+        to: user._id,
+        location: {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        }
       })
     })
     .then(response => response.json())
     .then(responseJson => {
-      console.log(responseJson);
       Alert.alert(
         'Success',
-        `Your HoHoHo to ${user.username} has been sent!`,
+        `Your location to ${user.username} has been sent!`,
         [{text: 'Dismiss'}] // Button
       );
     })
     .catch(err => {
       Alert.alert(
         'Failure',
-        `Your HoHoHo to ${user.username} was not sent`,
+        `Your location to ${user.username} was not sent`,
         [{text: 'Dismiss'}] // Button
       );
     });
   }
+
+  sendLocation = async(user) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      alert('Location permissions not granted :(');
+    } else {
+      let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
+      this.longTouchUser(user, location);
+    }
+  }
+
   render() {
     return (
       <View style={styles.container}>
         <ListView
           renderRow={item => {
             return (
-              <View key={item._id}><TouchableOpacity onPress={this.touchUser.bind(this, item)}><Text>{item.username}</Text></TouchableOpacity></View>
+              <View key={item._id}>
+                <TouchableOpacity
+                  onLongPress={this.sendLocation.bind(this, item)}
+                  delayLongPress={1000}>
+                  <Text>{item.username}</Text>
+                </TouchableOpacity>
+              </View>
             );
           }}
           dataSource={this.state.dataSource}
@@ -227,12 +295,19 @@ class MessagesScreen extends React.Component {
           from: {username: 'mason'},
           to: {username: 'jeff'},
           timestamp: 'right now',
+          location: {
+            latitude: 30.2672,
+            longitude: -97.7431,
+          },
         }
       ]),
       refreshing: false,
       ds: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
     };
+    this.getMessages();
+  }
 
+  getMessages() {
     fetch(baseUrl + 'messages', {
       method: 'GET',
       headers: {
@@ -244,11 +319,11 @@ class MessagesScreen extends React.Component {
       this.setState({
         dataSource: this.state.ds.cloneWithRows(responseJson.messages),
       });
+      console.log('getMessages', this.state.dataSource);
     })
     .catch(err => {
       alert('Error: ' + err);
     });
-
   }
 
   _onRefresh() {
@@ -275,13 +350,29 @@ class MessagesScreen extends React.Component {
         <ListView
           renderRow={aMessage => {
             return (
-              <View key={aMessage._id}>
+              <View style={{flex: 1}} key={aMessage._id}>
                 <TouchableOpacity>
                   <View style={{padding: 5, borderColor: 'grey', borderWidth: 1}}>
                     <Text>From: {aMessage.from.username}</Text>
                     <Text>To: {aMessage.to.username}</Text>
                     <Text>Message: {aMessage.body}</Text>
                     <Text>Timestamp: {aMessage.timestamp}</Text>
+                    {aMessage.location ?
+                       <MapView
+                        style={{height: 70}}
+                        region={{
+                          latitude: aMessage.location.latitude,
+                          longitude: aMessage.location.longitude,
+                          latitudeDelta: 0.3,
+                          longitudeDelta: 0.2,
+                        }}>
+                          <MapView.Marker
+                            coordinate={aMessage.location}
+                          />
+                       </MapView>
+                       :
+                       <View></View>
+                    }
                   </View>
                 </TouchableOpacity>
               </View>
@@ -300,6 +391,20 @@ class MessagesScreen extends React.Component {
   }
 }
 
+class SwiperScreen extends React.Component {
+  static navigationOptions = {
+    title: 'HoHoHo!'
+  };
+  render() {
+    return (
+      <Swiper>
+        <UsersScreen/>
+        <MessagesScreen/>
+      </Swiper>
+    );
+  }
+}
+
 //Navigator
 export default StackNavigator({
   Home: {
@@ -310,6 +415,9 @@ export default StackNavigator({
   },
   Login: {
     screen: LoginScreen,
+  },
+  Swiper: {
+    screen: SwiperScreen,
   },
   Users: {
     screen: UsersScreen,
