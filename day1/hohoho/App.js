@@ -42,13 +42,16 @@ class LoginScreen extends React.Component {
 
 class RegisterScreen extends React.Component {
   static navigationOptions = {
-    title: 'Register'
+    username: '',
+    password: '',
   };
 
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Register</Text>
+        <TextInput style={styles.input} placeholder="Enter your username" onChangeText={text => this.setState({username: text})} />
+        <TextInput style={styles.input} secureTextEntry={true} placeholder="Enter your password" onChangeText={text => this.setState({password: text})} />
+        <TouchableOpacity ><Text>Register</Text></TouchableOpacity>
       </View>
     )
   }
@@ -117,5 +120,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     color: 'white'
+  },
+  input: {
+    height: 40,
+    width: 100,
+    borderWidth: 1,
   }
 });
