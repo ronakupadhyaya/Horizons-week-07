@@ -14,6 +14,7 @@ import {
 import { StackNavigator } from 'react-navigation';
 import {Location, Permissions, MapView} from 'expo';
 import axios from 'axios';
+import Swiper from 'react-native-swiper'
 const backendUrl = "https://hohoho-backend.herokuapp.com/";
 //Screens
 class LoginScreen extends React.Component {
@@ -36,7 +37,7 @@ class LoginScreen extends React.Component {
         var password = parsedUser.password;
         if(username && password) {
           console.log("consistent login", username);
-          this.props.navigation.navigate('Users', {username: username});
+          this.props.navigation.navigate('Swiper', {username: username});
         }
       })
       .catch(err => {
@@ -94,7 +95,7 @@ class LoginOnlyScreen extends React.Component {
         }))
         .then((user) => {
           console.log("async storage user", user);
-          this.props.navigation.navigate('Users', {username: this.state.username});
+          this.props.navigation.navigate('Swiper', {username: this.state.username});
         })
       } else{
 
@@ -196,13 +197,11 @@ class RegisterScreen extends React.Component {
   }
 }
 
+
 class UserList extends React.Component {
-  static navigationOptions = ({navigation}) => {
-    return {
-            title: 'Users',
-            headerRight: <Button title='Messages' onPress={ () => {navigation.state.params.onRightPress()} } />
-            }
-};
+  static navigationOptions = {
+    title: 'Users!'
+  };
   constructor(props) {
      super(props);
 
@@ -226,15 +225,15 @@ class UserList extends React.Component {
      })
    }
 
-  componentDidMount(){
-    const name = this.props.navigation.state.username;
-    this.props.navigation.setParams({
-       onRightPress: (name) => {
-         console.log("NAME again", this.props.navigation.state.params)
-         return this.props.navigation.navigate('Messages', {username: this.props.navigation.state.params.username})
-       }
-     })
-  }
+  // componentDidMount(){
+  //   const name = this.props.navigation.state.username;
+  //   this.props.navigation.setParams({
+  //      onRightPress: (name) => {
+  //        console.log("NAME again", this.props.navigation.state.params)
+  //        return this.props.navigation.navigate('Messages', {username: this.props.navigation.state.params.username})
+  //      }
+  //    })
+  // }
 
   _onRefresh(){
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
@@ -325,11 +324,10 @@ class UserList extends React.Component {
   }
 
   render(){
-    const { params } = this.props.navigation.state;
-    console.log("PARAMS", params);
+    // const { params } = this.props.navigation.state;
     return(
       <View style={styles.container}>
-        <Text style={{marginBottom: 20, fontSize: 20}}> Welcome {params.username}! Click a user below to send a BRO </Text>
+        <Text style={{marginBottom: 20, fontSize: 20}}> Welcome {this.props.username}! Click a user below to send a BRO </Text>
         <Text style={{marginBottom: 20, fontSize: 15, color: 'red'}}>{this.state.errorMessage}</Text>
         <ListView
           renderRow={(item) => (
@@ -354,10 +352,9 @@ class UserList extends React.Component {
 }
 
 class MessageList extends React.Component {
-  static navigationOptions = ({navigation}) => ({
-    title: 'Messages',
-    headerLeft: <Button title='Users' onPress={ () => {navigation.state.params.onLeftPress()} } />
-  });
+  static navigationOptions = {
+    title: 'Messages!'
+  };
 
   constructor(props) {
      super(props);
@@ -380,13 +377,13 @@ class MessageList extends React.Component {
 
      })
    }
-   componentDidMount() {
-     this.props.navigation.setParams({
-        onLeftPress: () => {
-          return this.props.navigation.navigate('Users', {username: this.props.navigation.state.params.username});
-        }
-      })
-  }
+  //  componentDidMount() {
+  //    this.props.navigation.setParams({
+  //       onLeftPress: () => {
+  //         return this.props.navigation.navigate('Users', {username: this.props.navigation.state.params.username});
+  //       }
+  //     })
+  // }
 
   _onRefresh(){
     this.setState({refreshing: true});
@@ -405,12 +402,12 @@ class MessageList extends React.Component {
     })
   }
    render(){
-     const { params } = this.props.navigation.state;
+    //  const { params } = this.props.navigation.state.params.username
      return(
        <View style={styles.container}>
          <ListView
            renderRow={(msg) => {
-             if(msg.from.username === params.username){
+             if(msg.from.username === this.props.username){
                if(msg.location){
                 console.log("location", msg);
                  return (
@@ -491,6 +488,21 @@ class MessageList extends React.Component {
    }
 
 }
+
+class SwiperScreen extends React.Component {
+  static navigationOptions = {
+    title: 'HoHoHo!'
+  };
+
+  render() {
+    return (
+      <Swiper>
+        <UserList username={this.props.navigation.state.params.username}/>
+        <MessageList username={this.props.navigation.state.params.username} />
+      </Swiper>
+    );
+  }
+}
 //Navigator
 export default StackNavigator({
   Login: {
@@ -501,6 +513,9 @@ export default StackNavigator({
   },
   LoginOnly: {
     screen: LoginOnlyScreen
+  },
+  Swiper: {
+    screen: SwiperScreen
   },
   Users: {
     screen: UserList
