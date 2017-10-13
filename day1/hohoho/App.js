@@ -137,11 +137,39 @@ class UsersScreen extends React.Component {
   }
 
   componentWillMount() {
-    fetch('https://hohoho-backend.herokuapp.com/users')
+    fetch('https://hohoho-backend.herokuapp.com/users', {
+      headers: {
+        "Content-Type": "application/json"
+      },
+    })
     .then(resp => resp.json())
     .then(respJson => {
       if (respJson.success) {
         this.setState({dataSource: respJson.users})
+      }
+    })
+    .catch(err => {
+      alert('There seems to have been a problem. Pls contact the devs... bro.')
+      console.log('ERROR', err);
+    })
+  }
+
+  touchUser(user) {
+    fetch('https://hohoho-backend.herokuapp.com/messages', {
+      method: 'POST',
+      body: JSON.stringify({
+        to: user._id,
+      }),
+      headers: {
+        "Content-Type": "application/json"
+      },
+    })
+    .then(resp => resp.json())
+    .then(respJson => {
+      if (respJson.success) {
+        alert(`Successfully messaged ${user.username}!`)
+      } else {
+        alert(`There was an error messaging ${user.username}`)
       }
     })
     .catch(err => {
@@ -156,7 +184,13 @@ class UsersScreen extends React.Component {
       <View>
         <ListView
           dataSource={ds.cloneWithRows(this.state.dataSource)}
-          renderRow={(rowData) => <Text style={styles.textBig}>{rowData.username}</Text>}
+          renderRow={(rowData) => (
+            <TouchableOpacity onPress={() => this.touchUser(rowData)}>
+              <Text style={styles.textBig}>
+                {rowData.username}
+              </Text>
+            </TouchableOpacity>
+          )}
         />
       </View>
     )
