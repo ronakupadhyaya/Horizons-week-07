@@ -12,7 +12,7 @@ import {
   AsyncStorage
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-import {Location, Permissions} from 'expo';
+import {Location, Permissions, MapView} from 'expo';
 import axios from 'axios';
 const backendUrl = "https://hohoho-backend.herokuapp.com/";
 //Screens
@@ -406,12 +406,35 @@ class MessageList extends React.Component {
   }
    render(){
      const { params } = this.props.navigation.state;
-     console.log("PARAMS message", params);
      return(
        <View style={styles.container}>
          <ListView
            renderRow={(msg) => {
              if(msg.from.username === params.username){
+               if(msg.location){
+                console.log("location", msg);
+                 return (
+                   <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#9b59b6', flex: 1}}>
+                    <Text style={{color: 'white', flex: 1}}>From: {msg.from.username}</Text>
+                    <Text style={{color: 'white', flex: 1}}>To: {msg.to.username}</Text>
+                    <Text style={{color: 'white', flex: 1}}>Message: BRO </Text>
+                    <Text style={{color: 'white', flex: 1}}>When: {msg.timestamp} </Text>
+                    <MapView style={{flex: 7, height: 150, borderRadius: 5}}
+                       region={{
+                         latitude: msg.location.latitude,
+                         longitude: msg.location.longitude,
+                         latitudeDelta: 0.25,
+                         longitudeDelta: 0.125
+                       }}
+                     >
+                     <MapView.Marker
+                     coordinate={msg.location}
+                     title={"Sent From"}
+                     />
+                     </MapView>
+                    </View>
+                 )
+               }
                return (
                  <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#9b59b6'}}>
                   <Text style={{color: 'white'}}>From: {msg.from.username}</Text>
@@ -421,6 +444,30 @@ class MessageList extends React.Component {
                   </View>
                )
              } else{
+               if(msg.location){
+                console.log("location", msg);
+                 return (
+                   <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#2ecc71', flex: 1}}>
+                    <Text style={{color: 'white', flex: 1}}>From: {msg.from.username}</Text>
+                    <Text style={{color: 'white', flex: 1}}>To: {msg.to.username}</Text>
+                    <Text style={{color: 'white', flex: 1}}>Message: BRO </Text>
+                    <Text style={{color: 'white', flex: 1}}>When: {msg.timestamp} </Text>
+                    <MapView style={{flex: 7, height: 150, borderRadius: 5}}
+                       region={{
+                         latitude: msg.location.latitude,
+                         longitude: msg.location.longitude,
+                         latitudeDelta: 0.25,
+                         longitudeDelta: 0.125
+                       }}
+                     >
+                     <MapView.Marker
+                     coordinate={msg.location}
+                     title={"Sent From"}
+                     />
+                     </MapView>
+                    </View>
+                 )
+               }
                return(
                  <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#2ecc71'}}>
                   <Text style={{color: 'white'}}>From: {msg.from.username}</Text>
