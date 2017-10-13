@@ -8,9 +8,11 @@ import {
   ListView,
   Alert,
   Button,
-  RefreshControl
+  RefreshControl,
+  AsyncStorage
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
+import {Location, Permissions} from 'expo';
 import axios from 'axios';
 const backendUrl = "https://hohoho-backend.herokuapp.com/";
 //Screens
@@ -26,6 +28,21 @@ class LoginScreen extends React.Component {
     this.props.navigation.navigate('Register');
   }
 
+  componentDidMount() {
+    AsyncStorage.getItem('user')
+      .then(user => {
+        var parsedUser = JSON.parse(user);
+        var username = parsedUser.username;
+        var password = parsedUser.password;
+        if(username && password) {
+          console.log("consistent login", username);
+          this.props.navigation.navigate('Users', {username: username});
+        }
+      })
+      .catch(err => {
+        console.log("ERR", err);
+      })
+  }
   render() {
     return (
       <View style={styles.container}>
@@ -71,7 +88,14 @@ class LoginOnlyScreen extends React.Component {
         console.log("Error loggin in");
       }
       if(responseJson.success){
-        this.props.navigation.navigate('Users', {username: this.state.username});
+        AsyncStorage.setItem('user', JSON.stringify({
+          username: this.state.username,
+          password: this.state.password
+        }))
+        .then((user) => {
+          console.log("async storage user", user);
+          this.props.navigation.navigate('Users', {username: this.state.username});
+        })
       } else{
 
       }
@@ -185,7 +209,8 @@ class UserList extends React.Component {
      const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
      this.state = {
        dataSource: ds.cloneWithRows([]),
-       refreshing: false
+       refreshing: false,
+       errorMessage: ''
      };
 
      fetch(backendUrl + 'users')
@@ -230,7 +255,7 @@ class UserList extends React.Component {
 
   touchUser(item) {
     console.log("check id", item._id);
-    fetch(backendUrl+'messages?', {
+    fetch(backendUrl+'messages', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json"
@@ -258,15 +283,62 @@ class UserList extends React.Component {
     });
   }
 
+  sendLocation = async (item) => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      this.setState({
+        errorMessage: 'Permission to access location was denied',
+      });
+    }
+    let location = await Location.getCurrentPositionAsync({});
+    console.log("check location", location);
+    fetch(backendUrl + 'messages', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: item._id,
+        location: {
+          longitude: location.coords.longitude,
+          latitude: location.coords.latitude
+        }
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      console.log("responseJson", responseJson);
+      if(responseJson.success){
+        Alert.alert(
+          'Success',
+          'Your Hohoho and location to ' + item.username + ' has been sent' ,
+          [{text: 'Dismiss Button'}] // Button
+        )
+      } else{
+        console.log('problem with location send');
+      }
+
+    })
+    .catch((err) => {
+      console.log("ERR", err);
+    });
+  }
+
   render(){
     const { params } = this.props.navigation.state;
     console.log("PARAMS", params);
     return(
       <View style={styles.container}>
-        <Text style={{marginBottom: 20, fontSize: 40}}> Welcome {params.username}! Click a user below to send a BRO </Text>
+        <Text style={{marginBottom: 20, fontSize: 20}}> Welcome {params.username}! Click a user below to send a BRO </Text>
+        <Text style={{marginBottom: 20, fontSize: 15, color: 'red'}}>{this.state.errorMessage}</Text>
         <ListView
           renderRow={(item) => (
-          <TouchableOpacity style={styles.userItem} onPress={this.touchUser.bind(this, item)}><View><Text style={{textAlign: 'center', color: 'white', fontSize: 20}}>{item.username}</Text></View></TouchableOpacity>
+          <TouchableOpacity
+          style={styles.userItem}
+          onPress={this.touchUser.bind(this, item)}
+          onLongPress={this.sendLocation.bind(this, item)}>
+          <View><Text style={{textAlign: 'center', color: 'white', fontSize: 20}}>{item.username}</Text></View>
+          </TouchableOpacity>
           )}
           refreshControl={
             <RefreshControl
@@ -310,7 +382,9 @@ class MessageList extends React.Component {
    }
    componentDidMount() {
      this.props.navigation.setParams({
-        onLeftPress: () => (this.props.navigation.navigate('Users'))
+        onLeftPress: () => {
+          return this.props.navigation.navigate('Users', {username: this.props.navigation.state.params.username});
+        }
       })
   }
 
