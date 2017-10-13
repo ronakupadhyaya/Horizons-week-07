@@ -404,14 +404,15 @@ class MessageList extends React.Component {
    render(){
     //  const { params } = this.props.navigation.state.params.username
      return(
-       <View style={styles.container}>
+       <View style={[styles.container, {width: '100%'}]}>
          <ListView
+           style={{width: '100%'}}
            renderRow={(msg) => {
              if(msg.from.username === this.props.username){
                if(msg.location){
                 console.log("location", msg);
                  return (
-                   <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#9b59b6', flex: 1}}>
+                   <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#9b59b6', flex: 1, alignSelf: 'stretch'}}>
                     <Text style={{color: 'white', flex: 1}}>From: {msg.from.username}</Text>
                     <Text style={{color: 'white', flex: 1}}>To: {msg.to.username}</Text>
                     <Text style={{color: 'white', flex: 1}}>Message: BRO </Text>
@@ -433,7 +434,7 @@ class MessageList extends React.Component {
                  )
                }
                return (
-                 <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#9b59b6'}}>
+                 <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#9b59b6', flex: 1, alignSelf: 'stretch'}}>
                   <Text style={{color: 'white'}}>From: {msg.from.username}</Text>
                   <Text style={{color: 'white'}}>To: {msg.to.username}</Text>
                   <Text style={{color: 'white'}}>Message: BRO </Text>
@@ -444,7 +445,7 @@ class MessageList extends React.Component {
                if(msg.location){
                 console.log("location", msg);
                  return (
-                   <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#2ecc71', flex: 1}}>
+                   <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#2ecc71', flex: 1, alignSelf: 'stretch'}}>
                     <Text style={{color: 'white', flex: 1}}>From: {msg.from.username}</Text>
                     <Text style={{color: 'white', flex: 1}}>To: {msg.to.username}</Text>
                     <Text style={{color: 'white', flex: 1}}>Message: BRO </Text>
@@ -466,7 +467,7 @@ class MessageList extends React.Component {
                  )
                }
                return(
-                 <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#2ecc71'}}>
+                 <View style={{borderColor: 'grey', borderWidth: 1, marginBottom: 10, borderRadius: 3, padding: 5, backgroundColor: '#2ecc71', alignSelf: 'stretch'}}>
                   <Text style={{color: 'white'}}>From: {msg.from.username}</Text>
                   <Text style={{color: 'white'}}>To: {msg.to.username}</Text>
                   <Text style={{color: 'white'}}>Message: BRO </Text>
