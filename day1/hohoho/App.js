@@ -197,15 +197,57 @@ class UserScreen extends React.Component {
     })
   }
 
+  touchUser(user){
+    fetch(`${SERVER_URL}/messages`,{
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: user._id,
+      })
+    })
+    .then((resp)=>(
+      resp.json()
+    ))
+    .then((respJson)=>{
+      var message = `Your 'Ho Ho Ho!' to ${user.username} `;
+      if(respJson.success){
+        message += 'has been sent.';
+      }
+      else{
+        message += 'cound not be sent.';
+      }
+      alert(message);
+    })
+    .catch((err)=>{
+      alert(`Your 'Ho Ho Ho!' to ${user.username} could not be sent.`);
+    })
+  }
+
   render() {
     return (
       <ListView
         dataSource={this.state.dataSource}
-        renderRow={(rowData) => <Text style={{fontSize: 20}}>{rowData.username}</Text>}
+        renderRow={(rowData) =>
+          <TouchableOpacity
+            key={rowData._id}
+            onPress={()=>this.touchUser(rowData)}
+          >
+            <Text
+            style={{fontSize: 20}}
+            >
+              {rowData.username}
+            </Text>
+          </TouchableOpacity>
+        }
       />
     );
   }
 }
+
+
+
 
 //Navigator
 export default StackNavigator({
