@@ -2,12 +2,12 @@ import React from 'react';
 import { RefreshControl, ListView, View, Text, TouchableOpacity } from 'react-native';
 import { MapView } from 'expo';
 import styles from './styles';
-const baseUrl = 'https://hohoho-backend.herokuapp.com/'
+const baseUrl = 'https://hohoho-backend.herokuapp.com/';
 
 class MessagesScreen extends React.Component {
-  static navigationOptions = {
-    title: 'Messages',
-  };
+  /* static navigationOptions = { */
+  /*   title: 'Messages', */
+  /* }; */
   constructor(props) {
     super(props);
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
@@ -36,16 +36,15 @@ class MessagesScreen extends React.Component {
         "Content-Type": "application/json"
       },
     })
-    .then(response => response.json())
-    .then(responseJson => {
-      this.setState({
-        dataSource: this.state.ds.cloneWithRows(responseJson.messages),
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState({
+          dataSource: this.state.ds.cloneWithRows(responseJson.messages),
+        });
+      })
+      .catch(err => {
+        alert('Error: ' + err);
       });
-      console.log('getMessages', this.state.dataSource);
-    })
-    .catch(err => {
-      alert('Error: ' + err);
-    });
   }
   _onRefresh() {
     fetch(baseUrl + 'messages', {
@@ -54,15 +53,15 @@ class MessagesScreen extends React.Component {
         "Content-Type": "application/json"
       },
     })
-    .then(response => response.json())
-    .then(responseJson => {
-      this.setState({
-        dataSource: this.state.ds.cloneWithRows(responseJson.messages),
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState({
+          dataSource: this.state.ds.cloneWithRows(responseJson.messages),
+        });
+      })
+      .catch(err => {
+        alert('Error: ' + err);
       });
-    })
-    .catch(err => {
-      alert('Error: ' + err);
-    });
   }
   render() {
     return (
@@ -78,7 +77,7 @@ class MessagesScreen extends React.Component {
                     <Text>Message: {aMessage.body}</Text>
                     <Text>Timestamp: {aMessage.timestamp}</Text>
                     {aMessage.location ?
-                       <MapView
+                      <MapView
                         style={{height: 70}}
                         region={{
                           latitude: aMessage.location.latitude,
@@ -86,12 +85,12 @@ class MessagesScreen extends React.Component {
                           latitudeDelta: 0.3,
                           longitudeDelta: 0.2,
                         }}>
-                          <MapView.Marker
-                            coordinate={aMessage.location}
-                          />
-                       </MapView>
-                       :
-                       <View></View>
+                        <MapView.Marker
+                          coordinate={aMessage.location}
+                        />
+                      </MapView>
+                      :
+                      <View></View>
                     }
                   </View>
                 </TouchableOpacity>

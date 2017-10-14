@@ -36,6 +36,7 @@ class HomeScreen extends React.Component {
     })
     .then(response => response.json())
     .then(responseJson => {
+      console.log(responseJson);
       if (responseJson.success) {
         this.props.navigation.navigate('Swiper');
       } else {

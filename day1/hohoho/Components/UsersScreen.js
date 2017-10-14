@@ -2,7 +2,7 @@ import React from 'react';
 import { Alert, ListView, View, Text, TouchableOpacity } from 'react-native';
 import { Location, Permissions } from 'expo';
 import styles from './styles';
-const baseUrl = 'https://hohoho-backend.herokuapp.com/'
+const baseUrl = 'https://hohoho-backend.herokuapp.com/';
 
 class UsersScreen extends React.Component {
   static navigationOptions = (props) => ({
@@ -17,7 +17,7 @@ class UsersScreen extends React.Component {
         'Moose', 'Corey', 'Allie', 'Jay', 'Graham', 'Darwish', 'Abhi Fitness'
       ])
     };
-    this.getUsers()
+    this.getUsers();
   }
   getUsers() {
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
@@ -27,16 +27,16 @@ class UsersScreen extends React.Component {
         "Content-Type": "application/json"
       },
     })
-    .then(response => response.json())
-    .then(responseJson => {
-      this.setState({
-        dataSource: ds.cloneWithRows(responseJson.users)
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState({
+          dataSource: ds.cloneWithRows(responseJson.users)
+        });
+      })
+      .catch(err => {
+        alert('Error: ' + err);
+        /* console.log('Error: ' + err); */
       });
-    })
-    .catch(err => {
-      alert('Error: ' + err);
-      console.log('Error: ' + err);
-    });
   }
   longTouchUser(user, location) {
     fetch(baseUrl + 'messages', {
@@ -52,21 +52,21 @@ class UsersScreen extends React.Component {
         }
       })
     })
-    .then(response => response.json())
-    .then(responseJson => {
-      Alert.alert(
-        'Success',
-        `Your location to ${user.username} has been sent!`,
-        [{text: 'Dismiss'}] // Button
-      );
-    })
-    .catch(err => {
-      Alert.alert(
-        'Failure',
-        `Your location to ${user.username} was not sent`,
-        [{text: 'Dismiss'}] // Button
-      );
-    });
+      .then(response => response.json())
+      .then(responseJson => {
+        Alert.alert(
+          'Success',
+          `Your location to ${user.username} has been sent!`,
+          [{text: 'Dismiss'}] // Button
+        );
+      })
+      .catch(err => {
+        Alert.alert(
+          'Failure',
+          `Your location to ${user.username} was not sent. Error: ${err}`,
+          [{text: 'Dismiss'}] // Button
+        );
+      });
   }
   sendLocation = async(user) => {
     let { status } = await Permissions.askAsync(Permissions.LOCATION);

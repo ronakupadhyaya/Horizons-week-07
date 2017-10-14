@@ -1,7 +1,7 @@
 import React from 'react';
 import { AsyncStorage, TextInput, View, Text, TouchableOpacity } from 'react-native';
 import styles from './styles';
-const baseUrl = 'https://hohoho-backend.herokuapp.com/'
+const baseUrl = 'https://hohoho-backend.herokuapp.com/';
 
 class LoginScreen extends React.Component {
   static navigationOptions = {
