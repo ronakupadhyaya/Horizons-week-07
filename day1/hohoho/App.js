@@ -144,6 +144,7 @@ class MessagesScreen extends React.Component {
 			}
 
 			touchUser(user, coords) {
+				console.log('user in touchUser ', user);
 				fetch('https://hohoho-backend.herokuapp.com/messages', {
 					method: 'POST',
 					headers: {
@@ -212,6 +213,7 @@ class MessagesScreen extends React.Component {
 			}
 
 			sendLocation = async(user) => {
+				console.log("user is ", user);
 				let { status } = await Permissions.askAsync(Permissions.LOCATION);
 				if (status !== 'granted') {
 					//handle failure
@@ -222,8 +224,9 @@ class MessagesScreen extends React.Component {
 				}  else {
 					let location = await Location.getCurrentPositionAsync({enableHighAccuracy: true});
 					alert(location.coords);
-					longTouchUser(user);
-
+					console.log('coords: ', location.coords);
+					console.log('user in else ', user);
+					this.touchUser(user, location.coords);
 				}
 			}
 
@@ -233,7 +236,7 @@ class MessagesScreen extends React.Component {
 						dataSource={this.state.dataSource}
 						renderRow={(rowData) => {
 							console.log('rowData: ', rowData);
-							return <TouchableOpacity key={rowData._id} onLongPress={this.sendLocation.bind(this, rowData)} delayLongPress={1000} onPress={this.touchUser.bind(this, rowData.location)}><Text>{rowData.username}</Text></TouchableOpacity>
+							return <TouchableOpacity key={rowData._id} onLongPress={this.sendLocation.bind(this, rowData)} delayLongPress={1000} onPress={this.touchUser.bind(this, rowData)}><Text>{rowData.username}</Text></TouchableOpacity>
 						}}
 					/>
 				);
