@@ -1,0 +1,11 @@
+
+current starts at beginning of List
+
+Loop:
+  check current.next.data
+  if not match: (while loop)
+    current = current.next
+  else match:
+    current.next = current.next.next
+
+// list remove
