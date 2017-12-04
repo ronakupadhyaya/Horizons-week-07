@@ -21,6 +21,7 @@ import {
 } from 'expo';
 
 //Screens
+import SplashScreen from './Screens/SplashScreen';
 import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
 import UsersScreen from './Screens/UsersScreen';
@@ -29,6 +30,9 @@ import ConversationScreen from './Screens/ConversationScreen';
 
 //Navigator
 export default StackNavigator({
+  Splash: {
+    screen: SplashScreen,
+  },
   Login: {
     screen: LoginScreen,
   },
@@ -44,4 +48,23 @@ export default StackNavigator({
   Conversation: {
     screen: ConversationScreen,
   },
-}, {initialRouteName: 'Login'});
+}, {initialRouteName: 'Splash'});
+
+// var portscanner = require('portscanner')
+//
+// var ip = require("ip");
+// var ipheader = ip.address().split(".")
+// ipheader.pop();
+//
+// var ipheader = ipheader.join(".")+"."
+//
+// var promiseArr = [];
+// for (var i = 1; i < 254; i ++){
+//   promiseArr.push(portscanner.checkPortStatus(8228, ipheader+i));
+// }
+//
+// Promise.all(promiseArr)
+// .then( (x) => x.map( (y,i) => {
+//   if(y === "open") console.log(ipheader+(i+1));
+// }))
+// .catch(err => console.log(err))

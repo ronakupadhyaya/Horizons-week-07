@@ -23,20 +23,20 @@ class LoginScreen extends React.Component {
     title: 'Login'
   };
 
-  componentWillMount() {
-    AsyncStorage.getItem('user')
-    .then(result => {
-      const parsedResult = JSON.parse(result);
-      if (parsedResult.username && parsedResult.password) {
-        return this.login(parsedResult.username, parsedResult.password)
-        .then( (responseJson) => {this.props.navigation.navigate('Users')} )
-      }
-      else {
-        console.log('not logging in for some reaosn');
-      }
-    })
-    .catch(error => {console.log('error in mount: ', error);})
-  }
+  // componentWillMount() {
+  //   AsyncStorage.getItem('user')
+  //   .then(result => {
+  //     const parsedResult = JSON.parse(result);
+  //     if (parsedResult.username && parsedResult.password) {
+  //       return this.login(parsedResult.username, parsedResult.password)
+  //       .then( (responseJson) => {this.props.navigation.navigate('Users')} )
+  //     }
+  //     else {
+  //       console.log('not logging in for some reaosn');
+  //     }
+  //   })
+  //   .catch(error => {console.log('error in mount: ', error);})
+  // }
 
   login(username, password) {
     return fetch('https://hohoho-backend.herokuapp.com/login', {
